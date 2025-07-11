@@ -1,2 +1,3 @@
 # .eslintignore
 commitlint.config.cjs
+.eslintrc-auto-import.json
