@@ -6,6 +6,7 @@
 // biome-ignore lint: disable
 export {}
 declare global {
+  const IconLineMdLoadingLoop: typeof import('~icons/line-md/loading-loop')['default']
   const IconLucideCheck: typeof import('~icons/lucide/check')['default']
   const IconLucideDownload: typeof import('~icons/lucide/download')['default']
   const IconLucideHeart: typeof import('~icons/lucide/heart')['default']

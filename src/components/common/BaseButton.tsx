@@ -180,7 +180,8 @@ const StyledButton = styled.button<StyledButtonProps>`
       background: ${theme.background};
       color: ${theme.color};
       border-color: ${theme.border};
-      box-shadow: 0 4px 12px ${theme.shadow};
+      /* 별로 안어울리는 것 같아서 뺌 */
+      /* box-shadow: 0 4px 12px ${theme.shadow}; */
     `
   }}
   
@@ -231,7 +232,10 @@ const StyledButton = styled.button<StyledButtonProps>`
     const baseHover = css`
       &:hover {
         transform: scale(1.05);
-        box-shadow: 0 6px 20px ${theme.hoverShadow};
+
+        box-shadow:
+          0 0 30px ${theme.hoverShadow},
+          0 6px 20px ${theme.hoverShadow};
       }
 
       &:active {
@@ -254,7 +258,9 @@ const StyledButton = styled.button<StyledButtonProps>`
         return css`
           &:hover {
             animation: ${bounce} 1s;
-            box-shadow: 0 6px 20px ${theme.hoverShadow};
+            box-shadow:
+              0 0 30px ${theme.hoverShadow},
+              0 6px 20px ${theme.hoverShadow};
           }
           &:active {
             transform: scale(0.95);
@@ -264,7 +270,9 @@ const StyledButton = styled.button<StyledButtonProps>`
         return css`
           &:hover {
             transform: scale(1.05) rotate(3deg);
-            box-shadow: 0 6px 20px ${theme.hoverShadow};
+            box-shadow:
+              0 0 30px ${theme.hoverShadow},
+              0 6px 20px ${theme.hoverShadow};
           }
           &:active {
             transform: scale(0.95) rotate(1deg);
@@ -348,7 +356,7 @@ const BaseButton: React.FC<ButtonProps> = ({
 
       {loading ? (
         <>
-          <IconLucideLoader2 size={16} />
+          <IconLineMdLoadingLoop size={16} />
           로딩중
         </>
       ) : (
