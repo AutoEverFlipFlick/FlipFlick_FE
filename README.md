@@ -252,7 +252,33 @@ npm run build
 
 ---
 
+## 라우팅 및 레이아웃, 페이지 구성 예시
+
+- React Router v6 이상에서 권장되는 레이아웃 및 페이지 구성 방식으로 
+  **공용 레이아웃과 개별 페이지 및 개별 레이아웃을 분리**하여 관리합니다.
+
+```
+<Routes>
+  {/* 공용 레이아웃 적용 그룹 */}
+  <Route element={<BaseLayout />}>
+    <Route path="/" element={<HomePage />} />
+    <Route path="/mypage" element={<MyPage />} />
+    <Route path="/about" element={<AboutPage />} />
+  </Route>
+
+{/* 공용 레이아웃을 사용하지 않는 개별 페이지 및 별도 레이아웃 존재 시*/}
+<Route element={<AuthLayout />}>
+  <Route path="/login" element={<LoginPage />} />
+  <Route path="/signup" element={<SignupPage />} />
+</Route>
+<Route path="*" element={<NotFoundPage />} />
+</Routes>
+```
+
+---
+
 ## 기타
 
-* **모든 컴포넌트 단위는 Storybook을 만들면 `src/stories`에 작성** (자동 문서화 및 테스트 용이)
+* **컴포넌트 단위는 Storybook을 만들면 `src/stories`에 작성하여 컴포넌트 단위로 랜더링 및 확인할 수 있음** 
+* (자동 문서화 및 테스트 용이)
 * `unplugin-auto-import`를 사용 중이므로 `import React from 'react'` 등은 생략 가능 (자동)

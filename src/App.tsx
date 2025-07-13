@@ -1,17 +1,15 @@
-import {BrowserRouter, Route, Routes} from "react-router-dom";
-import ExampleReactVite from "@/pages/ExampleReactVite.tsx";
-import { GlobalStyle } from './styles/globalStyle.ts';
+import {BrowserRouter} from "react-router-dom";
+import AppRoutes from './router'
+import {GlobalStyle} from './styles/globalStyle.ts';
 
 function App() {
 
 
   return (
     <>
-      <GlobalStyle />
+      <GlobalStyle/>
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<ExampleReactVite/>}/>
-        </Routes>
+        <AppRoutes/>
       </BrowserRouter>
     </>
   )
