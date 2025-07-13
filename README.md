@@ -11,6 +11,7 @@ Vite로 구성된 빠른 개발 환경 위에 최신 라이브러리를 도입�
 2. `src/App.tsx`에서 전체 구조 확인 - `router/index.tsx`에서 라우팅 흐름 이해
 3. `pages/` - `components/` - `services/` 순으로 기능 흐름 따라가기
 4. 전역 스타일(`styles/`)과 전역 상태(`context/`)는 구조 파악 후 참조
+5. 개발 가이드라인 - 컴포넌트 개발 (권장) ⭐ 필독 ⭐
 
 ## 기술 스택
 
@@ -47,7 +48,7 @@ Vite로 구성된 빠른 개발 환경 위에 최신 라이브러리를 도입�
 - **Unplugin-Auto-Import**: 자동 임포트 기능
 - **Unplugin-Icons**: 아이콘 자동 임포트
 
-## 프로젝트 구조
+## 프로젝트 주요 구조
 
 ```
 src/
@@ -162,11 +163,10 @@ npm run test
 
 | 디렉토리                  | 책임         | 파일 추가 기준                                  |
 |-----------------------|------------|-------------------------------------------|
-| `assets/`             | 정적 리소스     | 아이콘, 이미지, 배경 등                            |
 | `components/common/`  | 범용 UI      | 버튼, 모달 등 재사용 가능 UI                        |
 | `components/feature/` | 기능 중심 UI   | 특정 기능 전용 UI (ex. 유저 카드)                   |
 | `constants.ts`        | 전역 상수      | URL, 메시지, enum, 정규식                       |
-| `context/`            | 글로벌 상태     | Auth, Modal 등 App 단위 상태                   |
+| `context/`            | 전역 상태      | Auth, Modal 등 App 단위 상태                   |
 | `hooks/`              | 커스텀 훅      | 재사용 가능한 로직 `useModal.ts`, `useFetch.ts` 등 |
 | `pages/`              | 라우트 단위 페이지 | `HomePage.tsx`, `LoginPage.tsx` 등         |
 | `router/`             | 라우팅 설정     | Route, Layout, ProtectedRoute 등           |
@@ -204,15 +204,13 @@ export const getUserInfo = () => {
 
 ## 개발 가이드라인
 
-### 코드 스타일
-
-- ESLint와 Prettier 설정을 따릅니다.
-- 커밋 전에 `npm run lint` 및 `npm run format`을 실행하여 코드 품질을 유지합니다.
-
-### 컴포넌트 개발
+### 컴포넌트 개발 (권장) ⭐ 필독 ⭐
 
 - 공통 컴포넌트는 `components/common` 디렉토리에 배치합니다.
 - 특정 기능에 관련된 컴포넌트는 `components/feature` 디렉토리에 배치합니다.
+- 상태 관리, api 호출, 타입 선언, 커스텀 훅 등은 해당 컴포넌트와 가까운 위치에 배치합니다.
+- 스타일은 컴포넌트 내부에서 `styled-components`를 사용하여 작성합니다.
+- 다른 코드에 영향이 없다면 책임 및 위치 분리를 엄밀하게 적용하지 않아도 됩니다.(위 사항들은 권장 사항입니다)
 - (선택) 컴포넌트 개발 시 Storybook를 통해 컴포넌트에 대해 문서화할 수 있습니다.
 
 ### 커밋 메시지
@@ -305,27 +303,32 @@ AuthContext, ThemeContext 등 |
 ### 기능추가/리팩토링/버그픽스 시 파일 위치 판단 기준
 
 1. **재사용 목적 여부**
-   - 재사용 가능하면 `common` 또는 `hooks`, 도메인 특화면 `feature`로
-   - (ui, hooks, 등)
+
+- 재사용 가능하면 `common` 또는 `hooks`, 도메인 특화면 `feature`로
+- (ui, hooks, 등)
 
 2. **관심사의 분리**
-   - API 로직은 `services`전역 상태 로직은 `context`, UI 로직은 `components`로 분리
-   - 페이지 단위 컴포넌트는 `pages`, ui 컴포넌트는 `components`로 분리
-   - 혹은, `components/feature/{기능/도메인 이름}/`, `page/{기능/도메인 이름}` 에 작성 
+
+- API 로직은 `services`전역 상태 로직은 `context`, UI 로직은 `components`로 분리
+- 페이지 단위 컴포넌트는 `pages`, ui 컴포넌트는 `components`로 분리
+- 혹은, `components/feature/{기능/도메인 이름}/`, `page/{기능/도메인 이름}` 에 작성
 
 3. **라우트 단위 or 컴포넌트 단위**
-   - 라우팅 UI면 `pages`, 조립 UI면 `components`
+
+- 라우팅 UI면 `pages`, 조립 UI면 `components`
 
 4. **정적 vs 동적 자산**
-   - `.svg`, `.png` 등은 `assets/`, 컴포넌트는 `components/`
-   - 정적 상수는 `constants.ts`에 정의
-   - 정적 스타일은 `styles/`에 작성
-   - 전역 타입은 `types/`에 작성
-   - API 응답 타입은 `types/api.ts`에 작성
-   - 커스텀 훅은 `hooks/`에 작성
-   - 서비스 API 호출은 `services/`에 작성
-   - 라우팅 설정은 `router/`에 작성
-   - 전역 상태 관리는 `context/`에 작성
+
+- `.svg`, `.png` 등은 `assets/`, 컴포넌트는 `components/`
+- 정적 상수는 `constants.ts`에 정의
+- 정적 스타일은 `styles/`에 작성
+- 전역 타입은 `types/`에 작성
+- API 응답 타입은 `types/api.ts`에 작성
+- 커스텀 훅은 `hooks/`에 작성
+- 서비스 API 호출은 `services/`에 작성
+- 라우팅 설정은 `router/`에 작성
+- 전역 상태 관리는 `context/`에 작성
+
 ---
 
 ## 라우팅 및 레이아웃, 페이지 구성 예시
