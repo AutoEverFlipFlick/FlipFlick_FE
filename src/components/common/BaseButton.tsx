@@ -153,7 +153,13 @@ const sizeStyles = {
 }
 
 // 메인 버튼 컴포넌트
-const StyledButton = styled.button<StyledButtonProps>`
+const StyledButton = styled.button<{
+  $variant?: ButtonVariant
+  $size?: ButtonSize
+  $state?: ButtonState
+  $hoverEffect?: HoverEffect
+  $fullWidth?: boolean
+}>`
   /* 기본 스타일 */
   display: inline-flex;
   align-items: center;
@@ -167,15 +173,15 @@ const StyledButton = styled.button<StyledButtonProps>`
   overflow: hidden;
 
   /* 크기 적용 */
-  ${({ size = 'medium' }) => css`
-    padding: ${sizeStyles[size].padding};
-    font-size: ${sizeStyles[size].fontSize};
-    border-radius: ${sizeStyles[size].borderRadius};
+  ${({ $size = 'medium' }) => css`
+    padding: ${sizeStyles[$size].padding};
+    font-size: ${sizeStyles[$size].fontSize};
+    border-radius: ${sizeStyles[$size].borderRadius};
   `}
 
   /* 색상 테마 적용 */
-  ${({ variant = 'orange' }) => {
-    const theme = colorThemes[variant]
+  ${({ $variant = 'orange' }) => {
+    const theme = colorThemes[$variant]
     return css`
       background: ${theme.background};
       color: ${theme.color};
@@ -186,15 +192,15 @@ const StyledButton = styled.button<StyledButtonProps>`
   }}
   
   /* 전체 너비 */
-  ${({ fullWidth }) =>
-    fullWidth &&
+  ${({ $fullWidth }) =>
+    $fullWidth &&
     css`
       width: 100%;
     `}
   
   /* 상태별 스타일 */
-  ${({ state }) => {
-    switch (state) {
+  ${({ $state }) => {
+    switch ($state) {
       case 'disabled':
         return css`
           background: #374151 !important;
@@ -225,10 +231,10 @@ const StyledButton = styled.button<StyledButtonProps>`
   }}
   
   /* 호버 효과 */
-  ${({ hoverEffect = 'none', variant = 'orange', state }) => {
-    if (state === 'disabled') return ''
+  ${({ $hoverEffect = 'none', $variant = 'orange', $state }) => {
+    if ($state === 'disabled') return ''
 
-    const theme = colorThemes[variant]
+    const theme = colorThemes[$variant]
     const baseHover = css`
       &:hover {
         transform: scale(1.05);
@@ -243,7 +249,7 @@ const StyledButton = styled.button<StyledButtonProps>`
       }
     `
 
-    switch (hoverEffect) {
+    switch ($hoverEffect) {
       case 'glow':
         return css`
           ${baseHover}
@@ -290,17 +296,21 @@ const LoadingSpinner = styled(IconLucideLoader2)`
 `
 
 // 파티클 효과를 위한 컴포넌트
-const Particle = styled.div<{ delay: number; top: string; left: string }>`
+const Particle = styled.div<{
+  $delay: number
+  $top: string
+  $left: string
+}>`
   position: absolute;
   width: 4px;
   height: 4px;
   background: currentColor;
   border-radius: 50%;
   opacity: 0.3;
-  top: ${({ top }) => top};
-  left: ${({ left }) => left};
+  top: ${({ $top }) => $top};
+  left: ${({ $left }) => $left};
   animation: ${ping} 2s infinite;
-  animation-delay: ${({ delay }) => delay}ms;
+  animation-delay: ${({ $delay }) => $delay}ms;
 `
 
 // 버튼 컴포넌트 인터페이스
@@ -335,11 +345,11 @@ const BaseButton: React.FC<ButtonProps> = ({
 
   return (
     <StyledButton
-      variant={variant}
-      size={size}
-      state={getState()}
-      hoverEffect={hoverEffect}
-      fullWidth={fullWidth}
+      $variant={variant}
+      $size={size}
+      $state={getState()}
+      $hoverEffect={hoverEffect}
+      $fullWidth={fullWidth}
       onClick={onClick}
       disabled={disabled || loading}
       className={className}
@@ -348,9 +358,9 @@ const BaseButton: React.FC<ButtonProps> = ({
       {/* 파티클 효과 (glow 효과일 때만) */}
       {hoverEffect === 'glow' && (
         <>
-          <Particle delay={0} top="20%" left="30%" />
-          <Particle delay={200} top="60%" left="70%" />
-          <Particle delay={400} top="80%" left="20%" />
+          <Particle $delay={0} $top="20%" $left="30%" />
+          <Particle $delay={200} $top="60%" $left="70%" />
+          <Particle $delay={400} $top="80%" $left="20%" />
         </>
       )}
 

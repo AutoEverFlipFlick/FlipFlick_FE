@@ -38,13 +38,13 @@ const SectionTitle = styled.h2`
   margin-bottom: 32px;
 `
 
-const Grid = styled.div<{ columns?: number }>`
+const Grid = styled.div<{ $columns?: number }>`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 24px;
 
   @media (min-width: 768px) {
-    grid-template-columns: repeat(${({ columns = 3 }) => columns}, 1fr);
+    grid-template-columns: repeat(${({ $columns = 3 }) => $columns}, 1fr);
   }
 `
 
@@ -154,7 +154,7 @@ const ExamplePage = () => {
         {/* 상태 변형 */}
         <Section>
           <SectionTitle>상태 변형</SectionTitle>
-          <Grid columns={4}>
+          <Grid $columns={4}>
             <ButtonDemo>
               <DemoLabel>Normal</DemoLabel>
               <BaseButton variant="blue" />
