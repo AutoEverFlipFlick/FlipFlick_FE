@@ -1,13 +1,13 @@
-import './App.css'
 import {BrowserRouter, Route, Routes} from "react-router-dom";
 import ExampleReactVite from "@/pages/ExampleReactVite.tsx";
+import { GlobalStyle } from './styles/globalStyle.ts';
 
-// TODO: 리액트 vite 기본 템플릿 삭제 후 기본 구조 설정 필요
 function App() {
 
 
   return (
     <>
+      <GlobalStyle />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<ExampleReactVite/>}/>
