@@ -1,7 +1,7 @@
 /// <reference types="vitest/config" />
 /// <reference types="vitest" />
 
-import {defineConfig} from 'vite'
+import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import svgr from 'vite-plugin-svgr'
 import * as path from 'node:path'
@@ -10,36 +10,42 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Icons from 'unplugin-icons/vite'
 import IconsResolver from 'unplugin-icons/resolver'
 
-import {fileURLToPath} from 'node:url'
-import {storybookTest} from '@storybook/addon-vitest/vitest-plugin'
+import { fileURLToPath } from 'node:url'
+import { storybookTest } from '@storybook/addon-vitest/vitest-plugin'
 
 const dirname =
   typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url))
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
-  plugins: [react(), svgr(),
+  plugins: [
+    react(),
+    svgr(),
     AutoImport({
-      imports: ['react', // preset: useState, useEffect 등
+      imports: [
+        'react', // preset: useState, useEffect 등
         {
           'react-router-dom': ['useNavigate', 'useLocation'],
           dayjs: [['default', 'dayjs']],
-        },],
+        },
+        {
+          'styled-components': [
+            ['default', 'styled'], // styled-components의 default export
+          ],
+        },
+      ],
       dts: 'src/auto-imports.d.ts',
       eslintrc: {
         enabled: true,
         filepath: './.eslintrc-auto-import.json',
         globalsPropValue: true,
       },
-      resolvers: [
-        IconsResolver({prefix: 'Icon'}),
-      ],
+      resolvers: [IconsResolver({ prefix: 'Icon' })],
     }),
     Icons({
       autoInstall: true,
       compiler: 'jsx',
     }),
-
   ],
   resolve: {
     alias: {
@@ -59,7 +65,6 @@ export default defineConfig({
             configDir: path.join(dirname, '.storybook'),
           }),
         ],
-
 
         test: {
           name: 'storybook',

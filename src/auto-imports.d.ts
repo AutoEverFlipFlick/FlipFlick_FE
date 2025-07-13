@@ -6,12 +6,18 @@
 // biome-ignore lint: disable
 export {}
 declare global {
+  const IconLucideCheck: typeof import('~icons/lucide/check')['default']
+  const IconLucideDownload: typeof import('~icons/lucide/download')['default']
+  const IconLucideHeart: typeof import('~icons/lucide/heart')['default']
+  const IconLucideLoader2: typeof import('~icons/lucide/loader2')['default']
+  const IconLucideStar: typeof import('~icons/lucide/star')['default']
   const createRef: typeof import('react')['createRef']
   const dayjs: typeof import('dayjs')['default']
   const forwardRef: typeof import('react')['forwardRef']
   const lazy: typeof import('react')['lazy']
   const memo: typeof import('react')['memo']
   const startTransition: typeof import('react')['startTransition']
+  const styled: typeof import('styled-components')['default']
   const useCallback: typeof import('react')['useCallback']
   const useContext: typeof import('react')['useContext']
   const useDebugValue: typeof import('react')['useDebugValue']
