@@ -1,4 +1,5 @@
 import BaseButton from '@/components/common/BaseButton'
+import BaseContainer from '@/components/common/BaseContainer'
 
 // 컨테이너 스타일
 const Container = styled.div`
@@ -97,6 +98,12 @@ const GuideList = styled.ul`
   li {
     margin-bottom: 8px;
   }
+`
+
+const Divider = styled.div`
+  border: 1px #fff solid;
+  border-radius: 30px;
+  margin-top: 3rem;
 `
 
 // 메인 컴포넌트
@@ -275,11 +282,23 @@ const ExamplePage = () => {
                 <li>• {'<BaseButton variant="green" loading={isLoading} />'}</li>
                 <li>• {'<BaseButton variant="pink" hoverEffect="glow" />'}</li>
                 <li>• {'<BaseButton variant="orange" icon={<Heart />} />'}</li>
-                <li>• {'<BaseButton variant="purple" fullWidth />'}</li>
+                <li>• {'<BaseButton variant="purple" fullWidth  />'}</li>
               </GuideList>
             </div>
           </GuideGrid>
         </GuideSection>
+
+        <Divider />
+        <Title>컨테이너</Title>
+        <Subtitle>공통 컨테이너 디자인</Subtitle>
+        <Section>
+          <FlexContainer style={{ backgroundColor: '#130803', padding: '30px' }}>
+            <BaseContainer fontSize="lg" style={{ width: '300px', padding: '12px' }}>
+              어두운 반투명 배경, 블러, 라운드 모서리, 그림자, 흰색 텍스트를 포함한 공통 컨테이너
+              디자인
+            </BaseContainer>
+          </FlexContainer>
+        </Section>
       </MaxWidthContainer>
     </Container>
   )
