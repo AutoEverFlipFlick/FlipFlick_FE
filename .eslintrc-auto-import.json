@@ -1,11 +1,17 @@
 {
   "globals": {
+    "IconLucideCheck": true,
+    "IconLucideDownload": true,
+    "IconLucideHeart": true,
+    "IconLucideLoader2": true,
+    "IconLucideStar": true,
     "createRef": true,
     "dayjs": true,
     "forwardRef": true,
     "lazy": true,
     "memo": true,
     "startTransition": true,
+    "styled": true,
     "useCallback": true,
     "useContext": true,
     "useDebugValue": true,
