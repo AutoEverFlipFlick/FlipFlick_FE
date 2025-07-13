@@ -2,9 +2,15 @@
 name: Fix Request
 about: 새로운 수정 요청을 작성해 주세요.
 title: "[FIX] 기능 설명"
-labels: FIX
+labels: [ "fix" ]
 assignees: ""
 ---
+
+## FIX Template 설정 안내(완료 시 삭제)
+
+- [ ] assignees를 본인으로 지정
+- [ ] label을 feature, fix, refactor 중에서 선택
+- 완료하셨다면 이 단락을 삭제해주세요.
 
 ## ❓ 어떤 수정인가요?
 
@@ -16,7 +22,7 @@ assignees: ""
 
 ## ✅ TODO
 
-수정 해야 하는 기능에 대해 체크리스트를 작성해 주세요.
+- 수정 해야 하는 기능에 대해 체크리스트를 작성해 주세요.
 
 - [ ] TODO 1
 - [ ] TODO 2
