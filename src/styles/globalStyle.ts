@@ -1,10 +1,20 @@
 import { createGlobalStyle } from 'styled-components'
-import { reset } from './reset'
 
 export const GlobalStyle = createGlobalStyle`
-  /* CSS Reset - Josh Comeau 스타일 기반 css 초기화 */
-  ${reset}
-  
-  /* Global Styles */
-  /* 이하에 전역 스타일 styled-components 형식으로 정의 */
-`
+
+  html, body {
+    font-family: ${({ theme }) => theme.fontFamily};
+    font-weight: ${({ theme }) => theme.fontWeight};
+    color: ${({ theme }) => theme.colors.text};
+    background-color: ${({ theme }) => theme.colors.background};
+    line-height: 1.5;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+`;

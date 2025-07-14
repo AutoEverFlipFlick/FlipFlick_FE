@@ -40,11 +40,12 @@ export default defineConfig({
         filepath: './.eslintrc-auto-import.json',
         globalsPropValue: true,
       },
-      resolvers: [IconsResolver({ prefix: 'Icon' })],
+      resolvers: [IconsResolver({ prefix: 'Icon', extension: 'jsx', })],
     }),
     Icons({
       autoInstall: true,
       compiler: 'jsx',
+      jsx: 'react'
     }),
   ],
   resolve: {

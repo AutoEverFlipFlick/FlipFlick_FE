@@ -1,11 +1,5 @@
 {
   "globals": {
-    "IconLineMdLoadingLoop": true,
-    "IconLucideCheck": true,
-    "IconLucideDownload": true,
-    "IconLucideHeart": true,
-    "IconLucideLoader2": true,
-    "IconLucideStar": true,
     "createRef": true,
     "dayjs": true,
     "forwardRef": true,

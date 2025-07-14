@@ -1,4 +1,4 @@
-/*
+/* 현재 사용 안함, 본래 main.tsx에서 import 되어야 함
 * React 바깥에서 적용될 수 있는 초기 CSS 로딩 또는 임포트만
 * main.tsx에서 가장 먼저 실행됨, 비React 리소스용
 * 그외 전역 스타일은 GlobalStyle.ts 에서 적용

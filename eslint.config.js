@@ -8,20 +8,22 @@ import jsxA11y from 'eslint-plugin-jsx-a11y';
 import importPlugin from 'eslint-plugin-import';
 import storybook from 'eslint-plugin-storybook';
 import prettier from 'eslint-config-prettier';
-import { configConventional } from '@commitlint/config-conventional';
 
 export default [
   js.configs.recommended,
 
   {
-    extends: [configConventional],
+    ignores: [
+      'commitlint.config.cjs',
+      '.eslintrc-auto-import.json'
+    ],
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
         ecmaVersion: 2022,
         sourceType: 'module',
-        ecmaFeatures: { jsx: true },
+        ecmaFeatures: {jsx: true},
       },
       globals: {
         ...globals.browser,
@@ -36,6 +38,16 @@ export default [
       import: importPlugin,
       storybook,
     },
+    settings: {
+      'import/resolver': {
+        typescript: {
+          project: './tsconfig.json', // tsconfig
+        },
+      },
+      react: {
+        version: 'detect',
+      },
+    },
     rules: {
       ...tseslint.configs.recommended[0].rules,
       ...react.configs.recommended.rules,
@@ -44,6 +56,8 @@ export default [
       ...importPlugin.configs.recommended.rules,
       ...storybook.configs['flat/recommended'].rules,
       'react/react-in-jsx-scope': 'off',
+      'no-undef': 'off',
+      'react/prop-types': 'off',
     },
   },
 
