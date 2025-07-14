@@ -1,5 +1,5 @@
-import {Route, Routes} from 'react-router-dom'
-import ExamplePage from "@/pages/example/ExamplePage";
+import { Route, Routes } from 'react-router-dom'
+import ExamplePage from '@/pages/example/ExamplePage'
 // import Layout from '@/components/common/CommonLayout' // 공통 레이아웃 컴포넌트가 필요함
 
 const AppRoutes = () => {
@@ -7,10 +7,10 @@ const AppRoutes = () => {
     <Routes>
       {/*해당 위치의 레이아웃 컴포넌트로 감싸기*/}
       {/*<Route element={<Layout />}>*/}
-        {/*페이지 컴포넌트 연결*/}
-        <Route path="/" element={<ExamplePage/>}/>
-        {/* 추후 추가될 하위 라우트 */}
-        {/* <Route path="/login" element={<LoginPage />} /> */}
+      {/*페이지 컴포넌트 연결*/}
+      <Route path="/" element={<ExamplePage />} />
+      {/* 추후 추가될 하위 라우트 */}
+      {/* <Route path="/login" element={<LoginPage />} /> */}
       {/*</Route>*/}
       {/* 레이아웃 적용 미 적용시 */}
       {/* <Route path="/" element={<ExampleReactVite/>}/>

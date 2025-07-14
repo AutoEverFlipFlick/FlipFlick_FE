@@ -161,28 +161,28 @@ npm run test
 
 ## 디렉토리 별 책임 기준
 
-| 디렉토리                  | 책임         | 파일 추가 기준                                  |
-|-----------------------|------------|-------------------------------------------|
-| `components/common/`  | 범용 UI      | 버튼, 모달 등 재사용 가능 UI                        |
-| `components/feature/` | 기능 중심 UI   | 특정 기능 전용 UI (ex. 유저 카드)                   |
-| `constants.ts`        | 전역 상수      | URL, 메시지, enum, 정규식                       |
-| `context/`            | 전역 상태      | Auth, Modal 등 App 단위 상태                   |
-| `hooks/`              | 커스텀 훅      | 재사용 가능한 로직 `useModal.ts`, `useFetch.ts` 등 |
-| `pages/`              | 라우트 단위 페이지 | `HomePage.tsx`, `LoginPage.tsx` 등         |
-| `router/`             | 라우팅 설정     | Route, Layout, ProtectedRoute 등           |
-| `services/`           | API 요청     | `userService.ts`, `problemService.ts` 등   |
-| `styles/`             | 글로벌 스타일    | reset, theme, 글로벌 CSS                     |
-| `types/api.ts`        | 타입 정의      | API 응답 타입, 전역 유틸 타입                       |
+| 디렉토리              | 책임               | 파일 추가 기준                                     |
+| --------------------- | ------------------ | -------------------------------------------------- |
+| `components/common/`  | 범용 UI            | 버튼, 모달 등 재사용 가능 UI                       |
+| `components/feature/` | 기능 중심 UI       | 특정 기능 전용 UI (ex. 유저 카드)                  |
+| `constants.ts`        | 전역 상수          | URL, 메시지, enum, 정규식                          |
+| `context/`            | 전역 상태          | Auth, Modal 등 App 단위 상태                       |
+| `hooks/`              | 커스텀 훅          | 재사용 가능한 로직 `useModal.ts`, `useFetch.ts` 등 |
+| `pages/`              | 라우트 단위 페이지 | `HomePage.tsx`, `LoginPage.tsx` 등                 |
+| `router/`             | 라우팅 설정        | Route, Layout, ProtectedRoute 등                   |
+| `services/`           | API 요청           | `userService.ts`, `problemService.ts` 등           |
+| `styles/`             | 글로벌 스타일      | reset, theme, 글로벌 CSS                           |
+| `types/api.ts`        | 타입 정의          | API 응답 타입, 전역 유틸 타입                      |
 
 ## 타입 작성 가이드
 
 ### 분류 기준
 
-| 분류       | 위치                  | 설명                               |
-|----------|---------------------|----------------------------------|
-| 전역 타입    | `types/api.ts`      | 모든 API 응답 및 공통 유틸 타입             |
-| Props 타입 | 컴포넌트 파일 내부          | 간단한 props는 inline 또는 컴포넌트 내부 선언  |
-| 유틸 타입    | `types/api.ts` 내 정의 | `Pagination`, `ApiResponse<T>` 등 |
+| 분류       | 위치                   | 설명                                          |
+| ---------- | ---------------------- | --------------------------------------------- |
+| 전역 타입  | `types/api.ts`         | 모든 API 응답 및 공통 유틸 타입               |
+| Props 타입 | 컴포넌트 파일 내부     | 간단한 props는 inline 또는 컴포넌트 내부 선언 |
+| 유틸 타입  | `types/api.ts` 내 정의 | `Pagination`, `ApiResponse<T>` 등             |
 
 ## 규칙
 
@@ -255,48 +255,48 @@ npm run build
 
 ### 상위 디렉토리 설명 및 파일 추가 위치 가이드
 
-| 디렉토리                          | 용도                  | 언제/무엇을 추가하나?                                                                                     |
-|-------------------------------|---------------------|--------------------------------------------------------------------------------------------------|
-| `src/App.tsx`, `src/main.tsx` | 앱 진입점               | 글로벌 레이아웃, 최상위 라우팅, Provider 주입 등 전역 설정 시 수정                                                      |
-| `src/assets`                  | 정적 자산 (이미지 등)       | **아이콘, 이미지, 폰트, 배경 등** 추가할 때 사용 <br> - `react.svg`는 예시 <br> - `styles/`는 CSS, 글로벌 스타일 또는 폰트 등 가능 |
-| `src/components/common`       | 재사용 가능한 **UI 컴포넌트** | 버튼, 모달, 토스트, 탭 등 **범용적 UI** 추가                                                                   |
-| `components/common/layout`    | 공용 레이아웃 컴포넌트        | BaseLayout, AuthLayout 등 페이지 구조를 담당하는 공용 UI                                                      |
+| 디렉토리                      | 용도                          | 언제/무엇을 추가하나?                                                                                                              |
+| ----------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `src/App.tsx`, `src/main.tsx` | 앱 진입점                     | 글로벌 레이아웃, 최상위 라우팅, Provider 주입 등 전역 설정 시 수정                                                                 |
+| `src/assets`                  | 정적 자산 (이미지 등)         | **아이콘, 이미지, 폰트, 배경 등** 추가할 때 사용 <br> - `react.svg`는 예시 <br> - `styles/`는 CSS, 글로벌 스타일 또는 폰트 등 가능 |
+| `src/components/common`       | 재사용 가능한 **UI 컴포넌트** | 버튼, 모달, 토스트, 탭 등 **범용적 UI** 추가                                                                                       |
+| `components/common/layout`    | 공용 레이아웃 컴포넌트        | BaseLayout, AuthLayout 등 페이지 구조를 담당하는 공용 UI                                                                           |
 
-| `src/components/feature`      | 특정 **도메인 종속 UI** 컴포넌트 | 유저 카드, 펫 뷰어, 게시판 등 특정 기능 전용 컴포넌트 추가 |
-| `src/constants`               | 상수 정의 | 정적 enum, URL, 메시지, 정규식, 마법 숫자/문자 제거용 |
-| `src/context`                 | 전역 상태 관리 (React Context)         | 새로운 전역 상태 추가 시: `xxxContext.tsx` 작성 <br> ex)
+| `src/components/feature` | 특정 **도메인 종속 UI** 컴포넌트 | 유저 카드, 펫 뷰어, 게시판 등 특정 기능 전용 컴포넌트 추가 |
+| `src/constants` | 상수 정의 | 정적 enum, URL, 메시지, 정규식, 마법 숫자/문자 제거용 |
+| `src/context` | 전역 상태 관리 (React Context) | 새로운 전역 상태 추가 시: `xxxContext.tsx` 작성 <br> ex)
 AuthContext, ThemeContext 등 |
-| `src/hooks`                   | 전역 재사용 커스텀 훅 | `useModal.ts`, `useUserInfo.ts`, `useFetch.ts` 등 재사용 가능한 로직 작성 |
-| `src/pages`                   | 라우트 단위 페이지 컴포넌트 | 새로운 라우트 생성 시 이 디렉토리에 `Page` 단위 컴포넌트 작성 <br> ex) `HomePage.tsx`,
+| `src/hooks` | 전역 재사용 커스텀 훅 | `useModal.ts`, `useUserInfo.ts`, `useFetch.ts` 등 재사용 가능한 로직 작성 |
+| `src/pages` | 라우트 단위 페이지 컴포넌트 | 새로운 라우트 생성 시 이 디렉토리에 `Page` 단위 컴포넌트 작성 <br> ex) `HomePage.tsx`,
 `MyPage.tsx` 등 |
-| `src/router`                  | 라우팅 설정 | 페이지 추가/변경 시 라우트도 여기에 정의 또는 갱신 |
-| `src/services`                | 외부 API 호출 (Axios 등)              | `api/user.ts`, `api/problem.ts` 등 REST API 연결 서비스
+| `src/router` | 라우팅 설정 | 페이지 추가/변경 시 라우트도 여기에 정의 또는 갱신 |
+| `src/services` | 외부 API 호출 (Axios 등) | `api/user.ts`, `api/problem.ts` 등 REST API 연결 서비스
 작성 |
-| `src/stories`                 | Storybook 관련 | 각 컴포넌트 스토리 및 데모용 예시 파일 작성 |
-| `src/styles`                  | 글로벌 CSS/Styled-component theme 등 | 테마, 공통 스타일, reset.css 등 작성 |
-| `src/types`                   | 전역 타입 정의 | 전역 공통 타입, 유틸 타입, API 응답 타입 등을 정의 |
-| `src/auto-imports.d.ts`       | `unplugin-auto-import` 자동 생성 파일 | 건드리지 않아도 됨 (자동
-관리)                                                                               |
+| `src/stories` | Storybook 관련 | 각 컴포넌트 스토리 및 데모용 예시 파일 작성 |
+| `src/styles` | 글로벌 CSS/Styled-component theme 등 | 테마, 공통 스타일, reset.css 등 작성 |
+| `src/types` | 전역 타입 정의 | 전역 공통 타입, 유틸 타입, API 응답 타입 등을 정의 |
+| `src/auto-imports.d.ts` | `unplugin-auto-import` 자동 생성 파일 | 건드리지 않아도 됨 (자동
+관리) |
 
 ---
 
 ### 시나리오별 파일 추가 위치 예시
 
-| 목적                | 추가 위치                                                          |
-|-------------------|----------------------------------------------------------------|
-| 새로운 페이지 생성        | `src/pages/SomePage.tsx`                                       |
-| 페이지 라우팅 추가        | `src/router/index.ts`                                          |
-| 전역 상태 관리 추가       | `src/context/SomeContext.tsx`                                  |
-| 공통 버튼/입력창 컴포넌트 추가 | `src/components/common/MyButton.tsx`                           |
-| 도메인 특화 UI 컴포넌트 추가 | `src/components/feature/` 내에 `UserCard.tsx`, `PetViewer.tsx` 등 |
-| REST API 연결       | `src/services/xxxService.ts`                                   |
-| 커스텀 훅 생성          | `src/hooks/useXxx.ts`                                          |
-| 정적 상수/enum        | `src/constants/xxx.ts`                                         |
-| 글로벌 스타일           | `src/styles/globalStyle.ts`                                    |
-| 이미지, 아이콘          | `src/assets/` 또는 `src/assets/icons/` 등에 사용 도메인 위치의 폴더 구조 생성    |
-| **라우트 정의**        | `src/router/index.tsx`의 `<Routes>` 내부에 `<Route>` 정의            |
-| **라우터 적용**        | `src/App.tsx`          `<BrowserRouter>`로 감싸기                  |
-| **페이지 컴포넌트**      | `src/pages/`          각각의 URL에 대응되는 UI 컴포넌트                    |
+| 목적                           | 추가 위치                                                                     |
+| ------------------------------ | ----------------------------------------------------------------------------- |
+| 새로운 페이지 생성             | `src/pages/SomePage.tsx`                                                      |
+| 페이지 라우팅 추가             | `src/router/index.ts`                                                         |
+| 전역 상태 관리 추가            | `src/context/SomeContext.tsx`                                                 |
+| 공통 버튼/입력창 컴포넌트 추가 | `src/components/common/MyButton.tsx`                                          |
+| 도메인 특화 UI 컴포넌트 추가   | `src/components/feature/` 내에 `UserCard.tsx`, `PetViewer.tsx` 등             |
+| REST API 연결                  | `src/services/xxxService.ts`                                                  |
+| 커스텀 훅 생성                 | `src/hooks/useXxx.ts`                                                         |
+| 정적 상수/enum                 | `src/constants/xxx.ts`                                                        |
+| 글로벌 스타일                  | `src/styles/globalStyle.ts`                                                   |
+| 이미지, 아이콘                 | `src/assets/` 또는 `src/assets/icons/` 등에 사용 도메인 위치의 폴더 구조 생성 |
+| **라우트 정의**                | `src/router/index.tsx`의 `<Routes>` 내부에 `<Route>` 정의                     |
+| **라우터 적용**                | `src/App.tsx` `<BrowserRouter>`로 감싸기                                      |
+| **페이지 컴포넌트**            | `src/pages/` 각각의 URL에 대응되는 UI 컴포넌트                                |
 
 ---
 
@@ -339,18 +339,18 @@ AuthContext, ThemeContext 등 |
 ```tsx
 <Routes>
   {/* 공용 레이아웃 적용 그룹 */}
-  <Route element={<BaseLayout/>}>
-    <Route path="/" element={<HomePage/>}/>
-    <Route path="/mypage" element={<MyPage/>}/>
-    <Route path="/about" element={<AboutPage/>}/>
+  <Route element={<BaseLayout />}>
+    <Route path="/" element={<HomePage />} />
+    <Route path="/mypage" element={<MyPage />} />
+    <Route path="/about" element={<AboutPage />} />
   </Route>
 
   {/* 공용 레이아웃을 사용하지 않는 개별 페이지 및 별도 레이아웃 존재 시*/}
-  <Route element={<AuthLayout/>}>
-    <Route path="/login" element={<LoginPage/>}/>
-    <Route path="/signup" element={<SignupPage/>}/>
+  <Route element={<AuthLayout />}>
+    <Route path="/login" element={<LoginPage />} />
+    <Route path="/signup" element={<SignupPage />} />
   </Route>
-  <Route path="*" element={<NotFoundPage/>}/>
+  <Route path="*" element={<NotFoundPage />} />
 </Routes>
 ```
 
@@ -358,6 +358,6 @@ AuthContext, ThemeContext 등 |
 
 ## 기타
 
-* **컴포넌트 단위는 Storybook을 만들면 `src/stories`에 작성하여 컴포넌트 단위로 랜더링 및 확인할 수 있음**
-* (자동 문서화 및 테스트 용이)
-* `unplugin-auto-import`를 사용 중이므로 `import React from 'react'` 등은 생략 가능 (자동)
+- **컴포넌트 단위는 Storybook을 만들면 `src/stories`에 작성하여 컴포넌트 단위로 랜더링 및 확인할 수 있음**
+- (자동 문서화 및 테스트 용이)
+- `unplugin-auto-import`를 사용 중이므로 `import React from 'react'` 등은 생략 가능 (자동)

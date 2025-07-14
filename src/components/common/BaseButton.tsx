@@ -1,5 +1,6 @@
 import type React from 'react'
-import styled, {css, keyframes} from 'styled-components'
+import styled, { css, keyframes } from 'styled-components'
+import { Icon } from '@iconify/react'
 
 // 애니메이션 정의
 const bounce = keyframes`
@@ -159,120 +160,124 @@ const StyledButton = styled.button<{
   $hoverEffect?: HoverEffect
   $fullWidth?: boolean
 }>`
-    /* 기본 스타일 */
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    font-weight: bold;
-    border: 2px solid;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    position: relative;
-    overflow: hidden;
+  /* 기본 스타일 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: bold;
+  border: 2px solid;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  position: relative;
+  overflow: hidden;
 
-    /* 크기 적용 */
-    ${({$size = 'medium'}) => css`
-        padding: ${sizeStyles[$size].padding};
-        font-size: ${sizeStyles[$size].fontSize};
-        border-radius: ${sizeStyles[$size].borderRadius};
-    `} /* 색상 테마 적용 */ ${({$variant = 'orange'}) => {
-        const theme = colorThemes[$variant]
+  /* 크기 적용 */
+  ${({ $size = 'medium' }) => css`
+    padding: ${sizeStyles[$size].padding};
+    font-size: ${sizeStyles[$size].fontSize};
+    border-radius: ${sizeStyles[$size].borderRadius};
+  `} /* 색상 테마 적용 */ ${({ $variant = 'orange' }) => {
+    const theme = colorThemes[$variant]
+    return css`
+      background: ${theme.background};
+      color: ${theme.color};
+      border-color: ${theme.border};
+      /* 별로 안어울리는 것 같아서 뺌 */
+      /* box-shadow: 0 4px 12px ${theme.shadow}; */
+    `
+  }} /* 전체 너비 */ ${({ $fullWidth }) =>
+    $fullWidth &&
+    css`
+      width: 100%;
+    `} /* 상태별 스타일 */ ${({ $state }) => {
+    switch ($state) {
+      case 'disabled':
         return css`
-            background: ${theme.background};
-            color: ${theme.color};
-            border-color: ${theme.border};
-            /* 별로 안어울리는 것 같아서 뺌 */
-                /* box-shadow: 0 4px 12px ${theme.shadow}; */
+          background: #374151 !important;
+          color: #9ca3af !important;
+          border-color: #4b5563 !important;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+          cursor: not-allowed;
+          opacity: 0.5;
+
+          &:hover {
+            transform: none !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+          }
         `
-    }} /* 전체 너비 */ ${({$fullWidth}) =>
-            $fullWidth &&
-            css`
-                width: 100%;
-            `} /* 상태별 스타일 */ ${({$state}) => {
-        switch ($state) {
-            case 'disabled':
-                return css`
-                    background: #374151 !important;
-                    color: #9ca3af !important;
-                    border-color: #4b5563 !important;
-                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
-                    cursor: not-allowed;
-                    opacity: 0.5;
-
-                    &:hover {
-                        transform: none !important;
-                        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
-                    }
-                `
-            case 'loading':
-                return css`
-                    cursor: wait;
-                `
-            case 'success':
-                return css`
-                    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
-                    border-color: #16a34a !important;
-                    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3) !important;
-                `
-            default:
-                return ''
-        }
-    }} /* 호버 효과 */ ${({$hoverEffect = 'none', $variant = 'orange', $state}) => {
-        if ($state === 'disabled') return ''
-
-        const theme = colorThemes[$variant]
-        const baseHover = css`
-            &:hover {
-                transform: scale(1.05);
-
-                box-shadow: 0 0 30px ${theme.hoverShadow},
-                0 6px 20px ${theme.hoverShadow};
-            }
-
-            &:active {
-                transform: scale(0.95);
-            }
+      case 'loading':
+        return css`
+          cursor: wait;
         `
+      case 'success':
+        return css`
+          background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+          border-color: #16a34a !important;
+          box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3) !important;
+        `
+      default:
+        return ''
+    }
+  }} /* 호버 효과 */ ${({ $hoverEffect = 'none', $variant = 'orange', $state }) => {
+    if ($state === 'disabled') return ''
 
-        switch ($hoverEffect) {
-            case 'glow':
-                return css`
-                    ${baseHover}
-                    &:hover {
-                        transform: scale(1.05);
-                        box-shadow: 0 0 30px ${theme.hoverShadow},
-                        0 6px 20px ${theme.hoverShadow};
-                    }
-                `
-            case 'bounce':
-                return css`
-                    &:hover {
-                        animation: ${bounce} 1s;
-                        box-shadow: 0 0 30px ${theme.hoverShadow},
-                        0 6px 20px ${theme.hoverShadow};
-                    }
+    const theme = colorThemes[$variant]
+    const baseHover = css`
+      &:hover {
+        transform: scale(1.05);
 
-                    &:active {
-                        transform: scale(0.95);
-                    }
-                `
-            case 'rotate':
-                return css`
-                    &:hover {
-                        transform: scale(1.05) rotate(3deg);
-                        box-shadow: 0 0 30px ${theme.hoverShadow},
-                        0 6px 20px ${theme.hoverShadow};
-                    }
+        box-shadow:
+          0 0 30px ${theme.hoverShadow},
+          0 6px 20px ${theme.hoverShadow};
+      }
 
-                    &:active {
-                        transform: scale(0.95) rotate(1deg);
-                    }
-                `
-            default:
-                return baseHover
-        }
-    }}
+      &:active {
+        transform: scale(0.95);
+      }
+    `
+
+    switch ($hoverEffect) {
+      case 'glow':
+        return css`
+          ${baseHover}
+          &:hover {
+            transform: scale(1.05);
+            box-shadow:
+              0 0 30px ${theme.hoverShadow},
+              0 6px 20px ${theme.hoverShadow};
+          }
+        `
+      case 'bounce':
+        return css`
+          &:hover {
+            animation: ${bounce} 1s;
+            box-shadow:
+              0 0 30px ${theme.hoverShadow},
+              0 6px 20px ${theme.hoverShadow};
+          }
+
+          &:active {
+            transform: scale(0.95);
+          }
+        `
+      case 'rotate':
+        return css`
+          &:hover {
+            transform: scale(1.05) rotate(3deg);
+            box-shadow:
+              0 0 30px ${theme.hoverShadow},
+              0 6px 20px ${theme.hoverShadow};
+          }
+
+          &:active {
+            transform: scale(0.95) rotate(1deg);
+          }
+        `
+      default:
+        return baseHover
+    }
+  }}
 `
 
 // // 로딩 스피너 컴포넌트
@@ -286,16 +291,16 @@ const Particle = styled.div<{
   $top: string
   $left: string
 }>`
-    position: absolute;
-    width: 4px;
-    height: 4px;
-    background: currentColor;
-    border-radius: 50%;
-    opacity: 0.3;
-    top: ${({$top}) => $top};
-    left: ${({$left}) => $left};
-    animation: ${ping} 2s infinite;
-    animation-delay: ${({$delay}) => $delay}ms;
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: currentColor;
+  border-radius: 50%;
+  opacity: 0.3;
+  top: ${({ $top }) => $top};
+  left: ${({ $left }) => $left};
+  animation: ${ping} 2s infinite;
+  animation-delay: ${({ $delay }) => $delay}ms;
 `
 
 // 버튼 컴포넌트 인터페이스
@@ -310,18 +315,18 @@ interface ButtonProps extends StyledButtonProps {
 
 // 메인 버튼 컴포넌트
 const BaseButton: React.FC<ButtonProps> = ({
-                                             children = '찜하기',
-                                             onClick,
-                                             disabled,
-                                             loading,
-                                             icon,
-                                             variant = 'orange',
-                                             size = 'medium',
-                                             hoverEffect = 'none',
-                                             fullWidth = false,
-                                             className,
-                                             ...props
-                                           }) => {
+  children = '찜하기',
+  onClick,
+  disabled,
+  loading,
+  icon,
+  variant = 'orange',
+  size = 'medium',
+  hoverEffect = 'none',
+  fullWidth = false,
+  className,
+  ...props
+}) => {
   const getState = (): ButtonState => {
     if (disabled) return 'disabled'
     if (loading) return 'loading'
@@ -343,15 +348,15 @@ const BaseButton: React.FC<ButtonProps> = ({
       {/* 파티클 효과 (glow 효과일 때만) */}
       {hoverEffect === 'glow' && (
         <>
-          <Particle $delay={0} $top="20%" $left="30%"/>
-          <Particle $delay={200} $top="60%" $left="70%"/>
-          <Particle $delay={400} $top="80%" $left="20%"/>
+          <Particle $delay={0} $top="20%" $left="30%" />
+          <Particle $delay={200} $top="60%" $left="70%" />
+          <Particle $delay={400} $top="80%" $left="20%" />
         </>
       )}
 
       {loading ? (
         <>
-          <IconLineMdLoadingLoop size={16}/>
+          <Icon icon="line-md:loading-loop" width="16" height="16" />
           로딩중
         </>
       ) : (

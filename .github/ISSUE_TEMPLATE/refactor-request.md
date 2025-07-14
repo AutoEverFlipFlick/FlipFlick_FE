@@ -1,9 +1,9 @@
 ---
 name: Refactor Request
 about: 새로운 리팩토링 요청을 작성해 주세요.
-title: "[REFACTOR] 기능 설명"
-labels: [ "refactor" ]
-assignees: ""
+title: '[REFACTOR] 기능 설명'
+labels: ['refactor']
+assignees: ''
 ---
 
 ## REFACTOR Template 설정 안내(완료 시 삭제)

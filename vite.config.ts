@@ -6,10 +6,6 @@ import react from '@vitejs/plugin-react'
 import svgr from 'vite-plugin-svgr'
 import * as path from 'node:path'
 
-import AutoImport from 'unplugin-auto-import/vite'
-import Icons from 'unplugin-icons/vite'
-import IconsResolver from 'unplugin-icons/resolver'
-
 import { fileURLToPath } from 'node:url'
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin'
 
@@ -18,36 +14,7 @@ const dirname =
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
-  plugins: [
-    react(),
-    svgr(),
-    AutoImport({
-      imports: [
-        'react', // preset: useState, useEffect 등
-        {
-          'react-router-dom': ['useNavigate', 'useLocation'],
-          dayjs: [['default', 'dayjs']],
-        },
-        {
-          'styled-components': [
-            ['default', 'styled'], // styled-components의 default export
-          ],
-        },
-      ],
-      dts: 'src/auto-imports.d.ts',
-      eslintrc: {
-        enabled: true,
-        filepath: './.eslintrc-auto-import.json',
-        globalsPropValue: true,
-      },
-      resolvers: [IconsResolver({ prefix: 'Icon', extension: 'jsx', })],
-    }),
-    Icons({
-      autoInstall: true,
-      compiler: 'jsx',
-      jsx: 'react'
-    }),
-  ],
+  plugins: [react(), svgr()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

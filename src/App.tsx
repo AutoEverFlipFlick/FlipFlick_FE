@@ -1,8 +1,8 @@
-import {ThemeProvider} from 'styled-components';
-import {theme} from "@/styles/theme";
-import {GlobalStyle} from '@/styles/globalStyle';
+import { ThemeProvider } from 'styled-components'
+import { theme } from '@/styles/theme'
+import { GlobalStyle } from '@/styles/globalStyle'
 
-import {BrowserRouter} from "react-router-dom";
+import { BrowserRouter } from 'react-router-dom'
 import AppRoutes from './router'
 
 // styled-components의 GlobalStyle을 사용하여 전역 스타일을 정의
@@ -10,14 +10,12 @@ import AppRoutes from './router'
 // AppRoutes(route/index.ts)를 통해 페이지 컴포넌트 및 라우팅 관리
 
 function App() {
-
-
   return (
     <>
       <ThemeProvider theme={theme}>
-        <GlobalStyle/>
+        <GlobalStyle />
         <BrowserRouter>
-          <AppRoutes/>
+          <AppRoutes />
         </BrowserRouter>
       </ThemeProvider>
     </>

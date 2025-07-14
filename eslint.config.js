@@ -1,29 +1,26 @@
 // eslint.config.js
-import js from '@eslint/js';
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
-import react from 'eslint-plugin-react';
-import reactHooks from 'eslint-plugin-react-hooks';
-import jsxA11y from 'eslint-plugin-jsx-a11y';
-import importPlugin from 'eslint-plugin-import';
-import storybook from 'eslint-plugin-storybook';
-import prettier from 'eslint-config-prettier';
+import js from '@eslint/js'
+import globals from 'globals'
+import tseslint from 'typescript-eslint'
+import react from 'eslint-plugin-react'
+import reactHooks from 'eslint-plugin-react-hooks'
+import jsxA11y from 'eslint-plugin-jsx-a11y'
+import importPlugin from 'eslint-plugin-import'
+import storybook from 'eslint-plugin-storybook'
+import prettier from 'eslint-config-prettier'
 
 export default [
   js.configs.recommended,
 
   {
-    ignores: [
-      'commitlint.config.cjs',
-      '.eslintrc-auto-import.json'
-    ],
+    ignores: ['commitlint.config.cjs'],
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
         ecmaVersion: 2022,
         sourceType: 'module',
-        ecmaFeatures: {jsx: true},
+        ecmaFeatures: { jsx: true },
       },
       globals: {
         ...globals.browser,
@@ -58,8 +55,9 @@ export default [
       'react/react-in-jsx-scope': 'off',
       'no-undef': 'off',
       'react/prop-types': 'off',
+      'react/no-unescaped-entities': 'off',
     },
   },
 
   prettier,
-];
+]
