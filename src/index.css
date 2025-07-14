@@ -1,0 +1,10 @@
+/*
+* React 바깥에서 적용될 수 있는 초기 CSS 로딩 또는 임포트만
+* main.tsx에서 가장 먼저 실행됨, 비React 리소스용
+* 그외 전역 스타일은 GlobalStyle.ts 에서 적용
+*
+* 허용 조건 :
+* 1. 웹폰트 삽입 @import font
+* 2. styled-components보다 먼저 선언되어야 할 제한적인 스타일
+* 3. React 컴포넌트가 아닌 일반 CSS
+*/

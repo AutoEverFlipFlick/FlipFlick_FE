@@ -1,8 +1,16 @@
-import ExamplePage from '@/pages/example/ExamplePage'
+import {BrowserRouter} from "react-router-dom";
+import AppRoutes from './router'
+import {GlobalStyle} from './styles/globalStyle.ts';
+
 function App() {
+
+
   return (
     <>
-      <ExamplePage />
+      <GlobalStyle/>
+      <BrowserRouter>
+        <AppRoutes/>
+      </BrowserRouter>
     </>
   )
 }
