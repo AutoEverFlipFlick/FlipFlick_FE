@@ -1,20 +1,19 @@
 // eslint.config.js
-import js from '@eslint/js';
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
-import react from 'eslint-plugin-react';
-import reactHooks from 'eslint-plugin-react-hooks';
-import jsxA11y from 'eslint-plugin-jsx-a11y';
-import importPlugin from 'eslint-plugin-import';
-import storybook from 'eslint-plugin-storybook';
-import prettier from 'eslint-config-prettier';
-import { configConventional } from '@commitlint/config-conventional';
+import js from '@eslint/js'
+import globals from 'globals'
+import tseslint from 'typescript-eslint'
+import react from 'eslint-plugin-react'
+import reactHooks from 'eslint-plugin-react-hooks'
+import jsxA11y from 'eslint-plugin-jsx-a11y'
+import importPlugin from 'eslint-plugin-import'
+import storybook from 'eslint-plugin-storybook'
+import prettier from 'eslint-config-prettier'
 
 export default [
   js.configs.recommended,
 
   {
-    extends: [configConventional],
+    ignores: ['commitlint.config.cjs'],
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       parser: tseslint.parser,
@@ -36,6 +35,16 @@ export default [
       import: importPlugin,
       storybook,
     },
+    settings: {
+      'import/resolver': {
+        typescript: {
+          project: './tsconfig.json', // tsconfig
+        },
+      },
+      react: {
+        version: 'detect',
+      },
+    },
     rules: {
       ...tseslint.configs.recommended[0].rules,
       ...react.configs.recommended.rules,
@@ -44,8 +53,11 @@ export default [
       ...importPlugin.configs.recommended.rules,
       ...storybook.configs['flat/recommended'].rules,
       'react/react-in-jsx-scope': 'off',
+      'no-undef': 'off',
+      'react/prop-types': 'off',
+      'react/no-unescaped-entities': 'off',
     },
   },
 
   prettier,
-];
+]

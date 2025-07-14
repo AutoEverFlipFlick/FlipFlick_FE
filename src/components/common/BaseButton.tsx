@@ -1,37 +1,37 @@
 import type React from 'react'
-import { useState } from 'react'
 import styled, { css, keyframes } from 'styled-components'
+import { Icon } from '@iconify/react'
 
 // 애니메이션 정의
 const bounce = keyframes`
-  0%, 20%, 53%, 80%, 100% {
-    transform: translate3d(0,0,0);
-  }
-  40%, 43% {
-    transform: translate3d(0, -30px, 0);
-  }
-  70% {
-    transform: translate3d(0, -15px, 0);
-  }
-  90% {
-    transform: translate3d(0, -4px, 0);
-  }
+    0%, 20%, 53%, 80%, 100% {
+        transform: translate3d(0, 0, 0);
+    }
+    40%, 43% {
+        transform: translate3d(0, -30px, 0);
+    }
+    70% {
+        transform: translate3d(0, -15px, 0);
+    }
+    90% {
+        transform: translate3d(0, -4px, 0);
+    }
 `
 
-const spin = keyframes`
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-`
+// const spin = keyframes`
+//     from {
+//         transform: rotate(0deg);
+//     }
+//     to {
+//         transform: rotate(360deg);
+//     }
+// `
 
 const ping = keyframes`
-  75%, 100% {
-    transform: scale(2);
-    opacity: 0;
-  }
+    75%, 100% {
+        transform: scale(2);
+        opacity: 0;
+    }
 `
 
 // 타입 정의
@@ -177,10 +177,7 @@ const StyledButton = styled.button<{
     padding: ${sizeStyles[$size].padding};
     font-size: ${sizeStyles[$size].fontSize};
     border-radius: ${sizeStyles[$size].borderRadius};
-  `}
-
-  /* 색상 테마 적용 */
-  ${({ $variant = 'orange' }) => {
+  `} /* 색상 테마 적용 */ ${({ $variant = 'orange' }) => {
     const theme = colorThemes[$variant]
     return css`
       background: ${theme.background};
@@ -189,17 +186,11 @@ const StyledButton = styled.button<{
       /* 별로 안어울리는 것 같아서 뺌 */
       /* box-shadow: 0 4px 12px ${theme.shadow}; */
     `
-  }}
-  
-  /* 전체 너비 */
-  ${({ $fullWidth }) =>
+  }} /* 전체 너비 */ ${({ $fullWidth }) =>
     $fullWidth &&
     css`
       width: 100%;
-    `}
-  
-  /* 상태별 스타일 */
-  ${({ $state }) => {
+    `} /* 상태별 스타일 */ ${({ $state }) => {
     switch ($state) {
       case 'disabled':
         return css`
@@ -228,10 +219,7 @@ const StyledButton = styled.button<{
       default:
         return ''
     }
-  }}
-  
-  /* 호버 효과 */
-  ${({ $hoverEffect = 'none', $variant = 'orange', $state }) => {
+  }} /* 호버 효과 */ ${({ $hoverEffect = 'none', $variant = 'orange', $state }) => {
     if ($state === 'disabled') return ''
 
     const theme = colorThemes[$variant]
@@ -268,6 +256,7 @@ const StyledButton = styled.button<{
               0 0 30px ${theme.hoverShadow},
               0 6px 20px ${theme.hoverShadow};
           }
+
           &:active {
             transform: scale(0.95);
           }
@@ -280,6 +269,7 @@ const StyledButton = styled.button<{
               0 0 30px ${theme.hoverShadow},
               0 6px 20px ${theme.hoverShadow};
           }
+
           &:active {
             transform: scale(0.95) rotate(1deg);
           }
@@ -290,10 +280,10 @@ const StyledButton = styled.button<{
   }}
 `
 
-// 로딩 스피너 컴포넌트
-const LoadingSpinner = styled(IconLucideLoader2)`
-  animation: ${spin} 1s linear infinite;
-`
+// // 로딩 스피너 컴포넌트
+// const LoadingSpinner = styled(IconLucideLoader2)`
+//     animation: ${spin} 1s linear infinite;
+// `
 
 // 파티클 효과를 위한 컴포넌트
 const Particle = styled.div<{
@@ -366,7 +356,7 @@ const BaseButton: React.FC<ButtonProps> = ({
 
       {loading ? (
         <>
-          <IconLineMdLoadingLoop size={16} />
+          <Icon icon="line-md:loading-loop" width="16" height="16" />
           로딩중
         </>
       ) : (

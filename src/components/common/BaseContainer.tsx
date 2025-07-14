@@ -1,4 +1,5 @@
-import { css } from 'styled-components'
+import React from 'react'
+import styled, { css } from 'styled-components'
 
 // 폰트 사이즈 기본 지정
 const FONT_SIZES = {

@@ -1,5 +1,8 @@
 import BaseButton from '@/components/common/BaseButton'
 import BaseContainer from '@/components/common/BaseContainer'
+import React, { useState } from 'react'
+import styled from 'styled-components'
+import { Check, Heart, Star, Download } from 'lucide-react'
 
 // 컨테이너 스타일
 const Container = styled.div`
@@ -180,7 +183,7 @@ const ExamplePage = () => {
             </ButtonDemo>
             <ButtonDemo>
               <DemoLabel>Success</DemoLabel>
-              <BaseButton variant="green" icon={<IconLucideCheck size={16} />}>
+              <BaseButton variant="green" icon={<Check size={16} />}>
                 완료
               </BaseButton>
             </ButtonDemo>
@@ -231,15 +234,15 @@ const ExamplePage = () => {
           <Grid>
             <ButtonDemo>
               <DemoLabel>Heart Icon</DemoLabel>
-              <BaseButton variant="pink" icon={<IconLucideHeart size={20} />} />
+              <BaseButton variant="pink" icon={<Heart size={20} />} />
             </ButtonDemo>
             <ButtonDemo>
               <DemoLabel>Star Icon</DemoLabel>
-              <BaseButton variant="yellow" icon={<IconLucideStar size={20} />} />
+              <BaseButton variant="yellow" icon={<Star size={20} />} />
             </ButtonDemo>
             <ButtonDemo>
               <DemoLabel>Download Icon</DemoLabel>
-              <BaseButton variant="indigo" icon={<IconLucideDownload size={20} />} />
+              <BaseButton variant="indigo" icon={<Download size={20} />} />
             </ButtonDemo>
           </Grid>
         </Section>
