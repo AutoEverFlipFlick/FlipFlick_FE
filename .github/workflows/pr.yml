@@ -1,0 +1,50 @@
+name: PR 리뷰어, 배정자 등록
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+
+permissions:
+  pull-requests: write
+
+env:
+  # 여기서 원하는 계정을 콤마 없이 하나만 지정
+  ASSIGNEE: ${{ github.actor }}
+  # 리뷰어 후보 목록(콤마로 구분). 나를 포함해도 자동으로 걸러냄
+  REVIEWERS: reviewer1,reviewer2,reviewer3
+
+jobs:
+  assign-and-request:
+    runs-on: ubuntu-latest
+    steps:
+      - name: PR 리뷰어, 배정자 등록
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const assignee = process.env.ASSIGNEE;
+            const reviewers = process.env.REVIEWERS
+                              .split(',')
+                              .map(r => r.trim())
+                              .filter(r => r && r !== assignee);
+
+            const prNumber = context.payload.pull_request.number;
+
+            // Assignee 달기
+            await github.rest.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              assignees: [assignee]
+            });
+
+            // Reviewers 요청
+            if (reviewers.length > 0) {
+              await github.rest.pulls.requestReviewers({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                reviewers
+              });
+            } else {
+              core.info('리뷰어 목록이 없거나 모두 필터링되었습니다.');
+            }
