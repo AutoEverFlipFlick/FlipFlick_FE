@@ -7,6 +7,7 @@ export const GlobalStyle = createGlobalStyle`
     font-weight: ${({ theme }) => theme.fontWeight};
     color: ${({ theme }) => theme.colors.text};
     background-color: ${({ theme }) => theme.colors.background};
+    background-image: ${({ theme }) => theme.backgroundImage};
     line-height: 1.5;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
