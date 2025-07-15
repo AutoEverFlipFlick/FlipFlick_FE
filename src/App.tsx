@@ -4,6 +4,7 @@ import { GlobalStyle } from '@/styles/globalStyle'
 
 import { BrowserRouter } from 'react-router-dom'
 import AppRoutes from './router'
+import FilmographyPage from './pages/filmography'
 
 // styled-components의 GlobalStyle을 사용하여 전역 스타일을 정의
 // browser-router를 사용하여 라우팅을 시작,
@@ -15,7 +16,7 @@ function App() {
       <ThemeProvider theme={theme}>
         <GlobalStyle />
         <BrowserRouter>
-          <AppRoutes />
+          <FilmographyPage></FilmographyPage>
         </BrowserRouter>
       </ThemeProvider>
     </>
