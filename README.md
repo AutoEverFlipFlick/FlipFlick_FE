@@ -261,7 +261,7 @@ npm run build
 | `src/App.tsx`, `src/main.tsx` | 앱 진입점               | 글로벌 레이아웃, 최상위 라우팅, Provider 주입 등 전역 설정 시 수정                                                      |
 | `src/assets`                  | 정적 자산 (이미지 등)       | **아이콘, 이미지, 폰트, 배경 등** 추가할 때 사용 <br> - `react.svg`는 예시 <br> - `styles/`는 CSS, 글로벌 스타일 또는 폰트 등 가능 |
 | `src/components/common`       | 재사용 가능한 **UI 컴포넌트** | 버튼, 모달, 토스트, 탭 등 **범용적 UI** 추가                                                                   |
-| `components/common/layout`    | 공용 레이아웃 컴포넌트        | BaseLayout, AuthLayout 등 페이지 구조를 담당하는 공용 UI                                                      |
+| `components/common/layout`    | 공용 레이아웃 컴포넌트        | BasePageLayout, AuthLayout 등 페이지 구조를 담당하는 공용 UI                                                      |
 
 | `src/components/feature` | 특정 **도메인 종속 UI** 컴포넌트 | 유저 카드, 펫 뷰어, 게시판 등 특정 기능 전용 컴포넌트 추가 |
 | `src/constants` | 상수 정의 | 정적 enum, URL, 메시지, 정규식, 마법 숫자/문자 제거용 |
@@ -338,7 +338,7 @@ AuthContext, ThemeContext 등 |
 ```tsx
 <Routes>
   {/* 공용 레이아웃 적용 그룹 */}
-  <Route element={<BaseLayout/>}>
+  <Route element={<BasePageLayout/>}>
     <Route path="/" element={<HomePage/>}/>
     <Route path="/mypage" element={<MyPage/>}/>
     <Route path="/about" element={<AboutPage/>}/>
