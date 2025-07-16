@@ -52,6 +52,7 @@ const Wrapper = styled.div`
 
 const Container = styled.div<{ $state?: InputState; $inputSize?: InputSize }>`
   display: inline-block;
+  transition: all 0.2s ease-in-out;
   border-radius: 15px;
   ${({ $state = 'normal' }) => {
     if ($state === 'disable') {
