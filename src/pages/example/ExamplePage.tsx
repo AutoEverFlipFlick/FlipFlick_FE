@@ -2,7 +2,7 @@ import BaseButton from '@/components/common/BaseButton'
 import BaseContainer from '@/components/common/BaseContainer'
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { Check, Heart, Star, Download } from 'lucide-react'
+import { Check, Heart, Star, Download, Search, Filter, User } from 'lucide-react'
 import BackgroundImage from '@/assets/common/backgroud_tile_512px.png'
 import BaseInput from '@/components/common/BaseInput'
 
@@ -112,9 +112,6 @@ const Divider = styled.div`
 `
 
 const ImageContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
   background-image: url(${BackgroundImage});
   background-repeat: repeat;
   padding: 100px;
@@ -306,7 +303,9 @@ const ExamplePage = () => {
         <Title>컨테이너</Title>
         <Subtitle>공통 컨테이너 디자인</Subtitle>
         <Section>
-          <ImageContainer>
+          <ImageContainer
+            style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+          >
             <BaseContainer
               fontSize="lg"
               style={{
@@ -345,15 +344,106 @@ const ExamplePage = () => {
         <Subtitle>공통 인풋 디자인</Subtitle>
         <Section>
           <ImageContainer>
-            <BaseInput state="success" icon={<Heart size={20} />} />
+            <Section>
+              <SectionTitle>상태 변형</SectionTitle>
+              <Grid $columns={3}>
+                <ButtonDemo>
+                  <DemoLabel>Normal</DemoLabel>
+                  <BaseInput />
+                </ButtonDemo>
+                <ButtonDemo>
+                  <DemoLabel>Success</DemoLabel>
+                  <BaseInput state="success" />
+                </ButtonDemo>
+                <ButtonDemo>
+                  <DemoLabel>Error</DemoLabel>
+                  <BaseInput state="error" />
+                </ButtonDemo>
+              </Grid>
+            </Section>
+
+            <Section>
+              <SectionTitle>크기 변형</SectionTitle>
+              <Grid $columns={3}>
+                <ButtonDemo>
+                  <DemoLabel>Small</DemoLabel>
+                  <BaseInput inputSize="small" />
+                </ButtonDemo>
+                <ButtonDemo>
+                  <DemoLabel>Medium</DemoLabel>
+                  <BaseInput inputSize="medium" />
+                </ButtonDemo>
+                <ButtonDemo>
+                  <DemoLabel>Large</DemoLabel>
+                  <BaseInput inputSize="large" />
+                </ButtonDemo>
+              </Grid>
+            </Section>
+
+            <Section>
+              <SectionTitle>아이콘과 함께</SectionTitle>
+              <Grid $columns={3}>
+                <ButtonDemo>
+                  <DemoLabel>Search</DemoLabel>
+                  <BaseInput icon={<Search />} />
+                </ButtonDemo>
+                <ButtonDemo>
+                  <DemoLabel>Filter</DemoLabel>
+                  <BaseInput icon={<Filter />} />
+                </ButtonDemo>
+                <ButtonDemo>
+                  <DemoLabel>User</DemoLabel>
+                  <BaseInput icon={<User />} />
+                </ButtonDemo>
+              </Grid>
+            </Section>
           </ImageContainer>
         </Section>
         <GuideSection>
           <SectionTitle>사용 가이드</SectionTitle>
           <GuideGrid>
             <div>
+              <GuideTitle>Props 사용법</GuideTitle>
+              <GuideList>
+                <li>
+                  <strong>state</strong> :'normal' | 'success' | 'error'
+                </li>
+                <li>
+                  <strong>inputSize</strong> :'small' | 'medium' | 'large'
+                </li>
+                <li>
+                  <strong>disabled</strong> : boolean
+                </li>
+                <li>
+                  <strong>icon</strong> :React.ReactNode
+                </li>
+                <li>
+                  <strong>iconGap</strong> : '10px' | '20px' | ... | '~px'
+                </li>
+              </GuideList>
+            </div>
+
+            <div>
               <GuideTitle>사용 예시</GuideTitle>
               <GuideList>
+                <li>
+                  <div>{`<BaseInput state="success"/>`}</div>
+                </li>
+                <li>
+                  <div>{`<BaseInput state="error"/>`}</div>
+                </li>
+                <li>
+                  <div>{`<BaseInput inputSize="small"/>`}</div>
+                </li>
+                <li>
+                  <div>{`<BaseInput icon={<Search/>}/>`}</div>
+                </li>
+                <li>
+                  <div>{`<BaseInput disabled/>`}</div>
+                </li>
+                <li>
+                  <div>{`<BaseInput state="success" inputSize="small" icon={<Heart/>}/>`}</div>
+                </li>
                 <li>
                   <div>
                     {`<BaseContainer style={{ maxHeight : '300px' }}/>`}
