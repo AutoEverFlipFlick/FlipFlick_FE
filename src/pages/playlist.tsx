@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import BaseButton from '../components/common/BaseButton';
 import { Plus, ChevronDown } from 'lucide-react';
 import axiosInstance from '../services/axiosInstance';
@@ -29,6 +29,17 @@ interface PlaylistResponse {
   message: string;
   data: PlaylistData;
 }
+
+// 애니메이션 정의
+const fadeInUp = keyframes`
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+`;
+
+const shimmer = keyframes`
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+`;
 
 const PlaylistContainer = styled.div`
   color: white;
@@ -62,20 +73,38 @@ const TabContainer = styled.div`
 const TabButtons = styled.div`
   display: flex;
   gap: 2rem;
+  
+  @media (max-width: 768px) {
+    gap: 1rem;
+  }
 `;
 
-const Tab = styled.button<{ $active: boolean }>`
-  background: none;
-  border: none;
-  color: ${props => props.$active ? '#ff7849' : '#aaa'};
-  font-size: 1rem;
+const Tab = styled.div<{ $active: boolean }>`
+  position: relative;
   cursor: pointer;
+  font-size: 1rem;
+  font-weight: ${({ $active }) => ($active ? 600 : 400)};
+  color: ${({ $active }) => ($active ? '#FF7849' : '#9CA3AF')};
   padding: 0.5rem 0;
-  border-bottom: ${props => props.$active ? '2px solid #ff7849' : 'none'};
-  transition: all 0.2s ease;
-
+  transition: color 0.2s ease;
+  
+  &:after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: ${({ $active }) => ($active ? '100%' : '0')};
+    height: 2px;
+    background: #FF7849;
+    transition: width 0.3s;
+  }
+  
   &:hover {
-    color: #ff7849;
+    color: #FF7849;
+  }
+  
+  @media (max-width: 768px) {
+    font-size: 0.875rem;
   }
 `;
 
@@ -164,14 +193,21 @@ const PlaylistGrid = styled.div`
 `;
 
 const PlaylistCard = styled.div`
-  background: #1a1a1a;
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   overflow: hidden;
-  transition: transform 0.2s ease;
-  cursor: pointer;
+  animation: ${fadeInUp} 0.3s ease both;
+  cursor: pointer; 
+  transition: transform 0.2s;
+  position: relative;
+  
+  &:hover { 
+    transform: translateY(-4px); 
+  }
 
-  &:hover {
-    transform: translateY(-4px);
+  @media (max-width: 768px) {
+    display: flex;
+    align-items: center;
   }
 `;
 
@@ -182,10 +218,22 @@ const ThumbnailContainer = styled.div`
   overflow: hidden;
 `;
 
-const Thumbnail = styled.img`
+const ImageSkeleton = styled.div`
+  width: 100%;
+  height: 100%;
+  background: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 0.9rem;
+`;
+
+const Thumbnail = styled.img<{ $loaded: boolean }>`
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: ${props => props.$loaded ? 'block' : 'none'};
 `;
 
 const CardInfo = styled.div`
@@ -256,6 +304,49 @@ const EmptyMessage = styled.div`
 `;
 
 type SortBy = 'popularity' | 'latest' | 'oldest';
+
+// 이미지 로더 컴포넌트
+const ImageLoader: React.FC<{
+  src: string;
+  alt: string;
+  onError?: () => void;
+}> = ({ src, alt, onError }) => {
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
+
+  const handleLoad = () => {
+    setLoaded(true);
+  };
+
+  const handleError = () => {
+    setError(true);
+    setLoaded(false);
+    onError?.();
+  };
+
+  return (
+    <ThumbnailContainer>
+      {!loaded && !error && (
+        <ImageSkeleton>
+        </ImageSkeleton>
+      )}
+      {!error && (
+        <Thumbnail
+          src={src}
+          alt={alt}
+          $loaded={loaded}
+          onLoad={handleLoad}
+          onError={handleError}
+        />
+      )}
+      {error && (
+        <ImageSkeleton>
+          이미지 없음
+        </ImageSkeleton>
+      )}
+    </ThumbnailContainer>
+  );
+};
 
 const PlaylistPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'all' | 'my' | 'bookmarked'>('all');
@@ -459,7 +550,7 @@ const PlaylistPage: React.FC = () => {
         )}
       </CountInfo>
 
-      {loading && <LoadingMessage>플레이리스트를 불러오는 중...</LoadingMessage>}
+      {loading && <LoadingMessage></LoadingMessage>}
       {error && <ErrorMessage>{error}</ErrorMessage>}
 
       {!loading && !error && (
@@ -468,15 +559,11 @@ const PlaylistPage: React.FC = () => {
             <PlaylistGrid>
               {playlists.map((playlist) => (
                 <PlaylistCard key={playlist.playListId}>
-                  <ThumbnailContainer>
-                    <Thumbnail 
-                      src={playlist.thumbnailUrl || '/default-thumbnail.png'} 
-                      alt={playlist.title}
-                      onError={(e) => {
-                        e.currentTarget.src = '/default-thumbnail.png';
-                      }}
-                    />
-                  </ThumbnailContainer>
+                  <ImageLoader
+                    src={playlist.thumbnailUrl || '/default-thumbnail.png'}
+                    alt={playlist.title}
+                    onError={() => console.log(`이미지 로딩 실패: ${playlist.title}`)}
+                  />
                   <CardInfo>
                     <CardTitle>{playlist.title}</CardTitle>
                     <CardMeta>
@@ -533,3 +620,6 @@ const PlaylistPage: React.FC = () => {
 };
 
 export default PlaylistPage;
+
+
+

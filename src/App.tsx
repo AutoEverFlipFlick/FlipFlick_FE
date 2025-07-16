@@ -3,6 +3,7 @@ import { theme } from '@/styles/theme'
 import { GlobalStyle } from '@/styles/globalStyle'
 
 import { BrowserRouter } from 'react-router-dom'
+import CreatePlaylist from './pages/CreatePlaylist'
 import AppRoutes from './router'
 import PlaylistPage from './pages/playlist'
 
@@ -16,8 +17,9 @@ function App() {
       <ThemeProvider theme={theme}>
         <GlobalStyle />
         <BrowserRouter>
+        <CreatePlaylist/>
           {/* <AppRoutes /> */}
-          <PlaylistPage />
+          {/* <PlaylistPage /> */}
         </BrowserRouter>
       </ThemeProvider>
     </>
