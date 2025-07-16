@@ -43,17 +43,18 @@ const sizeStyles = {
   },
 }
 
-const Wrapper = styled.div`
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-`
-
-const Container = styled.div<{ $state?: InputState; $inputSize?: InputSize }>`
+const Container = styled.div<{ $state?: InputState; $inputSize?: InputSize; $fullWidth?: boolean }>`
   display: inline-block;
   transition: all 0.2s ease-in-out;
   border-radius: 15px;
+  ${({ $fullWidth = false }) => {
+    return $fullWidth
+      ? css`
+          width: 100%;
+        `
+      : null
+  }}
+
   ${({ $state = 'normal' }) => {
     if ($state === 'disable') {
       return css`
@@ -119,6 +120,9 @@ const Base = styled.input<{
   all: unset;
   background: transparent;
 
+  /* fullWidth를 위해 추가한 것 이상하면 수정하기 */
+  width: 100%;
+
   /* number 타입 스핀 버튼 제거 */
   &[type='number'] {
     appearance: none;
@@ -137,6 +141,7 @@ interface BaseInputProps extends InputHTMLAttributes<HTMLInputElement> {
   disabled?: boolean
   icon?: React.ReactNode
   iconGap?: string
+  fullWidth?: boolean
 }
 
 // 기획의도 : 고정된 스타일이 있으면서 기존 input과 똑같이
@@ -150,28 +155,30 @@ const BaseInput = forwardRef<Omit<HTMLInputElement, 'dangerouslySetInnerHTML'>, 
       disabled = false,
       icon = null,
       iconGap = '10px',
+      fullWidth = false,
       ...rest
     },
     ref,
   ) => {
     // disabled가 true일 때 자동으로 state를 'disable'로 전환
     const actualState: InputState = disabled ? 'disable' : state
+
+    // fullWidth
+    const actualWidth = fullWidth ? true : false
     return (
-      <Wrapper>
-        <Container $state={actualState} $inputSize={inputSize}>
-          <BaseContainer $state={actualState} $inputSize={inputSize} $iconGap={iconGap}>
-            {icon ? icon : <></>}
-            {/* $state에 $를 붙이는 이유는 안붙이면 styled-components에서 DOM요소에 직접 지정을 시켜서 warning뜸 */}
-            <Base
-              ref={ref}
-              $state={actualState}
-              $inputSize={inputSize}
-              disabled={actualState === 'disable'}
-              {...rest}
-            />
-          </BaseContainer>
-        </Container>
-      </Wrapper>
+      <Container $state={actualState} $inputSize={inputSize} $fullWidth={actualWidth}>
+        <BaseContainer $state={actualState} $inputSize={inputSize} $iconGap={iconGap}>
+          {icon ? icon : <></>}
+          {/* $state에 $를 붙이는 이유는 안붙이면 styled-components에서 DOM요소에 직접 지정을 시켜서 warning뜸 */}
+          <Base
+            ref={ref}
+            $state={actualState}
+            $inputSize={inputSize}
+            disabled={actualState === 'disable'}
+            {...rest}
+          />
+        </BaseContainer>
+      </Container>
     )
   },
 )
