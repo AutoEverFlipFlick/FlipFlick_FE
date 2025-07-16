@@ -378,6 +378,10 @@ const ExamplePage = () => {
                   <BaseInput inputSize="large" />
                 </ButtonDemo>
               </Grid>
+              <ButtonDemo style={{ marginTop: '30px' }}>
+                <DemoLabel>Full Width</DemoLabel>
+                <BaseInput fullWidth />
+              </ButtonDemo>
             </Section>
 
             <Section>
