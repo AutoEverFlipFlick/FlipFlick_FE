@@ -3,6 +3,7 @@ import BaseContainer from '@/components/common/BaseContainer'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { Check, Heart, Star, Download } from 'lucide-react'
+import BackgroundImage from '@/assets/common/backgroud_tile_512px.png'
 
 // 컨테이너 스타일
 const Container = styled.div`
@@ -295,12 +296,28 @@ const ExamplePage = () => {
         <Title>컨테이너</Title>
         <Subtitle>공통 컨테이너 디자인</Subtitle>
         <Section>
-          <FlexContainer style={{ backgroundColor: '#130803', padding: '30px' }}>
-            <BaseContainer fontSize="lg" style={{ width: '300px', padding: '12px' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundImage: `url(${BackgroundImage})`,
+              backgroundRepeat: 'repeat',
+              padding: '100px',
+            }}
+          >
+            <BaseContainer
+              fontSize="lg"
+              style={{
+                width: '300px',
+                height: '300px',
+                padding: '12px',
+              }}
+            >
               어두운 반투명 배경, 블러, 라운드 모서리, 그림자, 흰색 텍스트를 포함한 공통 컨테이너
               디자인
             </BaseContainer>
-          </FlexContainer>
+          </div>
         </Section>
       </MaxWidthContainer>
     </Container>

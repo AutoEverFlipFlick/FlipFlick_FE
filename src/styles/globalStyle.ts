@@ -1,21 +1,19 @@
 import { createGlobalStyle } from 'styled-components'
 
 export const GlobalStyle = createGlobalStyle`
-    html {
-        height: 100%;
-        font-family: var(--font-base), serif;
-        //font-weight: var(--font-weight-base);
-        color: var(--color-text);
-        background-color: var(--color-background);
+   
 
-    }
-
-    body {
-        height: 100%;
-        //font-weight: var(--font-weight-base);
-        color: var(--color-text);
-        //background-color: var(--color-background);
-    }
+  html, body {
+    font-family: ${({ theme }) => theme.fontFamily};
+    font-weight: ${({ theme }) => theme.fontWeight};
+    color: ${({ theme }) => theme.colors.text};
+    background-color: ${({ theme }) => theme.colors.background};
+    background-image: ${({ theme }) => theme.backgroundImage};
+    line-height: 1.5;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
     a {
         text-decoration: none;

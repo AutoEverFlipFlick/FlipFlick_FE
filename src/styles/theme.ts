@@ -6,4 +6,5 @@ export const theme = {
     text: 'var(--color-text)',
     background: 'var(--color-background)',
   },
-} as const;
+  backgroundImage: 'var(--background-pattern)',
+} as const

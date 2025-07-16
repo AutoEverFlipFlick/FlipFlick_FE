@@ -5,6 +5,8 @@
     --color-text: #ffffff;
     --color-primary: #191513;
     --color-secondary: #130803;
+    /* 패턴 이미지 변수 추가 */
+    --background-pattern: url('src/assets/common/backgroud_tile_512px.png');
 }
 
 @font-face {
