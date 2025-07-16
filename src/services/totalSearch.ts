@@ -6,6 +6,7 @@ export interface PageResult<T> {
     page: number
     size: number
     content: T[]
+    last: boolean
 }
 
 export interface Movie {
