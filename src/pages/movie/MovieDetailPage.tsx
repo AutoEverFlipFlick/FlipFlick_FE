@@ -76,7 +76,7 @@ const MovieDetailHeaderActorsSwiper = styled.div`
     display: flex;
     justify-content: start;
 `
-const DetailImageSwiper = styled.div`
+const DetailImage = styled.div`
     margin-bottom: 20px;
     height: 150px;
     display: flex;
@@ -264,7 +264,6 @@ const DetailReviewListWrapper = styled.div`
     max-width: 800px;
     width: 100%;
     min-height: 100px;
-    background-color: #ffffff;
     display: flex;
     flex-direction: column;
     margin: 10px auto;
@@ -272,7 +271,6 @@ const DetailReviewListWrapper = styled.div`
 const DetailReviewList = styled.div`
     width: 100%;
     min-height: 100px;
-    background-color: #ffffff;
     display: flex;
     flex-direction: column;
     margin: 5px auto;
@@ -282,20 +280,22 @@ const DetailReviewCardWrapper = styled.div`
     height: 100%;
     min-height: 100px;
     display: flex;
-    margin: 5px auto;
+    margin: 0 auto;
 `
 const DetailReviewCard = styled.div`
     width: 100%;
     height: 100%;
     min-height: 100px;
+    max-width: 800px;
     background-color: var(--color-primary);
     margin: 5px auto;
-    padding: 0 10px;
+    padding: 5px 10px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     color: white;
+    border-radius: 15px;
 `
 
 const ReviewCardHeader = styled.div`
@@ -309,11 +309,14 @@ const ReviewCardHeader = styled.div`
 
 const ReviewCardBody = styled.div`
     width: 100%;
-    padding: 10px;
-    margin: 5px auto;
+    max-width: 760px;
+    padding: 5px 10px;
+    margin: 0 auto;
     color: white;
     word-wrap: break-word;
     min-height: 50px;
+    font-size: 12px;
+    max-height: 110;
 `
 
 const ReviewUserCard = styled.div`
@@ -337,6 +340,8 @@ const UserImageSmall = styled.div`
 `
 
 const UserInfoWrapper = styled.div`
+    min-width: 60px;
+    max-width: 100px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -359,14 +364,16 @@ const ReviewCreatedAt = styled.div`
 
 
 const ReviewCardFooter = styled.div`
+    max-width: 780px;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     width: 100%;
-    padding: 5px;
+    padding: 5px 10px;
     color: white;
 `
 const ReviewLikeWrapper = styled.div`
+    padding: 0 10px;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -378,7 +385,6 @@ const DetailReviewListOrderTab = styled.div`
     height: 30px;
     display: flex;
     justify-content: end;
-    background-color: white;
     align-content: center;
 
 `
@@ -395,6 +401,7 @@ const ReviewListOrderDropdown = styled.div`
 
 type StarRatingProps = {
   rating: number; // 0.0 ~ 5.0
+  size?: number;
 };
 
 const StarWrapper = styled.div`
@@ -402,9 +409,11 @@ const StarWrapper = styled.div`
     gap: 4px;
 `;
 
-const StyledSvg = styled.svg`
-    width: 24px;
-    height: 24px;
+const getSvgSize = (size?: number) => `${size ?? 20}px`;
+
+const StyledSvg = styled.svg<{ $size?: number }>`
+    width: ${({ $size }) => getSvgSize($size)};
+    height: ${({ $size }) => getSvgSize($size)};
     stroke: gold;
     stroke-width: 0.8;
     stroke-linejoin: round;
@@ -420,51 +429,46 @@ const EmptyStyledSvg = styled(StyledSvg)`
     fill: none;
 `;
 
-export const StarRating: React.FC<StarRatingProps> = ({rating}) => {
+export const StarRating: React.FC<StarRatingProps> = ({ rating, size = 20 }) => {
   const renderStar = (index: number) => {
     const filled = rating - index;
-    const starPath = "M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21" +
-      "L12 17.77L5.82 21L7 14.14L2 9.27L8.91 8.26L12 2Z";
 
+    const starPath =
+      'M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21L12 17.77L5.82 21L7 14.14L2 9.27L8.91 8.26L12 2Z';
+    const transform = 'scale(4.1667)'; // 100 / 24 = 4.1667
 
     if (filled >= 1) {
-      // full star
       return (
-        <FilledStar viewBox="0 0 24 24" key={index}>
-          <path d={starPath}/>
+        <FilledStar viewBox="0 0 100 100" key={index} $size={size}>
+          <path d={starPath} transform={transform} />
         </FilledStar>
       );
     } else if (filled >= 0.5) {
-      // half star using mask
       return (
-        <StyledSvg viewBox="0 0 24 24" key={index}>
+        <StyledSvg viewBox="0 0 100 100" key={index} $size={size}>
           <defs>
             <mask id={`half-mask-${index}`}>
-              <rect x="0" y="0" width="12" height="24" fill="white"/>
+              <rect x="0" y="0" width="50" height="100" fill="white" />
             </mask>
           </defs>
 
-          {/* 빈 별 테두리 */}
-          <path
-            d={starPath}
-            fill="none"
-            stroke="gold"
-          />
+          {/* outline */}
+          <path d={starPath} fill="none" stroke="gold" transform={transform} />
 
-          {/* 반쪽 채워진 별 (mask 적용) */}
+          {/* half filled */}
           <path
             d={starPath}
             fill="gold"
             stroke="gold"
             mask={`url(#half-mask-${index})`}
+            transform={transform}
           />
         </StyledSvg>
       );
     } else {
-      // empty star
       return (
-        <EmptyStyledSvg viewBox="0 0 24 24" key={index}>
-          <path d={starPath}/>
+        <EmptyStyledSvg viewBox="0 0 100 100" key={index} $size={size}>
+          <path d={starPath} transform={transform} />
         </EmptyStyledSvg>
       );
     }
@@ -472,6 +476,7 @@ export const StarRating: React.FC<StarRatingProps> = ({rating}) => {
 
   return <StarWrapper>{[0, 1, 2, 3, 4].map(renderStar)}</StarWrapper>;
 };
+
 
 
 export default function MovieDetailPage() {
@@ -619,6 +624,7 @@ export default function MovieDetailPage() {
               <DetailReviewList>
 
                 <DetailReviewCardWrapper>
+
                   <DetailReviewCard>
                     <ReviewCardHeader>
                       <ReviewUserCard>
@@ -628,18 +634,19 @@ export default function MovieDetailPage() {
                           <ReviewCreatedAt>작성일</ReviewCreatedAt>
                         </UserInfoWrapper>
                         <UserMovieRatingWrapper>
-                          <StarRating rating={0.5}/>
+                          <StarRating rating={0.5} />
                         </UserMovieRatingWrapper>
                       </ReviewUserCard>
+
                     </ReviewCardHeader>
                     <ReviewCardBody>
-                      <p>리뷰 내용 영역</p>
+                      리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용
                     </ReviewCardBody>
                     <ReviewCardFooter>
                       <ReviewLikeWrapper>
                         {/*lucid*/}
-                        <Heart/>
-                        <p>100</p>
+                        <Heart size={15} color={"red"}/>
+                        <p style={{fontSize:'12px'}}>100</p>
                       </ReviewLikeWrapper>
                       <button>...</button>
                     </ReviewCardFooter>
@@ -665,8 +672,8 @@ export default function MovieDetailPage() {
                     <ReviewCardFooter>
                       <ReviewLikeWrapper>
                         {/*lucid*/}
-                        <Heart/>
-                        <p>100</p>
+                        <Heart size={15} color={"red"} fill={"red"}/>
+                        <p style={{fontSize:'12px'}}>100</p>
                       </ReviewLikeWrapper>
                       <button>...</button>
                     </ReviewCardFooter>
@@ -692,9 +699,9 @@ export default function MovieDetailPage() {
                     <ReviewCardFooter>
                       <ReviewLikeWrapper>
                         {/*lucid*/}
-                        <Heart/>
-                        <p>100</p>
-                      </ReviewLikeWrapper>
+                        <Heart size={15} color={"red"} />
+                        <p style={{fontSize:'12px'}}>100</p>
+                       </ReviewLikeWrapper>
                       <button>...</button>
                     </ReviewCardFooter>
                   </DetailReviewCard>
@@ -708,9 +715,9 @@ export default function MovieDetailPage() {
             토론장 영역
           </DetailDebateContents>
           <DetailImageContents>
-            <DetailImageSwiper>
-              영화 이미지 슬라이더 컴포넌트
-            </DetailImageSwiper>
+            <DetailImage>
+              영화 이미지 Grid
+            </DetailImage>
           </DetailImageContents>
         </MovieDetailMainContent>
 
