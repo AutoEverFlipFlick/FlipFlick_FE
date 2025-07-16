@@ -1,7 +1,10 @@
 import { Route, Routes } from 'react-router-dom'
 import ExamplePage from '@/pages/example/ExamplePage'
-import MovieDetailPage from "@/pages/movie/MovieDetailPage";
+import MovieDetailPage from '@/pages/movie/MovieDetailPage'
 import TotalSearch from '@/pages/TotalSearch'
+import Login from '@/pages/member/Login'
+import SignUp from '@/pages/member/SignUp'
+import EmailLogin from '@/pages/member/EmailLogin'
 // import Layout from '@/components/common/CommonLayout' // 공통 레이아웃 컴포넌트가 필요함
 
 const AppRoutes = () => {
@@ -18,7 +21,12 @@ const AppRoutes = () => {
       {/* 레이아웃 적용 미 적용시 */}
       {/* <Route path="/" element={<ExampleReactVite/>}/>
       {/* 위 형태로 사용 */}
-      <Route path="/movie/detail" element={<MovieDetailPage/>}/>
+
+      <Route path="/movie/detail" element={<MovieDetailPage />} />
+
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<SignUp />} />
+      <Route path="/emaillogin" element={<EmailLogin />} />
     </Routes>
   )
 }
