@@ -345,7 +345,7 @@ const ExamplePage = () => {
         <Subtitle>공통 인풋 디자인</Subtitle>
         <Section>
           <ImageContainer>
-            <BaseInput />
+            <BaseInput state="success" icon={<Heart size={20} />} />
           </ImageContainer>
         </Section>
         <GuideSection>
