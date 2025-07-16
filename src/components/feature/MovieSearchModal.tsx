@@ -2,27 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { Search, ImageIcon, RefreshCw, Loader } from 'lucide-react';
 import BaseButton from '../common/BaseButton';
-import axiosInstance from '../../services/axiosInstance';
-
-interface Movie {
-  tmdbId: number;
-  title: string;
-  releaseDate: string;
-  image: string;
-}
-
-interface SearchResponse {
-  status: number;
-  success: boolean;
-  message: string;
-  data: {
-    totalElements: number;
-    totalPages: number;
-    page: number;
-    size: number;
-    content: Movie[];
-  };
-}
+import { searchMovies, Movie } from '../../services/playlist';
 
 interface MovieSearchModalProps {
   isOpen: boolean;
@@ -83,7 +63,7 @@ const ModalOverlay = styled.div<{ $isOpen: boolean }>`
   animation: ${fadeIn} 0.3s ease;
   padding: 1rem;
   box-sizing: border-box;
-  overflow: hidden; /* 외부 스크롤 숨기기 */
+  overflow: hidden;
 `;
 
 const ModalContent = styled.div`
@@ -156,7 +136,6 @@ const ModalBody = styled.div`
   overflow-y: auto;
   padding: 1.5rem 2rem 2rem 2rem;
   
-  /* 스크롤바 숨기기 */
   -ms-overflow-style: none;
   scrollbar-width: none;
   
@@ -207,7 +186,6 @@ const MovieGrid = styled.div`
   box-sizing: border-box;
   padding-right: 0.5rem;
   
-  /* 그리드 전체 애니메이션 */
   animation: ${slideInUp} 0.4s ease-out;
 `;
 
@@ -221,7 +199,6 @@ const MovieCard = styled.div<{ $selected: boolean; $index?: number }>`
   transition: all 0.2s;
   box-sizing: border-box;
   
-  /* 개별 카드 애니메이션 */
   opacity: 0;
   animation: ${staggerIn} 0.3s ease-out forwards;
   animation-delay: ${props => (props.$index || 0) * 0.05}s;
@@ -321,7 +298,6 @@ const LoadingMessage = styled.div`
   align-items: center;
   gap: 1rem;
   
-  /* 로딩 메시지 애니메이션 */
   animation: ${fadeIn} 0.2s ease-out;
 `;
 
@@ -335,7 +311,6 @@ const ErrorMessage = styled.div`
   font-size: 1rem;
   margin: 2rem 0;
   
-  /* 에러 메시지 애니메이션 */
   animation: ${slideInUp} 0.3s ease-out;
 `;
 
@@ -345,7 +320,6 @@ const EmptyMessage = styled.div`
   font-size: 1rem;
   margin: 2rem 0;
   
-  /* 빈 결과 메시지 애니메이션 */
   animation: ${slideInUp} 0.3s ease-out;
 `;
 
@@ -361,7 +335,6 @@ const SelectedCount = styled.div`
   font-size: 0.9rem;
   margin-bottom: 1rem;
   
-  /* 선택 카운트 애니메이션 */
   animation: ${fadeIn} 0.3s ease-out;
 `;
 
@@ -386,7 +359,6 @@ const ImageLoader: React.FC<{
 
   return (
     <ImageContainer>
-      {/* src가 null이거나 비어있는 경우 */}
       {(!src || src === 'null' || src.trim() === '') ? (
         <NoImagePlaceholder>
           <ImageIcon size={24} />
@@ -394,14 +366,12 @@ const ImageLoader: React.FC<{
         </NoImagePlaceholder>
       ) : (
         <>
-          {/* 로딩 중일 때 스켈레톤 표시 */}
           {!loaded && !error && (
             <ImageSkeleton>
               이미지 로딩 중...
             </ImageSkeleton>
           )}
 
-          {/* 에러가 없을 때 이미지 표시 */}
           {!error && (
             <MovieImage
               src={src}
@@ -412,7 +382,6 @@ const ImageLoader: React.FC<{
             />
           )}
 
-          {/* 에러가 발생했을 때 대체 표시 */}
           {error && (
             <NoImagePlaceholder>
               <ImageIcon size={24} />
@@ -443,21 +412,21 @@ const MovieSearchModal: React.FC<MovieSearchModalProps> = ({
   // 무한스크롤 관련 상태
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [totalElements, setTotalElements] = useState(0); // 전체 영화 개수 추가
+  const [totalElements, setTotalElements] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   
   const observer = useRef<IntersectionObserver | null>(null);
   const lastMovieElementRef = useRef<HTMLDivElement | null>(null);
 
-  // 영화 검색 (첫 페이지 또는 추가 페이지)
-  const searchMovies = async (query: string, page: number = 1, isLoadMore: boolean = false) => {
+  // 영화 검색 - 서비스 함수 사용
+  const performMovieSearch = async (query: string, page: number = 1, isLoadMore: boolean = false) => {
     if (!query.trim()) {
       setMovies([]);
       setHasSearched(false);
       setShowResults(false);
       setCurrentPage(1);
       setTotalPages(0);
-      setTotalElements(0); // 초기화
+      setTotalElements(0);
       setHasMore(false);
       return;
     }
@@ -472,18 +441,15 @@ const MovieSearchModal: React.FC<MovieSearchModalProps> = ({
     }
 
     try {
-      const response = await axiosInstance.post<SearchResponse>('/search/movie', {
-        query: query.trim(),
-        page: page
-      });
+      const response = await searchMovies(query, page);
 
-      if (response.data.success) {
+      if (response.success) {
         const { 
           content, 
           totalPages: total, 
           page: currentPageFromApi, 
           totalElements: totalElementsFromApi 
-        } = response.data.data;
+        } = response.data;
         
         // 첫 페이지가 아닌 경우 최소 로딩 시간 보장
         if (!isLoadMore) {
@@ -500,18 +466,18 @@ const MovieSearchModal: React.FC<MovieSearchModalProps> = ({
         
         setCurrentPage(currentPageFromApi);
         setTotalPages(total);
-        setTotalElements(totalElementsFromApi); // 전체 개수 설정
+        setTotalElements(totalElementsFromApi);
         setHasMore(currentPageFromApi < total);
         setShowResults(true);
       } else {
-        setError('영화 검색에 실패했습니다.');
+        setError(response.message || '영화 검색에 실패했습니다.');
         if (!isLoadMore) {
           setMovies([]);
         }
         setShowResults(true);
       }
-    } catch (err) {
-      setError('영화 검색 중 오류가 발생했습니다.');
+    } catch (err: any) {
+      setError(err.response?.data?.message || '영화 검색 중 오류가 발생했습니다.');
       if (!isLoadMore) {
         setMovies([]);
       }
@@ -529,7 +495,7 @@ const MovieSearchModal: React.FC<MovieSearchModalProps> = ({
   // 다음 페이지 로드
   const loadNextPage = useCallback(() => {
     if (hasMore && !loadingMore && searchQuery.trim()) {
-      searchMovies(searchQuery, currentPage + 1, true);
+      performMovieSearch(searchQuery, currentPage + 1, true);
     }
   }, [hasMore, loadingMore, searchQuery, currentPage]);
 
@@ -555,9 +521,9 @@ const MovieSearchModal: React.FC<MovieSearchModalProps> = ({
         // 새로운 검색 시 페이지 초기화
         setCurrentPage(1);
         setTotalPages(0);
-        setTotalElements(0); // 초기화
+        setTotalElements(0);
         setHasMore(false);
-        searchMovies(searchQuery, 1, false);
+        performMovieSearch(searchQuery, 1, false);
       } else {
         setMovies([]);
         setHasSearched(false);
@@ -565,7 +531,7 @@ const MovieSearchModal: React.FC<MovieSearchModalProps> = ({
         setShowResults(false);
         setCurrentPage(1);
         setTotalPages(0);
-        setTotalElements(0); // 초기화
+        setTotalElements(0);
         setHasMore(false);
       }
     }, 300);
@@ -598,7 +564,7 @@ const MovieSearchModal: React.FC<MovieSearchModalProps> = ({
     setShowResults(false);
     setCurrentPage(1);
     setTotalPages(0);
-    setTotalElements(0); // 초기화
+    setTotalElements(0);
     setHasMore(false);
   };
 
@@ -612,7 +578,7 @@ const MovieSearchModal: React.FC<MovieSearchModalProps> = ({
     setShowResults(false);
     setCurrentPage(1);
     setTotalPages(0);
-    setTotalElements(0); // 초기화
+    setTotalElements(0);
     setHasMore(false);
   };
 
@@ -625,7 +591,7 @@ const MovieSearchModal: React.FC<MovieSearchModalProps> = ({
     setShowResults(false);
     setCurrentPage(1);
     setTotalPages(0);
-    setTotalElements(0); // 초기화
+    setTotalElements(0);
     setHasMore(false);
     onClose();
   };
@@ -641,7 +607,7 @@ const MovieSearchModal: React.FC<MovieSearchModalProps> = ({
       setShowResults(false);
       setCurrentPage(1);
       setTotalPages(0);
-      setTotalElements(0); // 초기화
+      setTotalElements(0);
       setHasMore(false);
     }
   }, [isOpen]);

@@ -2,33 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import styled, { keyframes } from 'styled-components';
 import BaseButton from '../components/common/BaseButton';
 import { Plus, ChevronDown } from 'lucide-react';
-import axiosInstance from '../services/axiosInstance';
-
-interface PlaylistItem {
-  playListId: number;
-  title: string;
-  nickname: string;
-  thumbnailUrl: string;
-  movieCount: number;
-  bookmarkCount: number;
-}
-
-interface PlaylistData {
-  content: PlaylistItem[];
-  currentPage: number;
-  totalPages: number;
-  totalElements: number;
-  numberOfElements: number;
-  first: boolean;
-  last: boolean;
-}
-
-interface PlaylistResponse {
-  status: number;
-  success: boolean;
-  message: string;
-  data: PlaylistData;
-}
+import { useNavigate } from 'react-router-dom';
+import {
+  getAllPlaylists,
+  getMyPlaylists,
+  getBookmarkedPlaylists,
+  PlaylistItem,
+  SortBy
+} from '../services/playlist';
 
 // 애니메이션 정의
 const fadeInUp = keyframes`
@@ -303,8 +284,6 @@ const EmptyMessage = styled.div`
   margin: 4rem 0;
 `;
 
-type SortBy = 'popularity' | 'latest' | 'oldest';
-
 // 이미지 로더 컴포넌트
 const ImageLoader: React.FC<{
   src: string;
@@ -349,6 +328,7 @@ const ImageLoader: React.FC<{
 };
 
 const PlaylistPage: React.FC = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'all' | 'my' | 'bookmarked'>('all');
   const [currentPage, setCurrentPage] = useState(0);
   const [sortBy, setSortBy] = useState<SortBy>('latest');
@@ -376,42 +356,35 @@ const PlaylistPage: React.FC = () => {
     };
   }, []);
 
+  // 플레이리스트 가져오기 - 서비스 함수 사용
   const fetchPlaylists = async () => {
     setLoading(true);
     setError(null);
     
     try {
-      let endpoint = '';
-      let params: any = {
-        page: currentPage,
-        size: 20
-      };
-
+      let response;
+      
       switch (activeTab) {
         case 'all':
-          endpoint = '/playlist/all';
-          params.sortBy = sortBy;
+          response = await getAllPlaylists(currentPage, 20, sortBy);
           break;
         case 'my':
-          endpoint = '/playlist/my';
-          params.userId = userId;
+          response = await getMyPlaylists(userId, currentPage, 20);
           break;
         case 'bookmarked':
-          endpoint = '/playlist/bookmarked';
-          params.userId = userId;
+          response = await getBookmarkedPlaylists(userId, currentPage, 20);
           break;
+        default:
+          throw new Error('Invalid tab');
       }
 
-      const response = await axiosInstance.get<PlaylistResponse>(endpoint, { params });
-      
-      // API 응답 형식에 맞춰 데이터 처리
-      if (response.data.success && response.data.data) {
-        const data = response.data.data;
+      if (response.success && response.data) {
+        const data = response.data;
         setPlaylists(data.content || []);
         setTotalElements(data.totalElements || 0);
         setTotalPages(data.totalPages || 0);
       } else {
-        throw new Error(response.data.message || '데이터를 불러올 수 없습니다.');
+        throw new Error(response.message || '데이터를 불러올 수 없습니다.');
       }
     } catch (err: any) {
       setError(err.message || '플레이리스트를 불러오는 중 오류가 발생했습니다.');
@@ -456,8 +429,7 @@ const PlaylistPage: React.FC = () => {
   };
 
   const handleCreatePlaylist = () => {
-    // 플레이리스트 생성 로직
-    console.log('플레이리스트 생성');
+    navigate('/createplaylist');
   };
 
   const handlePageChange = (page: number) => {
@@ -490,6 +462,10 @@ const PlaylistPage: React.FC = () => {
     { value: 'latest', label: '최신순' },
     { value: 'oldest', label: '오래된순' }
   ];
+
+  const handlePlaylistClick = (playlistId: number) => {
+    navigate(`/playlist/${playlistId}`);
+  };
 
   return (
     <PlaylistContainer>
@@ -550,7 +526,7 @@ const PlaylistPage: React.FC = () => {
         )}
       </CountInfo>
 
-      {loading && <LoadingMessage></LoadingMessage>}
+      {loading && <LoadingMessage>로딩 중...</LoadingMessage>}
       {error && <ErrorMessage>{error}</ErrorMessage>}
 
       {!loading && !error && (
@@ -558,7 +534,10 @@ const PlaylistPage: React.FC = () => {
           {playlists && playlists.length > 0 ? (
             <PlaylistGrid>
               {playlists.map((playlist) => (
-                <PlaylistCard key={playlist.playListId}>
+                <PlaylistCard 
+                  key={playlist.playListId}
+                  onClick={() => handlePlaylistClick(playlist.playListId)}
+                >
                   <ImageLoader
                     src={playlist.thumbnailUrl || '/default-thumbnail.png'}
                     alt={playlist.title}

@@ -17,8 +17,8 @@ function App() {
       <ThemeProvider theme={theme}>
         <GlobalStyle />
         <BrowserRouter>
-        <CreatePlaylist/>
-          {/* <AppRoutes /> */}
+        {/* <CreatePlaylist/> */}
+          <AppRoutes />
           {/* <PlaylistPage /> */}
         </BrowserRouter>
       </ThemeProvider>

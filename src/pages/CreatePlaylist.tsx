@@ -4,7 +4,7 @@ import styled, { keyframes } from 'styled-components';
 import { Plus, Lock, LockOpen, X, ImageIcon } from 'lucide-react';
 import BaseButton from '../components/common/BaseButton';
 import MovieSearchModal from '../components/feature/MovieSearchModal';
-import axiosInstance from '../services/axiosInstance';
+import { createPlaylist } from '../services/playlist';
 
 interface Movie {
   tmdbId: number;
@@ -251,7 +251,6 @@ const ImageLoader: React.FC<{
 
   return (
     <ImageContainer>
-      {/* src가 null이거나 비어있는 경우 */}
       {(!src || src === 'null' || src.trim() === '') ? (
         <NoImagePlaceholder>
           <ImageIcon size={24} />
@@ -259,14 +258,12 @@ const ImageLoader: React.FC<{
         </NoImagePlaceholder>
       ) : (
         <>
-          {/* 로딩 중일 때 스켈레톤 표시 */}
           {!loaded && !error && (
             <ImageSkeleton>
               이미지 로딩 중...
             </ImageSkeleton>
           )}
           
-          {/* 에러가 없을 때 이미지 표시 */}
           {!error && (
             <MovieImage
               src={src}
@@ -277,7 +274,6 @@ const ImageLoader: React.FC<{
             />
           )}
           
-          {/* 에러가 발생했을 때 대체 표시 */}
           {error && (
             <NoImagePlaceholder>
               <ImageIcon size={24} />
@@ -316,10 +312,10 @@ const CreatePlaylist: React.FC = () => {
 
   // 취소 버튼 클릭
   const handleCancel = () => {
-    navigate('/playlists');
+    navigate('/playlist');
   };
 
-  // 플레이리스트 생성
+  // 플레이리스트 생성 - 서비스 함수 사용
   const handleCreatePlaylist = async () => {
     if (!title.trim()) {
       alert('플레이리스트 제목을 입력해주세요.');
@@ -334,28 +330,28 @@ const CreatePlaylist: React.FC = () => {
     setCreating(true);
 
     try {
-      // API 요청 데이터 형식 변경
-      const requestData = {
+      const playlistData = {
         title: title.trim(),
         hidden: isPrivate,
         movies: selectedMovies.map(movie => ({
           tmdbId: movie.tmdbId,
           posterUrl: movie.image,
-          title: movie.title
+          title: movie.title,
+          releaseDate: movie.releaseDate || null
         }))
       };
 
-      const response = await axiosInstance.post('/playlist/create?userId=1', requestData);
+      const response = await createPlaylist(playlistData, 1);
 
-      if (response.data.success) {
+      if (response.success) {
         alert('플레이리스트가 성공적으로 생성되었습니다!');
-        navigate('/playlists');
+        navigate('/playlist');
       } else {
-        alert('플레이리스트 생성에 실패했습니다.');
+        alert(response.message || '플레이리스트 생성에 실패했습니다.');
       }
-    } catch (err) {
-      alert('플레이리스트 생성 중 오류가 발생했습니다.');
+    } catch (err: any) {
       console.error('Create playlist error:', err);
+      alert(err.response?.data?.message || '플레이리스트 생성 중 오류가 발생했습니다.');
     } finally {
       setCreating(false);
     }
