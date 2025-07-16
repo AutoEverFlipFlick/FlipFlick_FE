@@ -219,6 +219,24 @@ export const checkBookmarkStatus = async (
   }
 };
 
+// 북마크 목록 응답 인터페이스 추가
+export interface BookmarkListResponse {
+  status: number;
+  success: boolean;
+  message: string;
+  data: {
+    playListIds: number[];
+    totalCount: number;
+  };
+}
+
+// 사용자 북마크 목록 가져오기 - 수정
+export const getUserBookmarks = async (userId: number): Promise<string[]> => {
+  const response = await axiosInstance.get<BookmarkListResponse>(`/playlist/user/${userId}/bookmarks`);
+  
+  // 숫자 배열을 문자열 배열로 변환
+  return response.data.data.playListIds.map(id => id.toString());
+};
 
 // 영화 검색
 export const searchMovies = async (

@@ -5,10 +5,9 @@ import { Bookmark, BookmarkCheck, ImageIcon, ChevronLeft, ChevronRight } from 'l
 import BaseButton from '../components/common/BaseButton';
 import { 
   getPlaylistDetail, 
-  togglePlaylistBookmark,
   PlaylistDetail as PlaylistDetailType,
-  Movie
 } from '../services/playlist';
+import { useBookmark } from '../context/BookmarkContext';
 
 // 애니메이션 정의
 const fadeIn = keyframes`
@@ -285,6 +284,8 @@ const ImageLoader: React.FC<{
 const PlaylistDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { isBookmarked, toggleBookmark } = useBookmark();
+  
   const [playlist, setPlaylist] = useState<PlaylistDetailType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -329,24 +330,39 @@ const PlaylistDetail: React.FC = () => {
     setBookmarking(true);
     
     try {
-      const response = await togglePlaylistBookmark(playlist.playListId);
+      const success = await toggleBookmark(playlist.playListId.toString());
       
-      if (response.success) {
+      if (success) {
+        // UI 업데이트용 로컬 상태 수정
         setPlaylist(prev => prev ? {
           ...prev,
           isBookmarked: !prev.isBookmarked,
           bookmarkCount: prev.isBookmarked ? prev.bookmarkCount - 1 : prev.bookmarkCount + 1
         } : null);
       } else {
-        alert(response.message || '북마크 처리에 실패했습니다.');
+        alert('북마크 처리에 실패했습니다.');
       }
     } catch (err: any) {
       console.error('Error toggling bookmark:', err);
-      alert(err.response?.data?.message || '북마크 처리 중 오류가 발생했습니다.');
+      alert('북마크 처리 중 오류가 발생했습니다.');
     } finally {
       setBookmarking(false);
     }
   };
+
+  // 북마크 상태 동기화 (추가)
+  useEffect(() => {
+    if (playlist) {
+      const contextBookmarkState = isBookmarked(playlist.playListId.toString());
+      // Context의 상태와 로컬 상태가 다르면 동기화
+      if (playlist.isBookmarked !== contextBookmarkState) {
+        setPlaylist(prev => prev ? {
+          ...prev,
+          isBookmarked: contextBookmarkState
+        } : null);
+      }
+    }
+  }, [playlist?.playListId, isBookmarked]);
 
   // 페이지 변경 핸들러
   const handlePageChange = (page: number) => {
@@ -416,6 +432,9 @@ const PlaylistDetail: React.FC = () => {
     );
   }
 
+  // JSX에서 북마크 상태 표시 수정
+  const bookmarkStatus = playlist ? isBookmarked(playlist.playListId.toString()) : false;
+
   return (
     <Container>
       <Header>
@@ -426,16 +445,16 @@ const PlaylistDetail: React.FC = () => {
           </PlaylistMeta>
         </TitleSection>
         <BookmarkButton 
-          $isBookmarked={playlist.isBookmarked || false}
+          $isBookmarked={bookmarkStatus}
           onClick={handleToggleBookmark}
           disabled={bookmarking}
         >
-          {playlist.isBookmarked ? (
+          {bookmarkStatus ? (
             <BookmarkCheck size={20} />
           ) : (
             <Bookmark size={20} />
           )}
-          {bookmarking ? '처리 중...' : (playlist.isBookmarked ? '관심 해제' : '관심 등록')}
+          {bookmarking ? '처리 중...' : (bookmarkStatus ? '관심 해제' : '관심 등록')}
         </BookmarkButton>
       </Header>
 

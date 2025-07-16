@@ -338,9 +338,10 @@ const PlaylistPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false); // 추가: 최초 로딩 완료 여부
   
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const userId = 1; // 고정된 유저 ID
+  const userId = 1;
 
   // 드롭다운 외부 클릭 처리
   useEffect(() => {
@@ -394,6 +395,7 @@ const PlaylistPage: React.FC = () => {
       console.error('Error fetching playlists:', err);
     } finally {
       setLoading(false);
+      setHasLoaded(true); // 추가: 로딩 완료 표시
     }
   };
 
@@ -404,8 +406,9 @@ const PlaylistPage: React.FC = () => {
   const handleTabChange = (tab: 'all' | 'my' | 'bookmarked') => {
     setActiveTab(tab);
     setCurrentPage(0);
+    setHasLoaded(false); // 추가: 탭 변경 시 로딩 상태 초기화
     if (tab !== 'all') {
-      setSortBy('latest'); // 전체가 아닌 경우 기본값으로 리셋
+      setSortBy('latest');
     }
   };
 
@@ -413,6 +416,7 @@ const PlaylistPage: React.FC = () => {
     setSortBy(newSortBy);
     setCurrentPage(0);
     setIsDropdownOpen(false);
+    setHasLoaded(false); // 추가: 정렬 변경 시 로딩 상태 초기화
   };
 
   const getSortLabel = (sort: SortBy) => {
@@ -434,6 +438,7 @@ const PlaylistPage: React.FC = () => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+    setHasLoaded(false); // 추가: 페이지 변경 시 로딩 상태 초기화
   };
 
   const renderPageNumbers = () => {
@@ -526,10 +531,14 @@ const PlaylistPage: React.FC = () => {
         )}
       </CountInfo>
 
+      {/* 로딩 중일 때 */}
       {loading && <LoadingMessage>로딩 중...</LoadingMessage>}
-      {error && <ErrorMessage>{error}</ErrorMessage>}
+      
+      {/* 에러가 있을 때 */}
+      {!loading && error && <ErrorMessage>{error}</ErrorMessage>}
 
-      {!loading && !error && (
+      {/* 로딩이 완료되고 에러가 없을 때만 컨텐츠 또는 빈 메시지 표시 */}
+      {!loading && !error && hasLoaded && (
         <>
           {playlists && playlists.length > 0 ? (
             <PlaylistGrid>
@@ -547,7 +556,7 @@ const PlaylistPage: React.FC = () => {
                     <CardTitle>{playlist.title}</CardTitle>
                     <CardMeta>
                       <span>{playlist.nickname}</span>
-                      <span>작품 {playlist.movieCount}</span>
+                      <span>영화 {playlist.movieCount}</span>
                     </CardMeta>
                   </CardInfo>
                 </PlaylistCard>
@@ -563,7 +572,8 @@ const PlaylistPage: React.FC = () => {
         </>
       )}
 
-      {!loading && !error && totalPages > 1 && (
+      {/* 페이지네이션 - 로딩이 완료되고 에러가 없을 때만 표시 */}
+      {!loading && !error && hasLoaded && totalPages > 1 && (
         <Pagination>
           <PaginationButton 
             disabled={currentPage === 0}
