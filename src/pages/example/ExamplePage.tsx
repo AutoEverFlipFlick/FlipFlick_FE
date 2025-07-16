@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import { Check, Heart, Star, Download } from 'lucide-react'
 import BackgroundImage from '@/assets/common/backgroud_tile_512px.png'
+import BaseInput from '@/components/common/BaseInput'
 
 // 컨테이너 스타일
 const Container = styled.div`
@@ -108,6 +109,15 @@ const Divider = styled.div`
   border: 1px #fff solid;
   border-radius: 30px;
   margin-top: 3rem;
+`
+
+const ImageContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url(${BackgroundImage});
+  background-repeat: repeat;
+  padding: 100px;
 `
 
 // 메인 컴포넌트
@@ -296,16 +306,7 @@ const ExamplePage = () => {
         <Title>컨테이너</Title>
         <Subtitle>공통 컨테이너 디자인</Subtitle>
         <Section>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundImage: `url(${BackgroundImage})`,
-              backgroundRepeat: 'repeat',
-              padding: '100px',
-            }}
-          >
+          <ImageContainer>
             <BaseContainer
               fontSize="lg"
               style={{
@@ -317,8 +318,54 @@ const ExamplePage = () => {
               어두운 반투명 배경, 블러, 라운드 모서리, 그림자, 흰색 텍스트를 포함한 공통 컨테이너
               디자인
             </BaseContainer>
-          </div>
+          </ImageContainer>
         </Section>
+
+        <GuideSection>
+          <SectionTitle>사용 가이드</SectionTitle>
+          <GuideGrid>
+            <div>
+              <GuideTitle>사용 예시</GuideTitle>
+              <GuideList>
+                <li>
+                  <div>
+                    {`<BaseContainer style={{ maxHeight : '300px' }}/>`}
+                    <br />
+                    <div style={{ marginLeft: '30px' }}>{`<div>예시입니다</div>`}</div>
+                    {`</BaseContainer>`}
+                  </div>
+                </li>
+              </GuideList>
+            </div>
+          </GuideGrid>
+        </GuideSection>
+
+        <Divider />
+        <Title>인풋</Title>
+        <Subtitle>공통 인풋 디자인</Subtitle>
+        <Section>
+          <ImageContainer>
+            <BaseInput />
+          </ImageContainer>
+        </Section>
+        <GuideSection>
+          <SectionTitle>사용 가이드</SectionTitle>
+          <GuideGrid>
+            <div>
+              <GuideTitle>사용 예시</GuideTitle>
+              <GuideList>
+                <li>
+                  <div>
+                    {`<BaseContainer style={{ maxHeight : '300px' }}/>`}
+                    <br />
+                    <div style={{ marginLeft: '30px' }}>{`<div>예시입니다</div>`}</div>
+                    {`</BaseContainer>`}
+                  </div>
+                </li>
+              </GuideList>
+            </div>
+          </GuideGrid>
+        </GuideSection>
       </MaxWidthContainer>
     </Container>
   )
