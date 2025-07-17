@@ -33,14 +33,12 @@
 
 import axios from 'axios'
 
-
 // access token을 로컬 스토리지에서 가져오도록 설정
 const getAccessToken = () => localStorage.getItem('accessToken')
 
 const axiosInstance = axios.create({
   baseURL: 'http://localhost:8080/api/v1',
   // withCredentials: true,
-
 })
 
 // 요청 인터셉터: Authorization 헤더 자동 추가
@@ -50,7 +48,9 @@ axiosInstance.interceptors.request.use(
     const isAuthExcluded =
       config.url?.includes('/member/login') ||
       config.url?.includes('/member/signup') ||
-      config.url?.includes('/s3/image')
+      config.url?.includes('/s3/image') ||
+      config.url?.includes('/member/kakao') ||
+      config.url?.includes('/member/naver')
 
     if (token && !isAuthExcluded) {
       config.headers.Authorization = `Bearer ${token}`
