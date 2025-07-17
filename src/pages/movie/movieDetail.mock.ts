@@ -1,5 +1,7 @@
 // movieDetail.mock.ts
-export const mockMovieDetailData = {
+import { MovieDetailData } from "./movieDetail";
+
+export const mockMovieDetailData: MovieDetailData = {
   tmdbId: 552524,
   title: "릴로 & 스티치",
   originalTitle: "Lilo & Stitch",

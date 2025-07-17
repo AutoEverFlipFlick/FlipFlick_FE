@@ -1,10 +1,8 @@
 // MovieDetailPage.tsx
-import React from "react";
 import styled from "styled-components";
 import BaseContainer from "@/components/common/BaseContainer";
 import ReviewDebateCard from "@/components/feature/movieDetail/ReviewDebateCard";
 
-// const movieDetailPageData =
 
 const MovieDetailLayout = styled.div`
     display: flex;
