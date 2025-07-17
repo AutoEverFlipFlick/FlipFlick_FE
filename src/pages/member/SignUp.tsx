@@ -6,6 +6,7 @@ import BaseButton from '@/components/common/BaseButton'
 import profileImageDefault from '@/assets/icons/profile.png'
 import cameraIcon from '@/assets/icons/camera.png'
 import { signup } from '@/services/member'
+import { uploadImage } from '@/services/s3'
 import { useNavigate } from 'react-router-dom'
 
 const Wrapper = styled.div`
@@ -188,6 +189,8 @@ const SignUp: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const navigate = useNavigate()
 
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null)
+
   const handleSignUp = async () => {
     try {
       const payload = {
@@ -195,7 +198,7 @@ const SignUp: React.FC = () => {
         password,
         checkedPassword: confirmPassword,
         nickname,
-        profileImage: imagePreview ?? undefined, // base64 형태로 보냄
+        profileImage: profileImageUrl ?? null,
       }
 
       const response = await signup(payload)
@@ -242,12 +245,21 @@ const SignUp: React.FC = () => {
     )
   }
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => setImagePreview(reader.result as string)
-      reader.readAsDataURL(file)
+    if (!file) return
+
+    // 로컬 미리보기
+    const reader = new FileReader()
+    reader.onloadend = () => setImagePreview(reader.result as string)
+    reader.readAsDataURL(file)
+
+    try {
+      const url = await uploadImage(file)
+      setProfileImageUrl(url)
+    } catch (error) {
+      console.error('이미지 업로드 실패:', error)
+      alert('이미지 업로드에 실패했습니다.')
     }
   }
 
