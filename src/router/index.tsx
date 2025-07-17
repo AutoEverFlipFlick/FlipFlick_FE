@@ -58,6 +58,7 @@ import TotalSearch from '@/pages/TotalSearch'
 import Login from '@/pages/member/Login'
 import SignUp from '@/pages/member/SignUp'
 import EmailLogin from '@/pages/member/EmailLogin'
+import Filmography from '@/pages/filmography'
 import KakaoRedirectHandler from '@/pages/member/KakaoRedirectHandler'
 import NaverRedirectHandler from '@/pages/member/NaverRedirectHandler'
 // import Layout from '@/components/common/CommonLayout' // 공통 레이아웃 컴포넌트가 필요함
@@ -107,6 +108,13 @@ const AppRoutes = () => {
         />
 
         {/* Protected Routes (로그인 필요) */}
+        <Route path="/createplaylist" element={
+          <ProtectedRoute><CreatePlaylist /></ProtectedRoute>
+        } />
+        <Route path="/playlist/:id/edit" element={
+          <ProtectedRoute><EditPlaylist /></ProtectedRoute>
+        } />
+
         <Route
           path="/createplaylist"
           element={
@@ -123,6 +131,13 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        <Route 
+          path="/filmography/:tmdbId" 
+          element={
+            <Filmography />
+          } 
+         />
+        
         <Route path="*" element={<Navigate to="/" replace />} />
 
         <Route path="/oauth/kakao/callback" element={<KakaoRedirectHandler />} />
