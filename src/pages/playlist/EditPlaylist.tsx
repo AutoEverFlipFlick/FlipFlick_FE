@@ -15,7 +15,7 @@ interface Movie {
   image: string;
 }
 
-// 애니메이션 정의 - CreatePlaylist와 동일
+// 애니메이션 정의
 const fadeIn = keyframes`
   from { opacity: 0; }
   to { opacity: 1; }
