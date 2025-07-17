@@ -3,6 +3,10 @@ import styled from "styled-components";
 import BaseContainer from "@/components/common/BaseContainer";
 import ReviewDebateCard from "@/components/feature/movieDetail/ReviewDebateCard";
 
+import {useEffect, useState} from "react";
+import {mockMovieDetailData} from "./movieDetail.mock";
+import {MovieDetailData} from "./movieDetail";
+
 
 const MovieDetailLayout = styled.div`
     display: flex;
@@ -171,20 +175,8 @@ const OverViewPlatformTab = styled.div`
     justify-content: space-around;
     align-items: center;
     max-width: 400px;
-    //min-width: 300px;
     margin: 0 auto;
     gap: 20px;
-
-
-    //display: flex;
-    //justify-content: space-evenly;
-    //flex-direction: row;
-    //max-width: 900px;
-    //min-width: 850px;
-    //margin: 30px auto;
-    //height: 30px;
-    //gap: 50px;
-    //border-bottom: white 1px solid;
 `
 
 const OverViewContainer = styled.div`
@@ -315,28 +307,52 @@ const ContentsListOrderDropdown = styled.div`
 
 
 export default function MovieDetailPage() {
+  const [movieData, setMovieData] = useState<MovieDetailData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // 실제 API 대체용
+    const timer = setTimeout(() => {
+      setMovieData(mockMovieDetailData);
+      setIsLoading(false);
+    }, 500); // 0.5초 후 mock 주입
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading || !movieData) {
+    return (
+      <MovieDetailLayout>
+        <p style={{color: "white"}}>로딩 중입니다...</p>
+        {/* 페이지 구성 자체에 최소 크기가 정해진 영역이 많음 */}
+        {/* 하위 컴포넌트에 예외 처리 추가 필요 */}
+        {/* isLoading, 정의되지 않음, 전달 받은 데이터가 특정 조건에 해당 */}
+      </MovieDetailLayout>
+    );
+  }
+
+
   return (
     <MovieDetailLayout>
       <MovieDetailHeader>
         <MovieDetailHeaderImageSwiper>
           <PostImage/>
-          {/* 여기에 이미지 슬라이더 컴포넌트를 추가*/}
         </MovieDetailHeaderImageSwiper>
         <MovieDetailHeaderContents>
           <MovieDetailHeaderTitle>
-            <p>영화 제목 영역</p>
+            <p>{movieData.title}</p>
           </MovieDetailHeaderTitle>
           <MovieDetailRelease>
-            <p>출시일 영역</p>
+            <p>{movieData.releaseDate} 개봉</p>
           </MovieDetailRelease>
           <MovieDetailHeaderRating>
-            <p>평점 영역 - 평점 영역</p>
+            <p>평점 {movieData.voteAverage.toFixed(1)}점</p>
           </MovieDetailHeaderRating>
           <MovieDetailLikeHate>
-            <p>좋아요 / 싫어요 영역</p>
+            <p>👍 {movieData.likes} / 👎 {movieData.dislikes}</p>
           </MovieDetailLikeHate>
           <MovieDetailHeaderPlot>
-            <p>영화 줄거리 영역</p>
+            <p>{movieData.overview}</p>
           </MovieDetailHeaderPlot>
           <MovieDetailHeaderActorsSwiper>
             <ActorsImageCard>
