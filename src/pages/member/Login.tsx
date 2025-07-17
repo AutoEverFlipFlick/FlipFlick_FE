@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import backgroundImage from '@/assets/common/background.png'
 import kakaoIcon from '@/assets/icons/kakao.png'
 import naverIcon from '@/assets/icons/naver.png'
+import { getKaKaoLoginLink } from '@/utils/auth/kakaoLogin'
 
 const Wrapper = styled.div`
   width: 100vw;
@@ -77,10 +78,13 @@ const TextRow = styled.div`
 `
 
 const Login: React.FC = () => {
+  const handleKakaoLogin = () => {
+    window.location.href = getKaKaoLoginLink()
+  }
   return (
     <Wrapper>
       <Box>
-        <SocialButton bgColor="#FEE500">
+        <SocialButton bgColor="#FEE500" onClick={handleKakaoLogin}>
           <Icon src={kakaoIcon} alt="카카오" />
           카카오로 시작하기
         </SocialButton>
