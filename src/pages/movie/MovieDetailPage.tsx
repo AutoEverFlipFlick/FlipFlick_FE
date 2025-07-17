@@ -1,9 +1,9 @@
 // MovieDetailPage.tsx
 import React from "react";
 import styled from "styled-components";
-import {Heart} from "lucide-react";
-import StarRating from "@/components/starRating/StarRating";
 import BaseContainer from "@/components/common/BaseContainer";
+import ReviewDebateCard from "@/components/feature/movieDetail/ReviewDebateCard";
+
 
 const MovieDetailLayout = styled.div`
     display: flex;
@@ -39,7 +39,8 @@ const MovieDetailHeaderImageSwiper = styled.div`
 const PostImage = styled.div`
     min-width: 240px;
     min-height: 360px;
-    background-color: white;
+    background-image: url(postImage);
+    background-size: cover;
 `
 
 const PlatFormImage = styled.div`
@@ -198,24 +199,27 @@ const OverViewContainer = styled.div`
     box-sizing: border-box;
 
 `
-const DetailReviewContents = styled.div`
+const ContentsHeader = styled.div`
     display: flex;
-    flex-direction: column;
-    max-width: 850px;
-    min-width: 850px;
-    min-height: 100px;
-    justify-content: start;
+    justify-content: space-between;
     align-items: center;
-    margin: 0 auto;
-    gap: 5px;
+    max-width: 800px;
+    font-weight: bold;
+    width: 100%;
+    min-height: 50px;
+`
+const ContentsTitle = styled.div`
+    font-size: 25px;
+    margin: 0 20px;
 `
 
-const DetailDebateContents = styled.div`
+
+const ReviewDebateContents = styled.div`
     display: flex;
     max-width: 800px;
     min-width: 800px;
     min-height: 100px;
-    flex-direction: row-reverse;
+    flex-direction: column;
     justify-content: start;
     align-items: center;
     margin: 0 auto;
@@ -232,7 +236,7 @@ const DetailImageContents = styled.div`
     margin: 0 auto;
     gap: 5px;
 `
-const DetailRatingWrapper = styled.div`
+const RatingWrapper = styled.div`
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
@@ -259,14 +263,15 @@ const DetailMyReviewCard = styled(BaseContainer)`
 
 const DetailMyReviewWrapper = styled.div`
     width: 100%;
-    min-height: 150px;
+    min-height: 100px;
+    max-height: 300px;
     display: flex;
-    margin: 5px auto;
+    margin: 0 auto;
     color: #191513;
     justify-content: center;
     align-items: center;
 `
-const DetailReviewListWrapper = styled.div`
+const ContentsListWrapper = styled.div`
     max-width: 800px;
     width: 100%;
     min-height: 100px;
@@ -274,7 +279,7 @@ const DetailReviewListWrapper = styled.div`
     flex-direction: column;
     margin: 10px auto;
 `
-const DetailReviewList = styled.div`
+const ReviewDebateList = styled.div`
     width: 100%;
     min-height: 100px;
     display: flex;
@@ -288,115 +293,21 @@ const DetailReviewCardWrapper = styled.div`
     display: flex;
     margin: 0 auto;
 `
-const DetailReviewCard = styled(BaseContainer)`
-    width: 100%;
-    height: 100%;
-    min-height: 100px;
-    max-width: 800px;
-    margin: 5px auto;
-    padding: 5px 10px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    border-radius: 15px;
-`
 
-const ReviewCardHeader = styled.div`
+const ContentsListTitleTab = styled.div`
+    width: 100%;
+    height: 40px;
     display: flex;
-    flex-direction: row;
     justify-content: space-between;
-    width: 100%;
-    padding: 5px;
-    color: white;
-`
-
-const ReviewCardBody = styled.div`
-    width: 100%;
-    max-width: 760px;
-    padding: 5px 10px;
-    margin: 0 auto;
-    color: white;
-    word-wrap: break-word;
-    min-height: 50px;
-    font-size: 12px;
-    max-height: 110;
-`
-
-const ReviewUserCard = styled.div`
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    padding: 5px;
-    color: white;
-`
-
-const UserImageSmall = styled.div`
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background-color: #f0f0f0;
-    background-image: url('https://via.placeholder.com/30');
-    background-size: cover;
-    background-position: center;
-`
-
-const UserInfoWrapper = styled.div`
-    min-width: 60px;
-    max-width: 100px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: start;
-    color: white;
-    gap: 2px;
-`
-const UserMovieRatingWrapper = styled.div`
-    display: flex;
-    flex-direction: row;
-`
-
-const ReviewUserName = styled.div`
-    font-size: 12px;
-`
-
-const ReviewCreatedAt = styled.div`
-    font-size: 8px;
-`
-
-
-const ReviewCardFooter = styled.div`
-    max-width: 780px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    width: 100%;
-    padding: 5px 10px;
-    color: white;
-`
-const ReviewLikeWrapper = styled.div`
-    padding: 0 10px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 5px;
-`
-
-const DetailReviewListOrderTab = styled.div`
-    width: 100%;
-    height: 30px;
-    display: flex;
-    justify-content: end;
     align-content: center;
-
+    align-items: center;
 `
 
-const ReviewListOrderDropdown = styled.div`
+const ContentsListOrderDropdown = styled.div`
     width: 80px;
     height: 30px;
     display: flex;
+    border-radius: 5px;
     background-color: #191513;
     text-align: center;
     align-items: center;
@@ -410,7 +321,7 @@ export default function MovieDetailPage() {
       <MovieDetailHeader>
         <MovieDetailHeaderImageSwiper>
           <PostImage/>
-          {/* 여기에 이미지 슬라이더 컴포넌트를 추가할 수 있습니다. */}
+          {/* 여기에 이미지 슬라이더 컴포넌트를 추가*/}
         </MovieDetailHeaderImageSwiper>
         <MovieDetailHeaderContents>
           <MovieDetailHeaderTitle>
@@ -532,116 +443,63 @@ export default function MovieDetailPage() {
               </OverViewPlatformImageWrapper>
             </OverViewPlatformWrapper>
           </OverViewContents>
-          <DetailReviewContents>
-            <DetailRatingWrapper>
+          <ReviewDebateContents>
+            <ContentsHeader>
+              <ContentsTitle></ContentsTitle>
+            </ContentsHeader>
+            <RatingWrapper>
               <TotalRatingContainer>전체 평점</TotalRatingContainer>
               <TotalRatingContainer>평가하기</TotalRatingContainer>
-            </DetailRatingWrapper>
+            </RatingWrapper>
             <DetailMyReviewWrapper>
               <DetailMyReviewCard>
                 내 리뷰
-                </DetailMyReviewCard>
+              </DetailMyReviewCard>
 
             </DetailMyReviewWrapper>
-            <DetailReviewListWrapper>
-              <DetailReviewListOrderTab>
-                <ReviewListOrderDropdown>
+            <ContentsListWrapper>
+              <ContentsListTitleTab>
+                <ContentsTitle>리뷰</ContentsTitle>
+                <ContentsListOrderDropdown>
                   정렬 순서
-                </ReviewListOrderDropdown>
-              </DetailReviewListOrderTab>
-              <DetailReviewList>
+                </ContentsListOrderDropdown>
+              </ContentsListTitleTab>
+              <ReviewDebateList>
 
                 <DetailReviewCardWrapper>
-
-                  <DetailReviewCard>
-                    <ReviewCardHeader>
-                      <ReviewUserCard>
-                        <UserImageSmall/>
-                        <UserInfoWrapper>
-                          <ReviewUserName>사용자 이름</ReviewUserName>
-                          <ReviewCreatedAt>작성일</ReviewCreatedAt>
-                        </UserInfoWrapper>
-                        <UserMovieRatingWrapper>
-                          <StarRating rating={0.5} />
-                        </UserMovieRatingWrapper>
-                      </ReviewUserCard>
-
-                    </ReviewCardHeader>
-                    <ReviewCardBody>
-                      리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용
-                    </ReviewCardBody>
-                    <ReviewCardFooter>
-                      <ReviewLikeWrapper>
-                        {/*lucid*/}
-                        <Heart size={15} color={"red"}/>
-                        <p style={{fontSize:'12px'}}>100</p>
-                      </ReviewLikeWrapper>
-                      <button>...</button>
-                    </ReviewCardFooter>
-                  </DetailReviewCard>
+                  <ReviewDebateCard rating={4.0} content={'리뷰 내용 리뷰 내용 리뷰 내용 '} createdAt={'1 시간 전'} likes={100}
+                                    username={'사용자'} comments={10}/>
                 </DetailReviewCardWrapper>
                 <DetailReviewCardWrapper>
-                  <DetailReviewCard>
-                    <ReviewCardHeader>
-                      <ReviewUserCard>
-                        <UserImageSmall/>
-                        <UserInfoWrapper>
-                          <ReviewUserName>사용자 이름</ReviewUserName>
-                          <ReviewCreatedAt>작성일</ReviewCreatedAt>
-                        </UserInfoWrapper>
-                        <UserMovieRatingWrapper>
-                          <StarRating rating={0.5}/>
-                        </UserMovieRatingWrapper>
-                      </ReviewUserCard>
-                    </ReviewCardHeader>
-                    <ReviewCardBody>
-                      <p>리뷰 내용 영역</p>
-                    </ReviewCardBody>
-                    <ReviewCardFooter>
-                      <ReviewLikeWrapper>
-                        {/*lucid*/}
-                        <Heart size={15} color={"red"} fill={"red"}/>
-                        <p style={{fontSize:'12px'}}>100</p>
-                      </ReviewLikeWrapper>
-                      <button>...</button>
-                    </ReviewCardFooter>
-                  </DetailReviewCard>
-                </DetailReviewCardWrapper>
-                <DetailReviewCardWrapper>
-                  <DetailReviewCard>
-                    <ReviewCardHeader>
-                      <ReviewUserCard>
-                        <UserImageSmall/>
-                        <UserInfoWrapper>
-                          <ReviewUserName>사용자 이름</ReviewUserName>
-                          <ReviewCreatedAt>작성일</ReviewCreatedAt>
-                        </UserInfoWrapper>
-                        <UserMovieRatingWrapper>
-                          <StarRating rating={0.5}/>
-                        </UserMovieRatingWrapper>
-                      </ReviewUserCard>
-                    </ReviewCardHeader>
-                    <ReviewCardBody>
-                      <p>리뷰 내용 영역</p>
-                    </ReviewCardBody>
-                    <ReviewCardFooter>
-                      <ReviewLikeWrapper>
-                        {/*lucid*/}
-                        <Heart size={15} color={"red"} />
-                        <p style={{fontSize:'12px'}}>100</p>
-                       </ReviewLikeWrapper>
-                      <button>...</button>
-                    </ReviewCardFooter>
-                  </DetailReviewCard>
-                </DetailReviewCardWrapper>
+                  <ReviewDebateCard rating={4.0} content={'리뷰 내용 리뷰 내용 리뷰 내용 '} createdAt={'1 시간 전'} likes={100}
+                                    username={'사용자'} comments={10}/>
+                </DetailReviewCardWrapper><DetailReviewCardWrapper>
+                <ReviewDebateCard rating={4.0} content={'리뷰 내용 리뷰 내용 리뷰 내용 '} createdAt={'1 시간 전'} likes={100}
+                                  username={'사용자'} comments={10}/>
+              </DetailReviewCardWrapper>
+              </ReviewDebateList>
+            </ContentsListWrapper>
 
-              </DetailReviewList>
-            </DetailReviewListWrapper>
+          </ReviewDebateContents>
 
-          </DetailReviewContents>
-          <DetailDebateContents>
-            토론장 영역
-          </DetailDebateContents>
+          <ReviewDebateContents>
+            <ContentsHeader>
+              <ContentsTitle>토론장</ContentsTitle>
+            </ContentsHeader>
+            <ReviewDebateList>
+              <DetailReviewCardWrapper>
+                <ReviewDebateCard rating={4.0} content={'리뷰 내용 리뷰 내용 리뷰 내용 '} createdAt={'1 시간 전'} likes={100}
+                                  username={'사용자'} comments={10}/>
+              </DetailReviewCardWrapper>
+              <DetailReviewCardWrapper>
+                <ReviewDebateCard rating={4.0} content={'리뷰 내용 리뷰 내용 리뷰 내용 '} createdAt={'1 시간 전'} likes={100}
+                                  username={'사용자'} comments={10}/>
+              </DetailReviewCardWrapper><DetailReviewCardWrapper>
+              <ReviewDebateCard rating={4.0} content={'리뷰 내용 리뷰 내용 리뷰 내용 '} createdAt={'1 시간 전'} likes={100}
+                                username={'사용자'} comments={10}/>
+            </DetailReviewCardWrapper>
+            </ReviewDebateList>
+          </ReviewDebateContents>
           <DetailImageContents>
             <DetailImage>
               영화 이미지 Grid
