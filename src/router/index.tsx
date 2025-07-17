@@ -61,6 +61,7 @@ import EmailLogin from '@/pages/member/EmailLogin'
 import Filmography from '@/pages/filmography'
 import KakaoRedirectHandler from '@/pages/member/KakaoRedirectHandler'
 import NaverRedirectHandler from '@/pages/member/NaverRedirectHandler'
+import Bolkinator from '@/pages/Bolkinator'
 // import Layout from '@/components/common/CommonLayout' // 공통 레이아웃 컴포넌트가 필요함
 
 const AppRoutes = () => {
@@ -80,6 +81,7 @@ const AppRoutes = () => {
         />
         <Route path="/movie/detail" element={<MovieDetailPage />} />
         <Route path="/totalsearch" element={<TotalSearch />} />
+        <Route path="/bolkinator" element={<Bolkinator />} />
 
         {/* Public Routes (로그인된 사용자는 접근 불가) */}
         <Route
