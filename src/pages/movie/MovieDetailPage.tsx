@@ -3,6 +3,7 @@ import React from "react";
 import styled from "styled-components";
 import {Heart} from "lucide-react";
 import StarRating from "@/components/starRating/StarRating";
+import BaseContainer from "@/components/common/BaseContainer";
 
 const MovieDetailLayout = styled.div`
     display: flex;
@@ -241,20 +242,24 @@ const DetailRatingWrapper = styled.div`
     margin: 0 auto;
     gap: 10px;
 `
-const TotalRatingContainer = styled.div`
+const TotalRatingContainer = styled(BaseContainer)`
     min-width: 380px;
     height: 150px;
-    background-color: #f0f0f0;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 24px;
-    color: #130803;
 `
+const DetailMyReviewCard = styled(BaseContainer)`
+    min-width: 800px;
+    min-height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+`
+
 const DetailMyReviewWrapper = styled.div`
     width: 100%;
     min-height: 150px;
-    background-color: #ffffff;
     display: flex;
     margin: 5px auto;
     color: #191513;
@@ -283,19 +288,17 @@ const DetailReviewCardWrapper = styled.div`
     display: flex;
     margin: 0 auto;
 `
-const DetailReviewCard = styled.div`
+const DetailReviewCard = styled(BaseContainer)`
     width: 100%;
     height: 100%;
     min-height: 100px;
     max-width: 800px;
-    background-color: var(--color-primary);
     margin: 5px auto;
     padding: 5px 10px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    color: white;
     border-radius: 15px;
 `
 
@@ -535,7 +538,10 @@ export default function MovieDetailPage() {
               <TotalRatingContainer>평가하기</TotalRatingContainer>
             </DetailRatingWrapper>
             <DetailMyReviewWrapper>
-              내 리뷰
+              <DetailMyReviewCard>
+                내 리뷰
+                </DetailMyReviewCard>
+
             </DetailMyReviewWrapper>
             <DetailReviewListWrapper>
               <DetailReviewListOrderTab>
