@@ -46,7 +46,9 @@ axiosInstance.interceptors.request.use(
   config => {
     const token = getAccessToken()
     const isAuthExcluded =
-      config.url?.includes('/member/login') || config.url?.includes('/member/signup')
+      config.url?.includes('/member/login') ||
+      config.url?.includes('/member/signup') ||
+      config.url?.includes('/s3/image')
 
     if (token && !isAuthExcluded) {
       config.headers.Authorization = `Bearer ${token}`

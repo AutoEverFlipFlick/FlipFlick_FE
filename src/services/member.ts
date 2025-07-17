@@ -5,7 +5,7 @@ export const signup = async (data: {
   password: string
   checkedPassword: string
   nickname: string
-  profileImage?: string // base64 or URL or FormData 처리 방식에 따라
+  profileImage?: string
 }) => {
   const res = await axiosInstance.post('/member/signup', data)
   return res.data
