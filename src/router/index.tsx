@@ -5,6 +5,7 @@ import TotalSearch from '@/pages/TotalSearch'
 import Login from '@/pages/member/Login'
 import SignUp from '@/pages/member/SignUp'
 import EmailLogin from '@/pages/member/EmailLogin'
+import KakaoRedirectHandler from '@/pages/member/KakaoRedirectHandler'
 // import Layout from '@/components/common/CommonLayout' // 공통 레이아웃 컴포넌트가 필요함
 
 const AppRoutes = () => {
@@ -27,6 +28,8 @@ const AppRoutes = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/emaillogin" element={<EmailLogin />} />
+
+      <Route path="/oauth/kakao/callback" element={<KakaoRedirectHandler />} />
     </Routes>
   )
 }

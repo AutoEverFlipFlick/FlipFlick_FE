@@ -17,3 +17,8 @@ export const login = async (data: { email: string; password: string }) => {
   })
   return res.data
 }
+
+export const kakaoLogin = async (code: string) => {
+  const res = await axiosInstance.post('/member/kakao', { code }, { withCredentials: true })
+  return res.data
+}
