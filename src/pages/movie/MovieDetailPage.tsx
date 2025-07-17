@@ -4,6 +4,7 @@ import styled from "styled-components";
 import BaseContainer from "@/components/common/BaseContainer";
 import ReviewDebateCard from "@/components/feature/movieDetail/ReviewDebateCard";
 
+// const movieDetailPageData =
 
 const MovieDetailLayout = styled.div`
     display: flex;
@@ -39,7 +40,7 @@ const MovieDetailHeaderImageSwiper = styled.div`
 const PostImage = styled.div`
     min-width: 240px;
     min-height: 360px;
-    background-image: url(postImage);
+    //background-image: url();
     background-size: cover;
 `
 
