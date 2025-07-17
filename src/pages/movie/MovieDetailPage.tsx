@@ -16,7 +16,7 @@ const MovieDetailLayout = styled.div`
 `;
 
 const MovieDetailHeader = styled.div`
-    max-width: 900px;
+    max-width: 1000px;
     margin: 0 auto;
     min-height: 400px;
     padding: 20px;
@@ -25,6 +25,7 @@ const MovieDetailHeader = styled.div`
     gap: 20px
 `;
 const MovieDetailMain = styled.div`
+    max-width: 900px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -39,11 +40,13 @@ const MovieDetailHeaderImageSwiper = styled.div`
     padding: 10px;
 `
 
-const PostImage = styled.div`
-    min-width: 240px;
-    min-height: 360px;
-    //background-image: url();
+const PostImage = styled.div<{ imageUrl: string }>`
+    min-width: 280px;
+    min-height: 420px;
+    background-image: url(${({ imageUrl }) => imageUrl});
     background-size: cover;
+    background-position: center;
+    border-radius: 8px;
 `
 
 const PlatFormImage = styled.div`
@@ -55,7 +58,7 @@ const MovieDetailHeaderContents = styled.div`
     display: flex;
     flex-direction: column;
     justify-content: start;
-    width: 720px;
+    max-width: 600px;
 
 `
 const MovieDetailHeaderRating = styled.div`
@@ -73,12 +76,15 @@ const MovieDetailLikeHate = styled.div`
     margin-bottom: 20px;
 `
 const MovieDetailHeaderPlot = styled.div`
+    max-width: 490px;
     margin-bottom: 20px;
 `
 
 const MovieDetailHeaderActorsSwiper = styled.div`
     margin-bottom: 20px;
-    height: 150px;
+    max-width: 490px;
+    overflow: scroll;
+    height: 200px;
     display: flex;
     justify-content: start;
 `
@@ -91,10 +97,27 @@ const DetailImage = styled.div`
 
 
 const ActorsImageCard = styled.div`
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-right: 10px;
+    background-color: var(--color-neutral);
+`
+const ActorImage = styled.div<{ imageUrl: string }>`
+    background-image: url(${({imageUrl}) => imageUrl});
+    background-size: cover;
+    background-position: center;
+    border-radius: 8px;
     width: 110px;
     height: 165px;
-    background-color: white;
-    margin-right: 10px;
+    margin: 10px 10px 5px 10px;
+`
+const ActorName = styled.div`
+    text-align: center;
+    font-size: 14px;
+    text-wrap: wrap;
+    margin-bottom: 5px;
 `
 const MovieDetailMainAction = styled.div`
     max-width: 600px;
@@ -336,7 +359,7 @@ export default function MovieDetailPage() {
     <MovieDetailLayout>
       <MovieDetailHeader>
         <MovieDetailHeaderImageSwiper>
-          <PostImage/>
+          <PostImage imageUrl={movieData.posterImg} />
         </MovieDetailHeaderImageSwiper>
         <MovieDetailHeaderContents>
           <MovieDetailHeaderTitle>
@@ -346,7 +369,7 @@ export default function MovieDetailPage() {
             <p>{movieData.releaseDate} 개봉</p>
           </MovieDetailRelease>
           <MovieDetailHeaderRating>
-            <p>평점 {movieData.voteAverage.toFixed(1)}점</p>
+            <p>🌽 {movieData.popcorn} 점 / ⭐ {movieData.voteAverage.toFixed(1)}점</p>
           </MovieDetailHeaderRating>
           <MovieDetailLikeHate>
             <p>👍 {movieData.likes} / 👎 {movieData.dislikes}</p>
@@ -355,18 +378,13 @@ export default function MovieDetailPage() {
             <p>{movieData.overview}</p>
           </MovieDetailHeaderPlot>
           <MovieDetailHeaderActorsSwiper>
-            <ActorsImageCard>
-              <p style={{color: 'black'}}>배우 이미지 카드 영역</p>
-            </ActorsImageCard>
-            <ActorsImageCard>
-              <p style={{color: 'black'}}>배우 이미지 카드 영역</p>
-            </ActorsImageCard>
-            <ActorsImageCard>
-              <p style={{color: 'black'}}>배우 이미지 카드 영역</p>
-            </ActorsImageCard>
-            <ActorsImageCard>
-              <p style={{color: 'black'}}>배우 이미지 카드 영역</p>
-            </ActorsImageCard>
+            {movieData.actors.map((actor) => (
+              <ActorsImageCard key={actor.name} >
+                <ActorImage imageUrl={actor.imageUrl} title={actor.name} />
+                <ActorName >{actor.name}</ActorName>
+              </ActorsImageCard>
+            ))}
+
           </MovieDetailHeaderActorsSwiper>
 
         </MovieDetailHeaderContents>
