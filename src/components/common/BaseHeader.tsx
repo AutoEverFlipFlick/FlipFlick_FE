@@ -105,6 +105,8 @@ const ActionArea = styled.div`
   gap: 16px;
 
   z-index: 600;
+
+  cursor: pointer;
 `
 
 const ActionText = styled.div`
@@ -116,16 +118,25 @@ const ActionText = styled.div`
 const BaseHeader = () => {
   const navigate = useNavigate()
 
+  const [searchContext, setSearchContext] = useState('')
   const [isFocused, setIsFocused] = useState(false)
   const handleInputFocused = () => {
     console.log('Focused')
-    setIsFocused(true)
+    // setIsFocused(true)
   }
 
   const handleInputBlured = () => {
     console.log('Blured')
-    setIsFocused(false)
+    // setIsFocused(false)
   }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      // 검색 키워드로 이동
+      navigate(`/totalsearch?query=${encodeURIComponent(searchContext)}&page=1`)
+    }
+  }
+
   return (
     <FixedWrapper>
       <Wrapper>
@@ -143,7 +154,11 @@ const BaseHeader = () => {
         <CenterArea />
 
         {/* 우측 아이콘 */}
-        <ActionArea>
+        <ActionArea
+          onClick={() => {
+            navigate('/login')
+          }}
+        >
           <ActionText>로그인</ActionText>
           <CircleUserRound size={36} />
         </ActionArea>
@@ -158,6 +173,9 @@ const BaseHeader = () => {
             inputSize={isFocused ? 'large' : 'small'}
             onFocus={handleInputFocused}
             onBlur={handleInputBlured}
+            enterKeyHint="search"
+            onChange={e => setSearchContext(e.target.value)}
+            onKeyDown={handleKeyDown}
           />
         </SearchInputWrapper>
       </SearchArea>
