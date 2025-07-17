@@ -5,7 +5,6 @@ import styled from 'styled-components'
 import { Check, Heart, Star, Download, Search, Filter, User } from 'lucide-react'
 import BackgroundImage from '@/assets/common/backgroud_tile_512px.png'
 import BaseInput from '@/components/common/BaseInput'
-import { C } from 'vitest/dist/chunks/reporters.d.BFLkQcL6'
 
 // 컨테이너 스타일
 const Container = styled.div`

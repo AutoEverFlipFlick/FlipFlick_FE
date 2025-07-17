@@ -60,16 +60,23 @@ import SignUp from '@/pages/member/SignUp'
 import EmailLogin from '@/pages/member/EmailLogin'
 import Filmography from '@/pages/filmography'
 import KakaoRedirectHandler from '@/pages/member/KakaoRedirectHandler'
+import Layout from '@/components/common/layout/BasePageLayout' // 공통 레이아웃 컴포넌트가 필요함
 import NaverRedirectHandler from '@/pages/member/NaverRedirectHandler'
 import Bolkinator from '@/pages/Bolkinator'
-// import Layout from '@/components/common/CommonLayout' // 공통 레이아웃 컴포넌트가 필요함
 
 const AppRoutes = () => {
   return (
     <AuthProvider>
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<ExamplePage />} />
+        <Route
+          path="/"
+          element={
+            <Layout>
+              <ExamplePage />
+            </Layout>
+          }
+        />
         <Route path="/playlist" element={<PlaylistPage />} />
         <Route
           path="/playlist/:id"
@@ -133,6 +140,7 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+
         <Route 
           path="/filmography/:tmdbId" 
           element={
