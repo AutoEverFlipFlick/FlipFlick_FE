@@ -502,6 +502,9 @@ const ExamplePage = () => {
                   <div>{`<BaseInput inputSize="small"/>`}</div>
                 </li>
                 <li>
+                  <div>{`<BaseInput fullWidth/>`}</div>
+                </li>
+                <li>
                   <div>{`<BaseInput icon={<Search/>}/>`}</div>
                 </li>
                 <li>
