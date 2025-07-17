@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import backgroundImage from '@/assets/common/background.png'
 import kakaoIcon from '@/assets/icons/kakao.png'
 import naverIcon from '@/assets/icons/naver.png'
-import { getKaKaoLoginLink } from '@/utils/auth/kakaoLogin'
+import { getKaKaoLoginLink, getNaverLoginLink } from '@/utils/auth/authLogin'
 
 const Wrapper = styled.div`
   width: 100vw;
@@ -81,6 +81,10 @@ const Login: React.FC = () => {
   const handleKakaoLogin = () => {
     window.location.href = getKaKaoLoginLink()
   }
+
+  const handleNaverLogin = () => {
+    window.location.href = getNaverLoginLink()
+  }
   return (
     <Wrapper>
       <Box>
@@ -88,7 +92,7 @@ const Login: React.FC = () => {
           <Icon src={kakaoIcon} alt="카카오" />
           카카오로 시작하기
         </SocialButton>
-        <SocialButton bgColor="#03C75A">
+        <SocialButton bgColor="#03C75A" onClick={handleNaverLogin}>
           <Icon src={naverIcon} alt="네이버" />
           네이버로 시작하기
         </SocialButton>

@@ -5,7 +5,7 @@ export const signup = async (data: {
   password: string
   checkedPassword: string
   nickname: string
-  profileImage?: string
+  profileImage?: string | null
 }) => {
   const res = await axiosInstance.post('/member/signup', data)
   return res.data
@@ -20,5 +20,14 @@ export const login = async (data: { email: string; password: string }) => {
 
 export const kakaoLogin = async (code: string) => {
   const res = await axiosInstance.post('/member/kakao', { code }, { withCredentials: true })
+  return res.data
+}
+
+export const naverLogin = async (code: string, state: string) => {
+  const res = await axiosInstance.post(
+    '/member/naver',
+    { code, state },
+    { withCredentials: true }, // refreshToken 쿠키로 받을 경우
+  )
   return res.data
 }
