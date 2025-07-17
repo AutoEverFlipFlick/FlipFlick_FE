@@ -25,6 +25,7 @@ export interface PlaylistDetail {
   movieCount: number;
   bookmarkCount: number;
   isBookmarked?: boolean;
+  hidden?: boolean; // 추가
   movies: MoviePage;
 }
 
@@ -114,14 +115,12 @@ export interface SearchMovieResponse {
   data: SearchMovieData;
 }
 
-
-// 플레이리스트 생성
+// 플레이리스트 생성 - userId 제거
 export const createPlaylist = async (
-  playlistData: CreatePlaylistRequest,
-  userId: number = 1
+  playlistData: CreatePlaylistRequest
 ): Promise<CreatePlaylistResponse> => {
   const response = await axiosInstance.post<CreatePlaylistResponse>(
-    `/playlist/create?userId=${userId}`,
+    '/playlist/create',
     playlistData
   );
   return response.data;
@@ -155,15 +154,13 @@ export const getAllPlaylists = async (
   return response.data;
 };
 
-// 내 플레이리스트 가져오기
+// 내 플레이리스트 가져오기 - userId 제거
 export const getMyPlaylists = async (
-  userId: number,
   page: number = 0,
   size: number = 20
 ): Promise<PlaylistResponse> => {
   const response = await axiosInstance.get<PlaylistResponse>('/playlist/my', {
     params: {
-      userId,
       page,
       size
     }
@@ -171,15 +168,13 @@ export const getMyPlaylists = async (
   return response.data;
 };
 
-// 북마크한 플레이리스트 가져오기
+// 북마크한 플레이리스트 가져오기 - userId 제거
 export const getBookmarkedPlaylists = async (
-  userId: number,
   page: number = 0,
   size: number = 20
 ): Promise<PlaylistResponse> => {
   const response = await axiosInstance.get<PlaylistResponse>('/playlist/bookmarked', {
     params: {
-      userId,
       page,
       size
     }
@@ -187,17 +182,16 @@ export const getBookmarkedPlaylists = async (
   return response.data;
 };
 
-// 북마크 추가/해제
+// 북마크 추가/해제 - userId 제거
 export const togglePlaylistBookmark = async (
-  playListId: number,
-  userId: number = 3
+  playListId: number
 ): Promise<BookmarkResponse> => {
   const requestBody = {
     playListId
   };
 
   const response = await axiosInstance.post<BookmarkResponse>(
-    `/playlist/bookmark?userId=${userId}`,
+    '/playlist/bookmark',
     requestBody
   );
   return response.data;
@@ -232,9 +226,7 @@ export interface BookmarkListResponse {
 
 // 사용자 북마크 목록 가져오기 - 수정
 export const getUserBookmarks = async (userId: number): Promise<string[]> => {
-  const response = await axiosInstance.get<BookmarkListResponse>(`/playlist/user/${userId}/bookmarks`);
-  
-  // 숫자 배열을 문자열 배열로 변환
+  const response = await axiosInstance.get<BookmarkListResponse>(`/playlist/user/bookmarks`);
   return response.data.data.playListIds.map(id => id.toString());
 };
 
@@ -247,5 +239,52 @@ export const searchMovies = async (
     query: query.trim(),
     page: page
   });
+  return response.data;
+};
+
+// 플레이리스트 수정 인터페이스
+export interface UpdatePlaylistRequest {
+  title: string;
+  hidden: boolean;
+  movies: {
+    tmdbId: number;
+    posterUrl: string;
+    title: string;
+    releaseDate: string | null;
+  }[];
+}
+
+export interface UpdatePlaylistResponse {
+  success: boolean;
+  message: string;
+  data?: any;
+}
+
+// 플레이리스트 수정
+export const updatePlaylist = async (
+  playlistId: string,
+  playlistData: UpdatePlaylistRequest
+): Promise<UpdatePlaylistResponse> => {
+  const response = await axiosInstance.put<UpdatePlaylistResponse>(
+    `/playlist/${playlistId}`,
+    playlistData
+  );
+  return response.data;
+};
+
+// 플레이리스트 삭제 응답 인터페이스
+export interface DeletePlaylistResponse {
+  success: boolean;
+  message: string;
+  data?: any;
+}
+
+// 플레이리스트 삭제
+export const deletePlaylist = async (
+  playlistId: string
+): Promise<DeletePlaylistResponse> => {
+  const response = await axiosInstance.delete<DeletePlaylistResponse>(
+    `/playlist/${playlistId}`
+  );
   return response.data;
 };

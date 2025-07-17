@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { Search, ImageIcon, RefreshCw, Loader } from 'lucide-react';
 import BaseButton from '../common/BaseButton';
+import BaseInput from '../common/BaseInput';
 import { searchMovies, Movie } from '../../services/playlist';
 
 interface MovieSearchModalProps {
@@ -147,35 +148,6 @@ const ModalBody = styled.div`
 const SearchContainer = styled.div`
   position: relative;
   margin-bottom: 1.5rem;
-`;
-
-const SearchIcon = styled(Search)`
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #aaa;
-`;
-
-const SearchInput = styled.input`
-  width: 100%;
-  padding: 1rem 1rem 1rem 3rem;
-  border: 1px solid #444;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  font-size: 1rem;
-  transition: border-color 0.2s;
-  box-sizing: border-box;
-
-  &::placeholder {
-    color: #aaa;
-  }
-
-  &:focus {
-    outline: none;
-    border-color: #ff7849;
-  }
 `;
 
 const MovieGrid = styled.div`
@@ -652,8 +624,9 @@ const MovieSearchModal: React.FC<MovieSearchModalProps> = ({
 
         <ModalBody>
           <SearchContainer>
-            <SearchIcon size={20} />
-            <SearchInput
+            <BaseInput
+              fullWidth
+               icon={<Search/>}
               type="text"
               placeholder="영화를 검색하세요"
               value={searchQuery}

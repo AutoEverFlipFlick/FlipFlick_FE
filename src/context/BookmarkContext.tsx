@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { getUserBookmarks, togglePlaylistBookmark } from '../services/playlist';
+import { useAuth } from './AuthContext';
 
 interface BookmarkContextType {
   bookmarkedPlaylists: Set<string>;
@@ -21,27 +22,24 @@ export const useBookmark = () => {
 
 interface BookmarkProviderProps {
   children: ReactNode;
-  userId?: number;
 }
 
-export const BookmarkProvider: React.FC<BookmarkProviderProps> = ({ 
-  children, 
-  userId = 3
-}) => {
+export const BookmarkProvider: React.FC<BookmarkProviderProps> = ({ children }) => {
+  const { user, isAuthenticated } = useAuth();
   const [bookmarkedPlaylists, setBookmarkedPlaylists] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
 
   // 북마크 목록 새로고침
   const refreshBookmarks = async () => {
-    if (!userId) return;
+    if (!user || !isAuthenticated) return;
     
     setLoading(true);
     try {
-      const bookmarks = await getUserBookmarks(userId);
+      const bookmarks = await getUserBookmarks(user.id);
+      console.log('Loaded bookmarks:', bookmarks);
       setBookmarkedPlaylists(new Set(bookmarks));
     } catch (error) {
       console.error('Failed to load bookmarks:', error);
-      // 에러 발생 시 빈 Set으로 초기화
       setBookmarkedPlaylists(new Set());
     } finally {
       setLoading(false);
@@ -50,18 +48,20 @@ export const BookmarkProvider: React.FC<BookmarkProviderProps> = ({
 
   // 북마크 토글
   const toggleBookmark = async (playlistId: string): Promise<boolean> => {
-    if (!userId) return false;
+    if (!user || !isAuthenticated) return false;
     
     try {
-      const response = await togglePlaylistBookmark(parseInt(playlistId), userId);
+      const response = await togglePlaylistBookmark(parseInt(playlistId));
       
       if (response.success) {
         setBookmarkedPlaylists(prev => {
           const newSet = new Set(prev);
           if (newSet.has(playlistId)) {
             newSet.delete(playlistId);
+            console.log(`Bookmark removed: ${playlistId}`);
           } else {
             newSet.add(playlistId);
+            console.log(`Bookmark added: ${playlistId}`);
           }
           return newSet;
         });
@@ -79,12 +79,14 @@ export const BookmarkProvider: React.FC<BookmarkProviderProps> = ({
     return bookmarkedPlaylists.has(playlistId);
   };
 
-  // 컴포넌트 마운트 시 북마크 목록 로드
+  // 사용자 인증 상태 변경 시 북마크 목록 처리
   useEffect(() => {
-    if (userId) {
+    if (user && isAuthenticated) {
       refreshBookmarks();
+    } else {
+      setBookmarkedPlaylists(new Set());
     }
-  }, [userId]);
+  }, [user, isAuthenticated]);
 
   return (
     <BookmarkContext.Provider value={{

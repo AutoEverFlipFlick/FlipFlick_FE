@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import { Plus, Lock, LockOpen, X, ImageIcon } from 'lucide-react';
-import BaseButton from '../components/common/BaseButton';
-import MovieSearchModal from '../components/feature/MovieSearchModal';
-import { createPlaylist } from '../services/playlist';
+import BaseButton from '../../components/common/BaseButton';
+import BaseInput from '@/components/common/BaseInput';
+import MovieSearchModal from '../../components/feature/MovieSearchModal';
+import { getPlaylistDetail, updatePlaylist } from '../../services/playlist';
+import { useAuth } from '../../context/AuthContext';
 
 interface Movie {
   tmdbId: number;
@@ -13,7 +15,7 @@ interface Movie {
   image: string;
 }
 
-// 애니메이션 정의 - PlaylistDetail과 동일
+// 애니메이션 정의 - CreatePlaylist와 동일
 const fadeIn = keyframes`
   from { opacity: 0; }
   to { opacity: 1; }
@@ -50,12 +52,12 @@ const Title = styled.h1`
   text-align: center;
   margin-bottom: 2rem;
   font-weight: bold;
-  animation: ${fadeIn} 0.5s ease; /* 애니메이션 추가 */
+  animation: ${fadeIn} 0.5s ease;
 `;
 
 const FormSection = styled.div`
   margin-bottom: 1.5rem;
-  animation: ${slideUp} 0.5s ease; /* 애니메이션 추가 */
+  animation: ${slideUp} 0.5s ease;
 `;
 
 const Label = styled.label`
@@ -116,7 +118,7 @@ const MovieGrid = styled.div`
   gap: 1rem;
   margin-bottom: 2rem;
   box-sizing: border-box;
-  animation: ${slideUp} 0.5s ease; /* PlaylistDetail과 동일한 애니메이션 */
+  animation: ${slideUp} 0.5s ease;
 `;
 
 const MovieCard = styled.div`
@@ -131,7 +133,7 @@ const MovieCard = styled.div`
 
   &:hover {
     border-color: #ff7849;
-    transform: translateY(-4px); /* PlaylistDetail과 동일한 호버 효과 */
+    transform: translateY(-4px);
   }
 `;
 
@@ -152,7 +154,7 @@ const AddMovieCard = styled.div`
   &:hover {
     border-color: #ff7849;
     color: #ff7849;
-    transform: translateY(-4px); /* PlaylistDetail과 동일한 호버 효과 */
+    transform: translateY(-4px);
   }
 `;
 
@@ -242,7 +244,7 @@ const ButtonContainer = styled.div`
   gap: 1rem;
   justify-content: flex-end;
   margin-top: 2rem;
-  animation: ${fadeIn} 0.5s ease; /* 애니메이션 추가 */
+  animation: ${fadeIn} 0.5s ease;
 `;
 
 const SelectedCount = styled.div`
@@ -250,6 +252,20 @@ const SelectedCount = styled.div`
   color: #aaa;
   font-size: 0.9rem;
   margin-bottom: 1rem;
+`;
+
+const LoadingMessage = styled.div`
+  text-align: center;
+  color: #ccc;
+  font-size: 1.1rem;
+  margin: 4rem 0;
+`;
+
+const ErrorMessage = styled.div`
+  text-align: center;
+  color: #ff4444;
+  font-size: 1.1rem;
+  margin: 4rem 0;
 `;
 
 // 이미지 로더 컴포넌트
@@ -308,13 +324,69 @@ const ImageLoader: React.FC<{
   );
 };
 
-const CreatePlaylist: React.FC = () => {
+const EditPlaylist: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
+  
   const [title, setTitle] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
   const [selectedMovies, setSelectedMovies] = useState<Movie[]>([]);
-  const [creating, setCreating] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // 기존 플레이리스트 정보 로드
+  useEffect(() => {
+    const fetchPlaylistData = async () => {
+      if (!id) return;
+      
+      setLoading(true);
+      try {
+        const response = await getPlaylistDetail(id, 0, 1000);
+        
+        if (response.success) {
+          const playlist = response.data;
+          
+          // 권한 체크
+          if (!user || playlist.nickname !== user.nickname) {
+            alert('수정 권한이 없습니다.');
+            navigate(`/playlist/${id}`, { replace: true }); // replace 추가
+            return;
+          }
+          
+          // 폼 데이터 설정
+          setTitle(playlist.title);
+          setIsPrivate(playlist.hidden || false);
+          
+          // 영화 데이터 변환
+          const movies: Movie[] = playlist.movies.content.map(movie => ({
+            tmdbId: movie.movieId,
+            title: movie.title,
+            releaseDate: movie.releaseDate || '',
+            image: movie.posterUrl || ''
+          }));
+          
+          setSelectedMovies(movies);
+          console.log(movies);
+        } else {
+          setError(response.message || '플레이리스트를 불러올 수 없습니다.');
+        }
+      } catch (err: any) {
+        setError(err.response?.data?.message || '플레이리스트를 불러오는 중 오류가 발생했습니다.');
+        console.error('Error fetching playlist:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchPlaylistData();
+    } else {
+      navigate('/login', { replace: true }); // replace 추가
+    }
+  }, [id, user, isAuthenticated, navigate]);
 
   // 선택된 영화 제거
   const removeSelectedMovie = (tmdbId: number) => {
@@ -334,11 +406,17 @@ const CreatePlaylist: React.FC = () => {
 
   // 취소 버튼 클릭
   const handleCancel = () => {
-    navigate('/playlist');
+    navigate(`/playlist/${id}`, { replace: true }); // replace 추가
   };
 
-  // 플레이리스트 생성 - 서비스 함수 사용
-  const handleCreatePlaylist = async () => {
+  // 플레이리스트 수정
+  const handleUpdatePlaylist = async () => {
+    if (!isAuthenticated || !user) {
+      alert('로그인이 필요합니다.');
+      navigate('/login', { replace: true }); // replace 추가
+      return;
+    }
+
     if (!title.trim()) {
       alert('플레이리스트 제목을 입력해주세요.');
       return;
@@ -349,7 +427,7 @@ const CreatePlaylist: React.FC = () => {
       return;
     }
 
-    setCreating(true);
+    setUpdating(true);
 
     try {
       const playlistData = {
@@ -363,29 +441,51 @@ const CreatePlaylist: React.FC = () => {
         }))
       };
 
-      const response = await createPlaylist(playlistData, 1);
+      const response = await updatePlaylist(id!, playlistData);
 
       if (response.success) {
-        alert('플레이리스트가 성공적으로 생성되었습니다!');
-        navigate('/playlist');
+        alert('플레이리스트가 성공적으로 수정되었습니다!');
+        navigate(`/playlist/${id}`, { replace: true }); // replace 추가
       } else {
-        alert(response.message || '플레이리스트 생성에 실패했습니다.');
+        alert(response.message || '플레이리스트 수정에 실패했습니다.');
       }
     } catch (err: any) {
-      console.error('Create playlist error:', err);
-      alert(err.response?.data?.message || '플레이리스트 생성 중 오류가 발생했습니다.');
+      console.error('Update playlist error:', err);
+      alert(err.response?.data?.message || '플레이리스트 수정 중 오류가 발생했습니다.');
     } finally {
-      setCreating(false);
+      setUpdating(false);
     }
   };
 
+  if (loading) {
+    return (
+      <Container>
+        <LoadingMessage>플레이리스트 정보를 불러오는 중...</LoadingMessage>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container>
+        <ErrorMessage>{error}</ErrorMessage>
+        <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+          <BaseButton variant="orange" onClick={() => navigate('/playlist', { replace: true })}>
+            플레이리스트 목록으로
+          </BaseButton>
+        </div>
+      </Container>
+    );
+  }
+
   return (
     <Container>
-      <Title>플레이리스트 만들기</Title>
+      <Title>플레이리스트 수정</Title>
       
       <FormSection>
         <Label>플레이리스트 제목</Label>
-        <Input
+        <BaseInput
+          fullWidth
           type="text"
           placeholder="플레이리스트 제목을 입력하세요"
           value={title}
@@ -434,18 +534,18 @@ const CreatePlaylist: React.FC = () => {
 
       <ButtonContainer>
         <BaseButton
-          variant="red"
+          variant="dark"
           onClick={handleCancel}
-          disabled={creating}
+          disabled={updating}
         >
           취소
         </BaseButton>
         <BaseButton
           variant="orange"
-          onClick={handleCreatePlaylist}
-          disabled={creating || !title.trim() || selectedMovies.length === 0}
+          onClick={handleUpdatePlaylist}
+          disabled={updating || !title.trim() || selectedMovies.length === 0}
         >
-          {creating ? '만드는 중...' : '만들기'}
+          {updating ? '수정 중...' : '수정하기'}
         </BaseButton>
       </ButtonContainer>
 
@@ -459,4 +559,4 @@ const CreatePlaylist: React.FC = () => {
   );
 };
 
-export default CreatePlaylist;
+export default EditPlaylist;

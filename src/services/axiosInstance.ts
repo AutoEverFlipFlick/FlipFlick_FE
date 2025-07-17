@@ -2,7 +2,7 @@
 // import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios'
 
 // const axiosInstance: AxiosInstance = axios.create({
-//   baseURL: 'https://api.ddalkkug.kro.kr/api/v1',
+//   baseURL: 'http://localhost:8080/api/v1',
 //   // withCredentials: true,
 // })
 
@@ -39,7 +39,7 @@ const getAccessToken = () => localStorage.getItem('accessToken')
 
 const axiosInstance = axios.create({
   baseURL: 'http://localhost:8080/api/v1',
-  withCredentials: true,
+  // withCredentials: true,
 
 })
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled, { keyframes } from 'styled-components';
-import BaseButton from '../components/common/BaseButton';
+import BaseButton from '../../components/common/BaseButton';
 import { Plus, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -9,7 +9,8 @@ import {
   getBookmarkedPlaylists,
   PlaylistItem,
   SortBy
-} from '../services/playlist';
+} from '../../services/playlist';
+import { useAuth } from '../../context/AuthContext';
 
 // 애니메이션 정의
 const fadeInUp = keyframes`
@@ -330,6 +331,7 @@ const ImageLoader: React.FC<{
 
 const PlaylistPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<'all' | 'my' | 'bookmarked'>('all');
   const [currentPage, setCurrentPage] = useState(0);
   const [sortBy, setSortBy] = useState<SortBy>('latest');
@@ -339,10 +341,9 @@ const PlaylistPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [hasLoaded, setHasLoaded] = useState(false); // 추가: 최초 로딩 완료 여부
+  const [hasLoaded, setHasLoaded] = useState(false);
   
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const userId = 1;
 
   // 드롭다운 외부 클릭 처리
   useEffect(() => {
@@ -371,10 +372,10 @@ const PlaylistPage: React.FC = () => {
           response = await getAllPlaylists(currentPage, 20, sortBy);
           break;
         case 'my':
-          response = await getMyPlaylists(userId, currentPage, 20);
+          response = await getMyPlaylists(currentPage, 20);
           break;
         case 'bookmarked':
-          response = await getBookmarkedPlaylists(userId, currentPage, 20);
+          response = await getBookmarkedPlaylists(currentPage, 20);
           break;
         default:
           throw new Error('Invalid tab');
@@ -396,7 +397,7 @@ const PlaylistPage: React.FC = () => {
       console.error('Error fetching playlists:', err);
     } finally {
       setLoading(false);
-      setHasLoaded(true); // 추가: 로딩 완료 표시
+      setHasLoaded(true);
     }
   };
 
@@ -410,6 +411,13 @@ const PlaylistPage: React.FC = () => {
       // 같은 탭을 클릭한 경우 강제로 새로고침
       setHasLoaded(false);
       fetchPlaylists();
+      return;
+    }
+    
+    // 로그인이 필요한 탭 확인
+    if ((tab === 'my' || tab === 'bookmarked') && !isAuthenticated) {
+      alert('로그인이 필요합니다.');
+      navigate('/login');
       return;
     }
     
@@ -442,6 +450,11 @@ const PlaylistPage: React.FC = () => {
   };
 
   const handleCreatePlaylist = () => {
+    if (!isAuthenticated) {
+      alert('로그인이 필요합니다.');
+      navigate('/login');
+      return;
+    }
     navigate('/createplaylist');
   };
 
@@ -495,27 +508,35 @@ const PlaylistPage: React.FC = () => {
           >
             전체
           </Tab>
-          <Tab 
-            $active={activeTab === 'my'} 
-            onClick={() => handleTabChange('my')}
-          >
-            내 플레이리스트
-          </Tab>
-          <Tab 
-            $active={activeTab === 'bookmarked'} 
-            onClick={() => handleTabChange('bookmarked')}
-          >
-            관심 플레이리스트
-          </Tab>
+          {/* 로그인된 사용자만 표시 */}
+          {isAuthenticated && (
+            <>
+              <Tab 
+                $active={activeTab === 'my'} 
+                onClick={() => handleTabChange('my')}
+              >
+                내 플레이리스트
+              </Tab>
+              <Tab 
+                $active={activeTab === 'bookmarked'} 
+                onClick={() => handleTabChange('bookmarked')}
+              >
+                관심 플레이리스트
+              </Tab>
+            </>
+          )}
         </TabButtons>
         
-        <BaseButton 
-          variant="orange" 
-          icon={<Plus size={16} />}
-          onClick={handleCreatePlaylist}
-        >
-          새 플레이리스트 만들기
-        </BaseButton>
+        {/* 로그인된 사용자만 플레이리스트 생성 버튼 표시 */}
+        {isAuthenticated && (
+          <BaseButton 
+            variant="orange" 
+            icon={<Plus size={16} />}
+            onClick={handleCreatePlaylist}
+          >
+            새 플레이리스트 만들기
+          </BaseButton>
+        )}
       </TabContainer>
 
       <CountInfo>
