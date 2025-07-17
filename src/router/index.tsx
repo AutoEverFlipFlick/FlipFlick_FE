@@ -43,7 +43,7 @@
 
 // export default AppRoutes
 
-import { Route, Routes,Navigate } from 'react-router-dom'
+import { Route, Routes, Navigate } from 'react-router-dom'
 import ExamplePage from '@/pages/example/ExamplePage'
 import PlaylistPage from '@/pages/playlist/playlist'
 import CreatePlaylist from '@/pages/playlist/CreatePlaylist'
@@ -59,6 +59,7 @@ import Login from '@/pages/member/Login'
 import SignUp from '@/pages/member/SignUp'
 import EmailLogin from '@/pages/member/EmailLogin'
 import KakaoRedirectHandler from '@/pages/member/KakaoRedirectHandler'
+import NaverRedirectHandler from '@/pages/member/NaverRedirectHandler'
 // import Layout from '@/components/common/CommonLayout' // 공통 레이아웃 컴포넌트가 필요함
 
 const AppRoutes = () => {
@@ -80,27 +81,53 @@ const AppRoutes = () => {
         <Route path="/totalsearch" element={<TotalSearch />} />
 
         {/* Public Routes (로그인된 사용자는 접근 불가) */}
-        <Route path="/login" element={
-          <PublicRoute><Login /></PublicRoute>
-          
-        } />
-        <Route path="/signup" element={
-          <PublicRoute><SignUp /></PublicRoute>
-        } />
-        <Route path="/emaillogin" element={
-          <PublicRoute><EmailLogin /></PublicRoute>
-        } />
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <PublicRoute>
+              <SignUp />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/emaillogin"
+          element={
+            <PublicRoute>
+              <EmailLogin />
+            </PublicRoute>
+          }
+        />
 
         {/* Protected Routes (로그인 필요) */}
-        <Route path="/createplaylist" element={
-          <ProtectedRoute><CreatePlaylist /></ProtectedRoute>
-        } />
-        <Route path="/playlist/:id/edit" element={
-          <ProtectedRoute><EditPlaylist /></ProtectedRoute>
-        } />
+        <Route
+          path="/createplaylist"
+          element={
+            <ProtectedRoute>
+              <CreatePlaylist />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/playlist/:id/edit"
+          element={
+            <ProtectedRoute>
+              <EditPlaylist />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
-        
+
         <Route path="/oauth/kakao/callback" element={<KakaoRedirectHandler />} />
+
+        <Route path="/oauth/naver/callback" element={<NaverRedirectHandler />} />
       </Routes>
     </AuthProvider>
   )
