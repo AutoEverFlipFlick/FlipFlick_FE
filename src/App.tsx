@@ -3,8 +3,8 @@ import { theme } from '@/styles/theme'
 import { GlobalStyle } from '@/styles/globalStyle'
 
 import { BrowserRouter } from 'react-router-dom'
+import CreatePlaylist from './pages/playlist/CreatePlaylist'
 import AppRoutes from './router'
-import FilmographyPage from './pages/filmography'
 
 // styled-components의 GlobalStyle을 사용하여 전역 스타일을 정의
 // browser-router를 사용하여 라우팅을 시작,
@@ -16,7 +16,10 @@ function App() {
       <ThemeProvider theme={theme}>
         <GlobalStyle />
         <BrowserRouter>
-          <FilmographyPage></FilmographyPage>
+
+        {/* <CreatePlaylist/> */}
+          <AppRoutes />
+          {/* <PlaylistPage /> */}
         </BrowserRouter>
       </ThemeProvider>
     </>
