@@ -3,5 +3,5 @@
     -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 
   /* 패턴 이미지 변수 추가 */
-  --background-pattern: url('src/assets/common/backgroud_tile_512px.png');
+  --background-pattern: url('@/assets/common/backgroud_tile_512px.png');
 }

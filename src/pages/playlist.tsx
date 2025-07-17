@@ -17,11 +17,6 @@ const fadeInUp = keyframes`
   to   { opacity: 1; transform: translateY(0); }
 `;
 
-const shimmer = keyframes`
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-`;
-
 const PlaylistContainer = styled.div`
   color: white;
   min-height: 100vh;
@@ -30,6 +25,12 @@ const PlaylistContainer = styled.div`
   font-family: 'Arial', sans-serif;
   overflow-y: auto;
   box-sizing: border-box;
+    -ms-overflow-style: none;
+  scrollbar-width: none;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 const TitleContainer = styled.div`
@@ -403,10 +404,18 @@ const PlaylistPage: React.FC = () => {
     fetchPlaylists();
   }, [activeTab, currentPage, sortBy]);
 
+  // 강제 새로고침 버전
   const handleTabChange = (tab: 'all' | 'my' | 'bookmarked') => {
+    if (activeTab === tab) {
+      // 같은 탭을 클릭한 경우 강제로 새로고침
+      setHasLoaded(false);
+      fetchPlaylists();
+      return;
+    }
+    
     setActiveTab(tab);
     setCurrentPage(0);
-    setHasLoaded(false); // 추가: 탭 변경 시 로딩 상태 초기화
+    setHasLoaded(false);
     if (tab !== 'all') {
       setSortBy('latest');
     }

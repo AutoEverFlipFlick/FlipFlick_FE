@@ -414,7 +414,7 @@ const PlaylistDetail: React.FC = () => {
   if (loading) {
     return (
       <Container>
-        <LoadingMessage>플레이리스트를 불러오는 중...</LoadingMessage>
+        <LoadingMessage></LoadingMessage>
       </Container>
     );
   }

@@ -13,7 +13,23 @@ interface Movie {
   image: string;
 }
 
-// 애니메이션 정의
+// 애니메이션 정의 - PlaylistDetail과 동일
+const fadeIn = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
+`;
+
+const slideUp = keyframes`
+  from { 
+    opacity: 0; 
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0);
+  }
+`;
+
 const fadeInUp = keyframes`
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -34,10 +50,12 @@ const Title = styled.h1`
   text-align: center;
   margin-bottom: 2rem;
   font-weight: bold;
+  animation: ${fadeIn} 0.5s ease; /* 애니메이션 추가 */
 `;
 
 const FormSection = styled.div`
   margin-bottom: 1.5rem;
+  animation: ${slideUp} 0.5s ease; /* 애니메이션 추가 */
 `;
 
 const Label = styled.label`
@@ -98,6 +116,7 @@ const MovieGrid = styled.div`
   gap: 1rem;
   margin-bottom: 2rem;
   box-sizing: border-box;
+  animation: ${slideUp} 0.5s ease; /* PlaylistDetail과 동일한 애니메이션 */
 `;
 
 const MovieCard = styled.div`
@@ -112,6 +131,7 @@ const MovieCard = styled.div`
 
   &:hover {
     border-color: #ff7849;
+    transform: translateY(-4px); /* PlaylistDetail과 동일한 호버 효과 */
   }
 `;
 
@@ -132,6 +152,7 @@ const AddMovieCard = styled.div`
   &:hover {
     border-color: #ff7849;
     color: #ff7849;
+    transform: translateY(-4px); /* PlaylistDetail과 동일한 호버 효과 */
   }
 `;
 
@@ -221,6 +242,7 @@ const ButtonContainer = styled.div`
   gap: 1rem;
   justify-content: flex-end;
   margin-top: 2rem;
+  animation: ${fadeIn} 0.5s ease; /* 애니메이션 추가 */
 `;
 
 const SelectedCount = styled.div`
