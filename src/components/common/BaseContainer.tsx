@@ -33,7 +33,7 @@ const Container = styled.div<{ $fontSize?: FontSize }>`
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 
   // 텍스트 색상
-  color: #fff;
+  color: #ffffff;
 
   // 폰트사이즈 설정
   /* 폰트 크기 설정 */

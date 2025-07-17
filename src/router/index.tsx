@@ -4,6 +4,11 @@ import PlaylistPage from '@/pages/playlist'
 import CreatePlaylist from '@/pages/CreatePlaylist'
 import PlaylistDetail from '@/pages/PlaylistDetail'
 import { BookmarkProvider } from '../context/BookmarkContext'
+import MovieDetailPage from '@/pages/movie/MovieDetailPage'
+import TotalSearch from '@/pages/TotalSearch'
+import Login from '@/pages/member/Login'
+import SignUp from '@/pages/member/SignUp'
+import EmailLogin from '@/pages/member/EmailLogin'
 // import Layout from '@/components/common/CommonLayout' // 공통 레이아웃 컴포넌트가 필요함
 
 const AppRoutes = () => {
@@ -23,8 +28,16 @@ const AppRoutes = () => {
         <Route path='/playlist' element={<PlaylistPage />}></Route>
         <Route path='/createplaylist' element={<CreatePlaylist />}></Route>
         <Route path="/playlist/:id" element={<PlaylistDetail />} />
+        <Route path="/movie/detail" element={<MovieDetailPage />} />
+
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/emaillogin" element={<EmailLogin />} />
+
+         <Route path="/totalsearch" element={<TotalSearch />} />
       </Routes>
-      </BookmarkProvider>
+    </BookmarkProvider>
+
   )
 }
 

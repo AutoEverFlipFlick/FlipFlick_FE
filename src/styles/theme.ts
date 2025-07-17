@@ -1,6 +1,6 @@
-// ✅ styles/theme.ts
+// styles/theme.ts
 export const theme = {
-  fontFamily: 'var(--font-base)', // 또는 직접 문자열 지정
+  fontFamily: 'var(--font-base)',
   fontWeight: 400,
   colors: {
     text: 'var(--color-text)',

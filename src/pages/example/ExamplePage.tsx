@@ -2,8 +2,9 @@ import BaseButton from '@/components/common/BaseButton'
 import BaseContainer from '@/components/common/BaseContainer'
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { Check, Heart, Star, Download } from 'lucide-react'
+import { Check, Heart, Star, Download, Search, Filter, User } from 'lucide-react'
 import BackgroundImage from '@/assets/common/backgroud_tile_512px.png'
+import BaseInput from '@/components/common/BaseInput'
 
 // 컨테이너 스타일
 const Container = styled.div`
@@ -108,6 +109,12 @@ const Divider = styled.div`
   border: 1px #fff solid;
   border-radius: 30px;
   margin-top: 3rem;
+`
+
+const ImageContainer = styled.div`
+  background-image: url(${BackgroundImage});
+  background-repeat: repeat;
+  padding: 100px;
 `
 
 // 메인 컴포넌트
@@ -296,15 +303,8 @@ const ExamplePage = () => {
         <Title>컨테이너</Title>
         <Subtitle>공통 컨테이너 디자인</Subtitle>
         <Section>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundImage: `url(${BackgroundImage})`,
-              backgroundRepeat: 'repeat',
-              padding: '100px',
-            }}
+          <ImageContainer
+            style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
           >
             <BaseContainer
               fontSize="lg"
@@ -317,8 +317,149 @@ const ExamplePage = () => {
               어두운 반투명 배경, 블러, 라운드 모서리, 그림자, 흰색 텍스트를 포함한 공통 컨테이너
               디자인
             </BaseContainer>
-          </div>
+          </ImageContainer>
         </Section>
+
+        <GuideSection>
+          <SectionTitle>사용 가이드</SectionTitle>
+          <GuideGrid>
+            <div>
+              <GuideTitle>사용 예시</GuideTitle>
+              <GuideList>
+                <li>
+                  <div>
+                    {`<BaseContainer style={{ maxHeight : '300px' }}/>`}
+                    <br />
+                    <div style={{ marginLeft: '30px' }}>{`<div>예시입니다</div>`}</div>
+                    {`</BaseContainer>`}
+                  </div>
+                </li>
+              </GuideList>
+            </div>
+          </GuideGrid>
+        </GuideSection>
+
+        <Divider />
+        <Title>인풋</Title>
+        <Subtitle>공통 인풋 디자인</Subtitle>
+        <Section>
+          <ImageContainer>
+            <Section>
+              <SectionTitle>상태 변형</SectionTitle>
+              <Grid $columns={3}>
+                <ButtonDemo>
+                  <DemoLabel>Normal</DemoLabel>
+                  <BaseInput />
+                </ButtonDemo>
+                <ButtonDemo>
+                  <DemoLabel>Success</DemoLabel>
+                  <BaseInput state="success" />
+                </ButtonDemo>
+                <ButtonDemo>
+                  <DemoLabel>Error</DemoLabel>
+                  <BaseInput state="error" />
+                </ButtonDemo>
+              </Grid>
+            </Section>
+
+            <Section>
+              <SectionTitle>크기 변형</SectionTitle>
+              <Grid $columns={3}>
+                <ButtonDemo>
+                  <DemoLabel>Small</DemoLabel>
+                  <BaseInput inputSize="small" />
+                </ButtonDemo>
+                <ButtonDemo>
+                  <DemoLabel>Medium</DemoLabel>
+                  <BaseInput inputSize="medium" />
+                </ButtonDemo>
+                <ButtonDemo>
+                  <DemoLabel>Large</DemoLabel>
+                  <BaseInput inputSize="large" />
+                </ButtonDemo>
+              </Grid>
+              <ButtonDemo style={{ marginTop: '30px' }}>
+                <DemoLabel>Full Width</DemoLabel>
+                <BaseInput fullWidth />
+              </ButtonDemo>
+            </Section>
+
+            <Section>
+              <SectionTitle>아이콘과 함께</SectionTitle>
+              <Grid $columns={3}>
+                <ButtonDemo>
+                  <DemoLabel>Search</DemoLabel>
+                  <BaseInput icon={<Search />} />
+                </ButtonDemo>
+                <ButtonDemo>
+                  <DemoLabel>Filter</DemoLabel>
+                  <BaseInput icon={<Filter />} />
+                </ButtonDemo>
+                <ButtonDemo>
+                  <DemoLabel>User</DemoLabel>
+                  <BaseInput icon={<User />} />
+                </ButtonDemo>
+              </Grid>
+            </Section>
+          </ImageContainer>
+        </Section>
+        <GuideSection>
+          <SectionTitle>사용 가이드</SectionTitle>
+          <GuideGrid>
+            <div>
+              <GuideTitle>Props 사용법</GuideTitle>
+              <GuideList>
+                <li>
+                  <strong>state</strong> :'normal' | 'success' | 'error'
+                </li>
+                <li>
+                  <strong>inputSize</strong> :'small' | 'medium' | 'large'
+                </li>
+                <li>
+                  <strong>disabled</strong> : boolean
+                </li>
+                <li>
+                  <strong>icon</strong> :React.ReactNode
+                </li>
+                <li>
+                  <strong>iconGap</strong> : '10px' | '20px' | ... | '~px'
+                </li>
+              </GuideList>
+            </div>
+
+            <div>
+              <GuideTitle>사용 예시</GuideTitle>
+              <GuideList>
+                <li>
+                  <div>{`<BaseInput state="success"/>`}</div>
+                </li>
+                <li>
+                  <div>{`<BaseInput state="error"/>`}</div>
+                </li>
+                <li>
+                  <div>{`<BaseInput inputSize="small"/>`}</div>
+                </li>
+                <li>
+                  <div>{`<BaseInput icon={<Search/>}/>`}</div>
+                </li>
+                <li>
+                  <div>{`<BaseInput disabled/>`}</div>
+                </li>
+                <li>
+                  <div>{`<BaseInput state="success" inputSize="small" icon={<Heart/>}/>`}</div>
+                </li>
+                <li>
+                  <div>
+                    {`<BaseContainer style={{ maxHeight : '300px' }}/>`}
+                    <br />
+                    <div style={{ marginLeft: '30px' }}>{`<div>예시입니다</div>`}</div>
+                    {`</BaseContainer>`}
+                  </div>
+                </li>
+              </GuideList>
+            </div>
+          </GuideGrid>
+        </GuideSection>
       </MaxWidthContainer>
     </Container>
   )

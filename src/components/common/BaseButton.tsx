@@ -70,7 +70,7 @@ const colorThemes = {
   },
   orange: {
     background: 'linear-gradient(135deg, #ff7849 0%, #ff6b3d 50%, #e55a2b 100%)',
-    color: '#5d2f1a',
+    color: '#ffffff',
     border: '#e55a2b',
     shadow: 'rgba(255, 107, 61, 0.3)',
     hoverShadow: 'rgba(255, 107, 61, 0.5)',
