@@ -2,6 +2,7 @@
 import styled from 'styled-components'
 import StarRating from '@/components/starRating/StarRating'
 import BaseContainer from '../common/BaseContainer'
+import React from 'react'
 
 type RatingCardProps = {
   title: string

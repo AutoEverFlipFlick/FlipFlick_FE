@@ -123,6 +123,7 @@ const ReviewDebateCard: React.FC<ReviewDebateCardProps> = ({username, createdAt,
       <ReportDeleteButton
         // onClick={isMyPost ? onDelete : onReport}
       >
+        {/*토론 글은 수정하기 버튼 추가되야함*/}
         {isMyPost ? '삭제' : '신고'}
       </ReportDeleteButton>
     </Footer>
