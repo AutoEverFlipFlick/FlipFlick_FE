@@ -1,3 +1,4 @@
+// src/styles/globalStyle.ts
 import { createGlobalStyle } from 'styled-components'
 
 export const GlobalStyle = createGlobalStyle`

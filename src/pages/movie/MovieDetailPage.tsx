@@ -52,7 +52,6 @@ const PostImage = styled.div<{ imageUrl: string }>`
 const PlatFormImage = styled.div`
     min-width: 120px;
     min-height: 120px;
-    background-color: white;
 `
 const MovieDetailHeaderContents = styled.div`
     display: flex;
@@ -433,6 +432,7 @@ export default function MovieDetailPage() {
         <MovieDetailMainContent>
           <OverViewContents>
             <OverViewContainerWrapper>
+
               <OverViewContainer>개요 내용 1</OverViewContainer>
               <OverViewContainer>개요 내용 2</OverViewContainer>
               <OverViewContainer>개요 내용 3</OverViewContainer>
@@ -463,17 +463,16 @@ export default function MovieDetailPage() {
                 </button>
               </OverViewPlatformTab>
               <OverViewPlatformImageWrapper>
-                {movieData.actors.map((actor) => (
-                <ActorsImageCard key={actor.name} >
-                  <ActorImage imageUrl={actor.imageUrl} title={actor.name} />
-                  <ActorName >{actor.name}</ActorName>
-                </ActorsImageCard>))}
+                {/*{movieData.actors.map((actor) => (*/}
+                {/*<ActorsImageCard key={actor.name} >*/}
+                {/*  <ActorImage imageUrl={actor.imageUrl} title={actor.name} />*/}
+                {/*  <ActorName >{actor.name}</ActorName>*/}
+                {/*</ActorsImageCard>))}*/}
                 {/*{movieData.platforms.map((platform) => (}*/}
                 {/*  <PostImage key={platform.name} imageUrl={platform.logoUrl} />*/}
                 {/*))}*/}
-                <PlatFormImage>
+                <PlatFormImage />
 
-                </PlatFormImage>
               </OverViewPlatformImageWrapper>
             </OverViewPlatformWrapper>
           </OverViewContents>
