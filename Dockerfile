@@ -1,5 +1,5 @@
 # 1) 빌드 스테이지: Vite + React 앱을 빌드
-FROM node:16-alpine AS builder
+FROM node:18-alpine AS builder
 WORKDIR /app
 
 # 의존성 설치
