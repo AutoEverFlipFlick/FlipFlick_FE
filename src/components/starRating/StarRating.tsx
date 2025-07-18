@@ -1,3 +1,4 @@
+// src/component/starRating/StartRating.tsx
 import styled from "styled-components";
 import React from "react";
 

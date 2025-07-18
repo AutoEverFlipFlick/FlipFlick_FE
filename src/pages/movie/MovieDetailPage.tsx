@@ -6,6 +6,7 @@ import ReviewDebateCard from '@/components/feature/movieDetail/ReviewDebateCard'
 import { useEffect, useState } from 'react'
 import { mockMovieDetailData } from './movieDetail.mock'
 import { MovieDetailData } from './movieDetail'
+import RatingCard from '@/components/starRating/RatingCard'
 
 const MovieDetailLayout = styled.div`
   display: flex;
@@ -156,7 +157,7 @@ const MovieDetailMainContentTab = styled.div`
   flex-direction: row;
   max-width: 900px;
   min-width: 850px;
-  margin: 0 auto;
+  margin: 10px auto;
   height: 30px;
   gap: 50px;
   border-bottom: white 1px solid;
@@ -173,14 +174,16 @@ const OverViewContents = styled.div`
   gap: 20px;
 `
 
-const OverViewContainerWrapper = styled.div`
+const OverViewContainerWrapper = styled(HeaderContentsContainer)`
+  
   display: flex;
   flex-direction: row;
   justify-content: space-around;
   align-items: center;
   max-width: 850px;
   min-width: 800px;
-  margin: 30px auto;
+  margin: 20px auto;
+  padding: 30px 20px;
   gap: 20px;
 `
 const OverViewPlatformWrapper = styled.div`
@@ -236,7 +239,8 @@ const ContentsHeader = styled.div`
 `
 const ContentsTitle = styled.div`
   font-size: 25px;
-  margin: 0 20px;
+  margin: 20px 0 0 20px;
+  
 `
 
 const ReviewDebateContents = styled.div`
@@ -271,13 +275,7 @@ const RatingWrapper = styled.div`
   margin: 0 auto;
   gap: 10px;
 `
-const TotalRatingContainer = styled(BaseContainer)`
-  min-width: 380px;
-  height: 150px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`
+
 const DetailMyReviewCard = styled(BaseContainer)`
   min-width: 800px;
   min-height: 100px;
@@ -465,6 +463,9 @@ export default function MovieDetailPage() {
         <MovieDetailMainContent>
           {activeTab === 'overview' && (
             <OverViewContents>
+              <ContentsListTitleTab>
+                <ContentsTitle>개요</ContentsTitle>
+              </ContentsListTitleTab>
               <OverViewContainerWrapper>
                 <OverViewContainer>
                   <p>장르: {movieData.genres.map(genre => genre.name).join(', ')}</p>
@@ -479,6 +480,9 @@ export default function MovieDetailPage() {
                   <p>평균 평점: {movieData.voteAverage.toFixed(1)}점</p>
                 </OverViewContainer>
               </OverViewContainerWrapper>
+              <ContentsListTitleTab>
+                <ContentsTitle>플랫폼</ContentsTitle>
+              </ContentsListTitleTab>
               <OverViewPlatformWrapper>
                 <OverViewPlatformTab>
                   <PlatformTabButton active>구매</PlatformTabButton>
@@ -493,12 +497,9 @@ export default function MovieDetailPage() {
           )}
           {activeTab === 'review' && (
             <ReviewDebateContents>
-              <ContentsHeader>
-                <ContentsTitle></ContentsTitle>
-              </ContentsHeader>
               <RatingWrapper>
-                <TotalRatingContainer>전체 평점</TotalRatingContainer>
-                <TotalRatingContainer>평가하기</TotalRatingContainer>
+                <RatingCard title="전체 평점" rating={movieData.voteAverage} size={40} />
+                <RatingCard title="평가하기" rating={0}  size={40} />
               </RatingWrapper>
               <DetailMyReviewWrapper>
                 <DetailMyReviewCard>내 리뷰</DetailMyReviewCard>
