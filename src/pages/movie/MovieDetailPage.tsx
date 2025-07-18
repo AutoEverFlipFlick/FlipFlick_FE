@@ -463,16 +463,17 @@ export default function MovieDetailPage() {
                 </button>
               </OverViewPlatformTab>
               <OverViewPlatformImageWrapper>
+                {movieData.actors.map((actor) => (
+                <ActorsImageCard key={actor.name} >
+                  <ActorImage imageUrl={actor.imageUrl} title={actor.name} />
+                  <ActorName >{actor.name}</ActorName>
+                </ActorsImageCard>))}
+                {/*{movieData.platforms.map((platform) => (}*/}
+                {/*  <PostImage key={platform.name} imageUrl={platform.logoUrl} />*/}
+                {/*))}*/}
                 <PlatFormImage>
-                  애플
-                </PlatFormImage>
-                <PlatFormImage>
-                  구글
-                </PlatFormImage>
-                <PlatFormImage>
-                  넷플릭스
-                </PlatFormImage>
 
+                </PlatFormImage>
               </OverViewPlatformImageWrapper>
             </OverViewPlatformWrapper>
           </OverViewContents>
