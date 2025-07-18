@@ -111,7 +111,7 @@ const ButtonRow = styled.div`
   }
 `
 
-const CameraIconButton = styled.div`
+const CameraIconButton = styled.label`
   position: absolute;
   right: 8px;
   bottom: 8px;
@@ -122,6 +122,7 @@ const CameraIconButton = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 
   img {
     width: 30px;

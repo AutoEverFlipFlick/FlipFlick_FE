@@ -14,8 +14,11 @@
   --color-error: #ef4444;
 
   /* 패턴 이미지 변수 추가 */
-  --background-pattern: url('src/assets/common/backgroud_tile_512px.png');
+  --background-pattern: url('@/assets/common/backgroud_tile_512px.png');
 
+  /* 로고 이미지 변수 추가 */
+  --logo-image: url('/logo.webp');
+  --logo-full-image: url('/logo_full.webp');
   /*
    * 타이포그래피 스케일: Modular Scale (비율 1.25 적용)
    * 출처: Tailwind CSS 기본 값 참고

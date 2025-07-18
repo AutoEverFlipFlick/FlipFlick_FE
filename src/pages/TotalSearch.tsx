@@ -589,7 +589,7 @@ const TotalSearch: React.FC = () => {
                                     {casts.content.map(c => (
                                         <CastCard
                                             key={c.tmdbId}
-                                            onClick={() => navigate(`/casts/${c.tmdbId}`)}
+                                            onClick={() => navigate(`/filmography/${c.tmdbId}`)}
                                             $animate={isMobile ? currentPage === 1 : true}
                                         >
                                             <ImageLoader
