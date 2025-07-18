@@ -21,7 +21,7 @@ const MovieDetailHeader = styled.div`
   padding: 20px 15px 5px 15px;
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 10px;
 `
 const MovieDetailMain = styled.div`
   max-width: 900px;
@@ -31,7 +31,8 @@ const MovieDetailMain = styled.div`
 `
 const MovieDetailHeaderTitle = styled.div`
   font-size: 40px;
-  margin-bottom: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
 `
 
 const MovieDetailHeaderImageSwiper = styled.div`
@@ -40,8 +41,10 @@ const MovieDetailHeaderImageSwiper = styled.div`
 `
 
 const PostImage = styled.div<{ imageUrl: string }>`
-  min-width: 280px;
-  min-height: 420px;
+  min-width: 320px;
+  min-height: 480px;
+  max-height: 300px;
+  max-width: 450px;
   background-image: url(${({ imageUrl }) => imageUrl});
   background-size: cover;
   background-position: center;
@@ -52,30 +55,44 @@ const PlatFormImage = styled.div`
   min-width: 120px;
   min-height: 120px;
 `
-const MovieDetailHeaderContents = styled.div`
+
+const HeaderContentsContainer = styled(BaseContainer)`
+  margin: 5px 10px;
+  padding: 10px 10px;
+  display: flex;
+`
+const MovieDetailHeaderContainer = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: start;
   max-width: 600px;
 `
-const MovieDetailHeaderRating = styled.div`
+const MovieDetailHeaderRating = styled(HeaderContentsContainer)`
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  text-align: center;
   font-size: 20px;
+  min-height: 50px;
+  width: 200px;
 `
-const MovieDetailRelease = styled.div`
-  font-size: 20px;
-  margin-bottom: 20px;
+const MovieDetailRelease = styled(HeaderContentsContainer)`
+  width:  200px;
+  font-size: 15px;
+  justify-content: space-around;
 `
 
-const MovieDetailLikeHate = styled.div`
-  max-width: 400px;
-  width: 400px;
+const MovieDetailLikeHate = styled(HeaderContentsContainer)`
+  max-width: 200px;
+  width: 200px;
   height: 40px;
-  margin-bottom: 20px;
+  justify-content: space-around;
+  align-items: center;
 `
-const MovieDetailHeaderPlot = styled.div`
+const MovieDetailHeaderPlot = styled(HeaderContentsContainer)`
   font-size: 12px;
-  max-width: 490px;
-  margin-bottom: 20px;
+  max-width: 480px;
+  min-height: 80px;
 `
 
 const MovieDetailHeaderActorsSwiper = styled.div`
@@ -93,13 +110,12 @@ const DetailImage = styled.div`
   justify-content: start;
 `
 
-const ActorsImageCard = styled.div`
+const ActorsImageCard = styled(BaseContainer)`
   border-radius: 4px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   margin-right: 10px;
-  background-color: var(--color-neutral);
 `
 const ActorImage = styled.div<{ imageUrl: string }>`
   background-image: url(${({ imageUrl }) => imageUrl});
@@ -108,13 +124,14 @@ const ActorImage = styled.div<{ imageUrl: string }>`
   border-radius: 8px;
   width: 110px;
   height: 165px;
-  margin: 10px 10px 5px 10px;
+  margin: 10px 10px 0 10px;
 `
 const ActorName = styled.div`
   text-align: center;
+  justify-content: center;
+  align-items: center;
   font-size: 14px;
   text-wrap: wrap;
-  margin-bottom: 5px;
 `
 const MovieDetailMainAction = styled.div`
   max-width: 600px;
@@ -345,7 +362,7 @@ const PlatformTabButton = styled.button<{ active?: boolean }>`
 const ActionButton = styled.button`
   all: unset;
   cursor: pointer;
-  background-color: #FE6A3C;
+  background-color: #fe6a3c;
   color: white;
   padding: 5px 10px;
   margin-right: 10px;
@@ -392,22 +409,24 @@ export default function MovieDetailPage() {
         <MovieDetailHeaderImageSwiper>
           <PostImage imageUrl={movieData.posterImg} />
         </MovieDetailHeaderImageSwiper>
-        <MovieDetailHeaderContents>
+        <MovieDetailHeaderContainer>
           <MovieDetailHeaderTitle>
             <p>{movieData.title}</p>
           </MovieDetailHeaderTitle>
           <MovieDetailRelease>
-            <p>{movieData.releaseDate} 개봉</p>
+            <p style={{fontWeight: "bold"}}>개봉일</p> <p> {movieData.releaseDate}</p>
           </MovieDetailRelease>
           <MovieDetailHeaderRating>
-            <p>
-              🌽 {movieData.popcorn} 점 / ⭐ {movieData.voteAverage.toFixed(1)}점
-            </p>
+            <p>🌽</p> <p> {movieData.popcorn} 점</p>
+            <p>/</p>
+            <p>⭐</p> <p> {movieData.voteAverage.toFixed(1)} 점</p>
           </MovieDetailHeaderRating>
           <MovieDetailLikeHate>
-            <p>
-              👍 {movieData.likes} / 👎 {movieData.dislikes}
-            </p>
+            <p>👍</p>
+            <p>{movieData.likes}</p>
+            <p>/</p>
+            <p>👎</p>
+            <p>{movieData.dislikes}</p>
           </MovieDetailLikeHate>
           <MovieDetailHeaderPlot>
             <p>{movieData.overview}</p>
@@ -420,7 +439,7 @@ export default function MovieDetailPage() {
               </ActorsImageCard>
             ))}
           </MovieDetailHeaderActorsSwiper>
-        </MovieDetailHeaderContents>
+        </MovieDetailHeaderContainer>
       </MovieDetailHeader>
       <MovieDetailMainAction>
         <ActionButton>찜하기</ActionButton>
