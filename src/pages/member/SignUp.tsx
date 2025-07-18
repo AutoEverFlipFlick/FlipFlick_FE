@@ -5,8 +5,8 @@ import BaseInput from '@/components/common/BaseInput'
 import BaseButton from '@/components/common/BaseButton'
 import profileImageDefault from '@/assets/icons/profile.png'
 import cameraIcon from '@/assets/icons/camera.png'
-import { signup } from '@/services/member'
-import { uploadImage } from '@/services/s3'
+import { signup, checkEmailDuplicate, checkNicknameDuplicate } from '@/services/member'
+import { uploadImage, deleteImage } from '@/services/s3'
 import { useNavigate } from 'react-router-dom'
 
 const Wrapper = styled.div`
@@ -49,7 +49,7 @@ const ResponsiveInput = styled(BaseInput)`
 const Message = styled.div<{ isError?: boolean }>`
   font-size: 13px;
   color: ${({ isError }) => (isError ? '#ff6666' : '#99ff99')};
-  align-self: flex-start;
+  align-self: flex-end;
   margin-left: 5px;
 `
 
@@ -134,7 +134,7 @@ const ProfileTextButton = styled.span`
   font-size: 14px;
   color: #ffa500;
   cursor: pointer;
-  text-decoration: underline;
+  text-decoration: none;
   position: absolute;
   right: 0;
   top: 50%;
@@ -191,6 +191,8 @@ const SignUp: React.FC = () => {
   const navigate = useNavigate()
 
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null)
+  const [isEmailChecked, setIsEmailChecked] = useState(false)
+  const [isNicknameChecked, setIsNicknameChecked] = useState(false)
 
   const handleSignUp = async () => {
     try {
@@ -216,7 +218,7 @@ const SignUp: React.FC = () => {
   const validateEmail = (value: string) => {
     const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
     setIsEmailValid(isValid)
-    setEmailMessage(isValid ? '올바른 이메일 형식입니다.' : '이메일 형식이 올바르지 않습니다.')
+    setEmailMessage(isValid ? '중복 검사가 필요합니다.' : '이메일 형식이 올바르지 않습니다.')
   }
 
   const validatePassword = (value: string) => {
@@ -242,7 +244,7 @@ const SignUp: React.FC = () => {
     const isValid = /^[a-zA-Z0-9가-힣]{2,20}$/.test(value)
     setIsNicknameValid(isValid)
     setNicknameMessage(
-      isValid ? '사용 가능한 닉네임입니다.' : '2~20자의 한글/영문/숫자만 가능합니다.',
+      isValid ? '중복 검사가 필요합니다.' : '2~20자의 한글/영문/숫자만 가능합니다.',
     )
   }
 
@@ -256,11 +258,54 @@ const SignUp: React.FC = () => {
     reader.readAsDataURL(file)
 
     try {
+      if (profileImageUrl) {
+        await deleteImage(profileImageUrl) // 삭제 API 호출
+      }
       const url = await uploadImage(file)
       setProfileImageUrl(url)
     } catch (error) {
       console.error('이미지 업로드 실패:', error)
       alert('이미지 업로드에 실패했습니다.')
+    }
+  }
+
+  const handleEmailCheck = async () => {
+    try {
+      const result = await checkEmailDuplicate(email)
+      if (result.data === true) {
+        setEmailMessage('이미 사용 중인 이메일입니다.')
+        setIsEmailValid(false)
+        setIsEmailChecked(false)
+      } else {
+        setEmailMessage('사용 가능한 이메일입니다.')
+        setIsEmailValid(true)
+        setIsEmailChecked(true)
+      }
+    } catch (e) {
+      console.error('이메일 중복 검사 실패', e)
+      setEmailMessage('이메일 중복 검사 중 오류가 발생했습니다.')
+      setIsEmailValid(false)
+      setIsEmailChecked(false)
+    }
+  }
+
+  const handleNicknameCheck = async () => {
+    try {
+      const result = await checkNicknameDuplicate(nickname)
+      if (result.data === true) {
+        setNicknameMessage('이미 사용 중인 닉네임입니다.')
+        setIsNicknameValid(false)
+        setIsNicknameChecked(false)
+      } else {
+        setNicknameMessage('사용 가능한 닉네임입니다.')
+        setIsNicknameValid(true)
+        setIsNicknameChecked(true)
+      }
+    } catch (e) {
+      console.error('닉네임 중복 검사 실패', e)
+      setNicknameMessage('닉네임 중복 검사 중 오류가 발생했습니다.')
+      setIsNicknameValid(false)
+      setIsNicknameChecked(false)
     }
   }
 
@@ -276,12 +321,19 @@ const SignUp: React.FC = () => {
               const value = e.target.value
               setEmail(value)
               validateEmail(value)
+              setIsEmailChecked(false)
+            }}
+            onBlur={() => {
+              if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                handleEmailCheck()
+              }
             }}
             inputSize="small"
           />
-          {isEmailValid !== null && <Message isError={!isEmailValid}>{emailMessage}</Message>}
+          {isEmailValid !== null && (
+            <Message isError={!isEmailChecked || !isEmailValid}>{emailMessage}</Message>
+          )}
         </InputGroup>
-
         <InputGroup>
           <ResponsiveInput
             placeholder="비밀번호"
@@ -325,26 +377,39 @@ const SignUp: React.FC = () => {
               const value = e.target.value
               setNickname(value)
               validateNickname(value)
+              setIsNicknameChecked(false)
+            }}
+            onBlur={() => {
+              if (nickname && /^[a-zA-Z0-9가-힣]{2,20}$/.test(nickname)) {
+                handleNicknameCheck()
+              }
             }}
             inputSize="small"
           />
           {isNicknameValid !== null && (
-            <Message isError={!isNicknameValid}>{nicknameMessage}</Message>
+            <Message isError={!isNicknameChecked || !isNicknameValid}>{nicknameMessage}</Message>
           )}
         </InputGroup>
 
         <ButtonRow>
+          <ProfileTextButton onClick={() => setShowModal(true)}>
+            프로필 이미지 설정
+          </ProfileTextButton>
           <SubmitButton
             variant="dark"
             size="small"
-            disabled={!isEmailValid || !isPasswordValid || !isPasswordMatch || !isNicknameValid}
+            disabled={
+              !isEmailValid ||
+              !isEmailChecked ||
+              !isPasswordValid ||
+              !isPasswordMatch ||
+              !isNicknameValid ||
+              !isNicknameChecked
+            }
             onClick={handleSignUp}
           >
             가입 해볼래?
           </SubmitButton>
-          <ProfileTextButton onClick={() => setShowModal(true)}>
-            프로필 이미지 설정
-          </ProfileTextButton>
         </ButtonRow>
 
         {showModal && (
