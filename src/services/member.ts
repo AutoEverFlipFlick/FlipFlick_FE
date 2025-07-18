@@ -31,3 +31,19 @@ export const naverLogin = async (code: string, state: string) => {
   )
   return res.data
 }
+
+// 이메일 중복 검사
+export const checkEmailDuplicate = async (email: string) => {
+  const res = await axiosInstance.get(`/member/check/email`, {
+    params: { email },
+  })
+  return res.data
+}
+
+// 닉네임 중복 검사
+export const checkNicknameDuplicate = async (nickname: string) => {
+  const res = await axiosInstance.get(`/member/check/nickname`, {
+    params: { nickname },
+  })
+  return res.data
+}
