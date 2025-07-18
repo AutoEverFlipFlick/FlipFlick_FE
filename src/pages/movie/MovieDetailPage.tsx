@@ -117,7 +117,7 @@ const ActorName = styled.div`
 `
 const MovieDetailMainAction = styled.div`
   max-width: 600px;
-  margin: 10px auto;
+  margin: 20px auto;
   height: 100%;
 `
 
@@ -339,20 +339,19 @@ const PlatformTabButton = styled.button<{ active?: boolean }>`
   font-size: 20px;
   color: ${({ active }) => (active ? '#FE6A3C' : '#fff')};
   border-bottom: ${({ active }) => (active ? '1px solid #FE6A3C' : 'none')};
-`;
+`
 
-const ActionButton = styled.button<{ active?: boolean }>`
+const ActionButton = styled.button`
   all: unset;
   cursor: pointer;
-  background-color: ${({ active }) => (active ? '#FE6A3C' : '#fff')};
+  background-color: #FE6A3C;
   color: white;
-  padding: 10px 16px;
+  padding: 5px 10px;
   margin-right: 10px;
   border-radius: 6px;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
-  width: 100px;
-  border-bottom: ${({ active }) => (active ? '1px solid #FE6A3C' : 'none')};
+  text-align: center;
   transition: background-color 0.2s ease;
 
   &:hover {
@@ -423,10 +422,10 @@ export default function MovieDetailPage() {
         </MovieDetailHeaderContents>
       </MovieDetailHeader>
       <MovieDetailMainAction>
-        <ActionButton active={true}>찜하기</ActionButton>
-        <ActionButton active={true}>봤어요</ActionButton>
-        <ActionButton active={false}>플레이리스트 추가</ActionButton>
-        <ActionButton active={false}>수정 요청</ActionButton>
+        <ActionButton>찜하기</ActionButton>
+        <ActionButton>봤어요</ActionButton>
+        <ActionButton>플레이리스트 추가</ActionButton>
+        <ActionButton>수정 요청</ActionButton>
       </MovieDetailMainAction>
       <MovieDetailMain>
         <MovieDetailMainContentTab>
@@ -504,22 +503,62 @@ export default function MovieDetailPage() {
             </OverViewContents>
           )}
           {activeTab === 'review' && (
-          <ReviewDebateContents>
-            <ContentsHeader>
-              <ContentsTitle></ContentsTitle>
-            </ContentsHeader>
-            <RatingWrapper>
-              <TotalRatingContainer>전체 평점</TotalRatingContainer>
-              <TotalRatingContainer>평가하기</TotalRatingContainer>
-            </RatingWrapper>
-            <DetailMyReviewWrapper>
-              <DetailMyReviewCard>내 리뷰</DetailMyReviewCard>
-            </DetailMyReviewWrapper>
-            <ContentsListWrapper>
-              <ContentsListTitleTab>
-                <ContentsTitle>리뷰</ContentsTitle>
-                <ContentsListOrderDropdown>정렬 순서</ContentsListOrderDropdown>
-              </ContentsListTitleTab>
+            <ReviewDebateContents>
+              <ContentsHeader>
+                <ContentsTitle></ContentsTitle>
+              </ContentsHeader>
+              <RatingWrapper>
+                <TotalRatingContainer>전체 평점</TotalRatingContainer>
+                <TotalRatingContainer>평가하기</TotalRatingContainer>
+              </RatingWrapper>
+              <DetailMyReviewWrapper>
+                <DetailMyReviewCard>내 리뷰</DetailMyReviewCard>
+              </DetailMyReviewWrapper>
+              <ContentsListWrapper>
+                <ContentsListTitleTab>
+                  <ContentsTitle>리뷰</ContentsTitle>
+                  <ContentsListOrderDropdown>정렬 순서</ContentsListOrderDropdown>
+                </ContentsListTitleTab>
+                <ReviewDebateList>
+                  <DetailReviewCardWrapper>
+                    <ReviewDebateCard
+                      rating={4.0}
+                      content={'리뷰 내용 리뷰 내용 리뷰 내용 '}
+                      createdAt={'1 시간 전'}
+                      likes={100}
+                      username={'사용자'}
+                      comments={10}
+                    />
+                  </DetailReviewCardWrapper>
+                  <DetailReviewCardWrapper>
+                    <ReviewDebateCard
+                      rating={4.0}
+                      content={'리뷰 내용 리뷰 내용 리뷰 내용 '}
+                      createdAt={'1 시간 전'}
+                      likes={100}
+                      username={'사용자'}
+                      comments={10}
+                    />
+                  </DetailReviewCardWrapper>
+                  <DetailReviewCardWrapper>
+                    <ReviewDebateCard
+                      rating={4.0}
+                      content={'리뷰 내용 리뷰 내용 리뷰 내용 '}
+                      createdAt={'1 시간 전'}
+                      likes={100}
+                      username={'사용자'}
+                      comments={10}
+                    />
+                  </DetailReviewCardWrapper>
+                </ReviewDebateList>
+              </ContentsListWrapper>
+            </ReviewDebateContents>
+          )}
+          {activeTab === 'debate' && (
+            <ReviewDebateContents>
+              <ContentsHeader>
+                <ContentsTitle>토론장</ContentsTitle>
+              </ContentsHeader>
               <ReviewDebateList>
                 <DetailReviewCardWrapper>
                   <ReviewDebateCard
@@ -552,53 +591,13 @@ export default function MovieDetailPage() {
                   />
                 </DetailReviewCardWrapper>
               </ReviewDebateList>
-            </ContentsListWrapper>
-          </ReviewDebateContents>
+            </ReviewDebateContents>
           )}
-          {activeTab === 'debate' && (
-          <ReviewDebateContents>
-            <ContentsHeader>
-              <ContentsTitle>토론장</ContentsTitle>
-            </ContentsHeader>
-            <ReviewDebateList>
-              <DetailReviewCardWrapper>
-                <ReviewDebateCard
-                  rating={4.0}
-                  content={'리뷰 내용 리뷰 내용 리뷰 내용 '}
-                  createdAt={'1 시간 전'}
-                  likes={100}
-                  username={'사용자'}
-                  comments={10}
-                />
-              </DetailReviewCardWrapper>
-              <DetailReviewCardWrapper>
-                <ReviewDebateCard
-                  rating={4.0}
-                  content={'리뷰 내용 리뷰 내용 리뷰 내용 '}
-                  createdAt={'1 시간 전'}
-                  likes={100}
-                  username={'사용자'}
-                  comments={10}
-                />
-              </DetailReviewCardWrapper>
-              <DetailReviewCardWrapper>
-                <ReviewDebateCard
-                  rating={4.0}
-                  content={'리뷰 내용 리뷰 내용 리뷰 내용 '}
-                  createdAt={'1 시간 전'}
-                  likes={100}
-                  username={'사용자'}
-                  comments={10}
-                />
-              </DetailReviewCardWrapper>
-            </ReviewDebateList>
-          </ReviewDebateContents>)}
           {activeTab === 'media' && (
-          <DetailImageContents>
-            <DetailImage>영화 이미지 Grid</DetailImage>
-          </DetailImageContents>
+            <DetailImageContents>
+              <DetailImage>영화 이미지 Grid</DetailImage>
+            </DetailImageContents>
           )}
-
         </MovieDetailMainContent>
       </MovieDetailMain>
     </MovieDetailLayout>
