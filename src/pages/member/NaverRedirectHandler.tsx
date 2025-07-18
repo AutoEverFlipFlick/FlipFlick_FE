@@ -31,9 +31,14 @@ const NaverRedirectHandler: React.FC = () => {
         try {
           const res = await naverLogin(code, state)
 
-          const { accessToken } = res.data
+          const { accessToken, isNew } = res.data
           localStorage.setItem('accessToken', accessToken)
-          navigate('/')
+          if (isNew) {
+            sessionStorage.setItem('socialType', 'KAKAO')
+            navigate('/signup/social') // 닉네임, 이미지 설정 페이지
+          } else {
+            navigate('/') // 메인 페이지
+          }
         } catch (error) {
           console.error('네이버 로그인 실패:', error)
           alert('네이버 로그인 실패')

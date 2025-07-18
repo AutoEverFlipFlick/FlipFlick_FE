@@ -47,3 +47,11 @@ export const checkNicknameDuplicate = async (nickname: string) => {
   })
   return res.data
 }
+
+export const updateSocialInfo = async (data: {
+  nickname: string
+  profileImage?: string | null
+}) => {
+  const res = await axiosInstance.patch('/member/social-info', data)
+  return res.data
+}
