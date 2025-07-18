@@ -63,6 +63,7 @@ import KakaoRedirectHandler from '@/pages/member/KakaoRedirectHandler'
 import Layout from '@/components/common/layout/BasePageLayout' // 공통 레이아웃 컴포넌트가 필요함
 import NaverRedirectHandler from '@/pages/member/NaverRedirectHandler'
 import Bolkinator from '@/pages/Bolkinator'
+import SocialSignUp from '@/pages/member/SocialSignUp'
 
 const AppRoutes = () => {
   return (
@@ -116,13 +117,32 @@ const AppRoutes = () => {
           }
         />
 
+        <Route
+          path="/signup/social"
+          element={
+            <PublicRoute>
+              <SocialSignUp />
+            </PublicRoute>
+          }
+        />
+
         {/* Protected Routes (로그인 필요) */}
-        <Route path="/createplaylist" element={
-          <ProtectedRoute><CreatePlaylist /></ProtectedRoute>
-        } />
-        <Route path="/playlist/:id/edit" element={
-          <ProtectedRoute><EditPlaylist /></ProtectedRoute>
-        } />
+        <Route
+          path="/createplaylist"
+          element={
+            <ProtectedRoute>
+              <CreatePlaylist />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/playlist/:id/edit"
+          element={
+            <ProtectedRoute>
+              <EditPlaylist />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/createplaylist"
@@ -141,13 +161,8 @@ const AppRoutes = () => {
           }
         />
 
-        <Route 
-          path="/filmography/:tmdbId" 
-          element={
-            <Filmography />
-          } 
-         />
-        
+        <Route path="/filmography/:tmdbId" element={<Filmography />} />
+
         <Route path="*" element={<Navigate to="/" replace />} />
 
         <Route path="/oauth/kakao/callback" element={<KakaoRedirectHandler />} />

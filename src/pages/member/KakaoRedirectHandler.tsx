@@ -30,10 +30,15 @@ const KakaoRedirectHandler: React.FC = () => {
         try {
           const response = await kakaoLogin(code)
 
-          const { accessToken } = response.data
+          const { accessToken, isNew } = response.data
           localStorage.setItem('accessToken', accessToken)
 
-          navigate('/') // 메인 페이지 등으로 이동
+          if (isNew) {
+            sessionStorage.setItem('socialType', 'KAKAO')
+            navigate('/signup/social') // 닉네임, 이미지 설정 페이지
+          } else {
+            navigate('/') // 메인 페이지
+          }
         } catch (error) {
           console.error('카카오 로그인 실패:', error)
           alert('카카오 로그인 실패')
