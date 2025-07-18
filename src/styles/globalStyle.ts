@@ -1,6 +1,7 @@
 import { createGlobalStyle } from 'styled-components'
 
 export const GlobalStyle = createGlobalStyle`
+   
 
   html, body {
     font-family: ${({ theme }) => theme.fontFamily};
@@ -14,8 +15,16 @@ export const GlobalStyle = createGlobalStyle`
     -moz-osx-font-smoothing: grayscale;
   }
 
-  a {
-    text-decoration: none;
-    color: inherit;
-  }
+    a {
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    p {
+        margin: 0;
+        padding: 0;
+    }
+    
+    html, body, #root {
+    }
 `
