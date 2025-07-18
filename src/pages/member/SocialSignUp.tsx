@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
-import backgroundImage from '@/assets/common/background.png'
+import backgroundImage from '@/assets/common/background.webp'
 import BaseInput from '@/components/common/BaseInput'
 import BaseButton from '@/components/common/BaseButton'
 import profileImageDefault from '@/assets/icons/profile.png'
