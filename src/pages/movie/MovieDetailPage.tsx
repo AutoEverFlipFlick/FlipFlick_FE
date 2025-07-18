@@ -363,7 +363,7 @@ const ActionButton = styled.button<{ active?: boolean }>`
 export default function MovieDetailPage() {
   const [movieData, setMovieData] = useState<MovieDetailData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'overview' | 'review' | 'debate' | 'photo'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'review' | 'debate' | 'media'>('overview')
 
   useEffect(() => {
     // 실제 API 대체용
@@ -439,7 +439,7 @@ export default function MovieDetailPage() {
           <TabButton active={activeTab === 'debate'} onClick={() => setActiveTab('debate')}>
             토론장
           </TabButton>
-          <TabButton active={activeTab === 'photo'} onClick={() => setActiveTab('photo')}>
+          <TabButton active={activeTab === 'media'} onClick={() => setActiveTab('media')}>
             사진
           </TabButton>
           {/*<button style={{*/}
@@ -476,31 +476,34 @@ export default function MovieDetailPage() {
           {/*</button>*/}
         </MovieDetailMainContentTab>
         <MovieDetailMainContent>
-          <OverViewContents>
-            <OverViewContainerWrapper>
-              <OverViewContainer>개요 내용 1</OverViewContainer>
-              <OverViewContainer>개요 내용 2</OverViewContainer>
-              <OverViewContainer>개요 내용 3</OverViewContainer>
-            </OverViewContainerWrapper>
-            <OverViewPlatformWrapper>
-              <OverViewPlatformTab>
-                <PlatformTabButton active>구매</PlatformTabButton>
-                <PlatformTabButton>정액제</PlatformTabButton>
-                <PlatformTabButton>대여</PlatformTabButton>
-              </OverViewPlatformTab>
-              <OverViewPlatformImageWrapper>
-                {/*{movieData.actors.map((actor) => (*/}
-                {/*<ActorsImageCard key={actor.name} >*/}
-                {/*  <ActorImage imageUrl={actor.imageUrl} title={actor.name} />*/}
-                {/*  <ActorName >{actor.name}</ActorName>*/}
-                {/*</ActorsImageCard>))}*/}
-                {/*{movieData.platforms.map((platform) => (}*/}
-                {/*  <PostImage key={platform.name} imageUrl={platform.logoUrl} />*/}
-                {/*))}*/}
-                <PlatFormImage />
-              </OverViewPlatformImageWrapper>
-            </OverViewPlatformWrapper>
-          </OverViewContents>
+          {activeTab === 'overview' && (
+            <OverViewContents>
+              <OverViewContainerWrapper>
+                <OverViewContainer>개요 내용 1</OverViewContainer>
+                <OverViewContainer>개요 내용 2</OverViewContainer>
+                <OverViewContainer>개요 내용 3</OverViewContainer>
+              </OverViewContainerWrapper>
+              <OverViewPlatformWrapper>
+                <OverViewPlatformTab>
+                  <PlatformTabButton active>구매</PlatformTabButton>
+                  <PlatformTabButton>정액제</PlatformTabButton>
+                  <PlatformTabButton>대여</PlatformTabButton>
+                </OverViewPlatformTab>
+                <OverViewPlatformImageWrapper>
+                  {/*{movieData.actors.map((actor) => (*/}
+                  {/*<ActorsImageCard key={actor.name} >*/}
+                  {/*  <ActorImage imageUrl={actor.imageUrl} title={actor.name} />*/}
+                  {/*  <ActorName >{actor.name}</ActorName>*/}
+                  {/*</ActorsImageCard>))}*/}
+                  {/*{movieData.platforms.map((platform) => (}*/}
+                  {/*  <PostImage key={platform.name} imageUrl={platform.logoUrl} />*/}
+                  {/*))}*/}
+                  <PlatFormImage />
+                </OverViewPlatformImageWrapper>
+              </OverViewPlatformWrapper>
+            </OverViewContents>
+          )}
+          {activeTab === 'review' && (
           <ReviewDebateContents>
             <ContentsHeader>
               <ContentsTitle></ContentsTitle>
@@ -551,7 +554,8 @@ export default function MovieDetailPage() {
               </ReviewDebateList>
             </ContentsListWrapper>
           </ReviewDebateContents>
-
+          )}
+          {activeTab === 'debate' && (
           <ReviewDebateContents>
             <ContentsHeader>
               <ContentsTitle>토론장</ContentsTitle>
@@ -588,10 +592,13 @@ export default function MovieDetailPage() {
                 />
               </DetailReviewCardWrapper>
             </ReviewDebateList>
-          </ReviewDebateContents>
+          </ReviewDebateContents>)}
+          {activeTab === 'media' && (
           <DetailImageContents>
             <DetailImage>영화 이미지 Grid</DetailImage>
           </DetailImageContents>
+          )}
+
         </MovieDetailMainContent>
       </MovieDetailMain>
     </MovieDetailLayout>
