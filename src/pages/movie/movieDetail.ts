@@ -29,6 +29,11 @@ export interface Debate {
   isMyPost: boolean;
 }
 
+export interface Genre {
+  tmdbId: number;
+  name: string;
+}
+
 export interface MovieDetailData {
   tmdbId: number;
   title: string;
@@ -48,7 +53,7 @@ export interface MovieDetailData {
   isDisliked: boolean;
   likes: number;
   dislikes: number;
-  genres: string[];
+  genres: Genre[];
   platforms: Platform[];
   actors: Actor[];
   images: string[];

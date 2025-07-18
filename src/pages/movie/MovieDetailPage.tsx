@@ -73,6 +73,7 @@ const MovieDetailLikeHate = styled.div`
   margin-bottom: 20px;
 `
 const MovieDetailHeaderPlot = styled.div`
+  font-size: 12px;
   max-width: 490px;
   margin-bottom: 20px;
 `
@@ -162,7 +163,7 @@ const OverViewContainerWrapper = styled.div`
   align-items: center;
   max-width: 850px;
   min-width: 800px;
-  margin: 10px auto;
+  margin: 30px auto;
   gap: 20px;
 `
 const OverViewPlatformWrapper = styled.div`
@@ -199,12 +200,12 @@ const OverViewPlatformTab = styled.div`
 
 const OverViewContainer = styled.div`
   display: flex;
-  color: #130803;
+  flex-direction: column;
   max-width: 800px;
   min-width: 220px;
   word-wrap: break-word;
-  min-height: 100px;
-  background-color: #f0f0f0;
+  min-height: 40px;
+  max-height: 100px;
   box-sizing: border-box;
 `
 const ContentsHeader = styled.div`
@@ -441,46 +442,23 @@ export default function MovieDetailPage() {
           <TabButton active={activeTab === 'media'} onClick={() => setActiveTab('media')}>
             사진
           </TabButton>
-          {/*<button style={{*/}
-          {/*  all: 'unset', cursor: 'pointer',*/}
-          {/*  borderBottom: '1px solid #FE6A3C',*/}
-          {/*  color: '#FE6A3C',*/}
-          {/*  width: '100px', textAlign: 'center',*/}
-          {/*  fontSize: '20px'*/}
-          {/*}}>개요*/}
-          {/*</button>*/}
-          {/*<button style={{*/}
-          {/*  all: 'unset', cursor: 'pointer',*/}
-          {/*  // borderBottom: '1px solid',*/}
-          {/*  // color:'#FE6A3C',*/}
-          {/*  width: '100px', textAlign: 'center',*/}
-          {/*  fontSize: '20px'*/}
-          {/*}}>리뷰*/}
-          {/*</button>*/}
-          {/*<button style={{*/}
-          {/*  all: 'unset', cursor: 'pointer',*/}
-          {/*  // borderBottom: '1px solid',*/}
-          {/*  // color:'#FE6A3C',*/}
-          {/*  width: '100px', textAlign: 'center',*/}
-          {/*  fontSize: '20px'*/}
-          {/*}}>토론장*/}
-          {/*</button>*/}
-          {/*<button style={{*/}
-          {/*  all: 'unset', cursor: 'pointer',*/}
-          {/*  // borderBottom: '1px solid',*/}
-          {/*  // color:'#FE6A3C',*/}
-          {/*  width: '100px', textAlign: 'center',*/}
-          {/*  fontSize: '20px'*/}
-          {/*}}>사진*/}
-          {/*</button>*/}
         </MovieDetailMainContentTab>
         <MovieDetailMainContent>
           {activeTab === 'overview' && (
             <OverViewContents>
               <OverViewContainerWrapper>
-                <OverViewContainer>개요 내용 1</OverViewContainer>
-                <OverViewContainer>개요 내용 2</OverViewContainer>
-                <OverViewContainer>개요 내용 3</OverViewContainer>
+                <OverViewContainer>
+                  <p>장르: {movieData.genres.map(genre => genre.name).join(', ')}</p>
+                  <p>러닝타임: {movieData.runtime}분</p>
+                </OverViewContainer>
+                <OverViewContainer>
+                  <p>제작년도: {movieData.productionYear}</p>
+                  <p>제작국가: {movieData.productionCountry}</p>
+                </OverViewContainer>
+                <OverViewContainer>
+                  <p>연령등급: {movieData.ageRating}</p>
+                  <p>평균 평점: {movieData.voteAverage.toFixed(1)}점</p>
+                </OverViewContainer>
               </OverViewContainerWrapper>
               <OverViewPlatformWrapper>
                 <OverViewPlatformTab>
@@ -489,14 +467,6 @@ export default function MovieDetailPage() {
                   <PlatformTabButton>대여</PlatformTabButton>
                 </OverViewPlatformTab>
                 <OverViewPlatformImageWrapper>
-                  {/*{movieData.actors.map((actor) => (*/}
-                  {/*<ActorsImageCard key={actor.name} >*/}
-                  {/*  <ActorImage imageUrl={actor.imageUrl} title={actor.name} />*/}
-                  {/*  <ActorName >{actor.name}</ActorName>*/}
-                  {/*</ActorsImageCard>))}*/}
-                  {/*{movieData.platforms.map((platform) => (}*/}
-                  {/*  <PostImage key={platform.name} imageUrl={platform.logoUrl} />*/}
-                  {/*))}*/}
                   <PlatFormImage />
                 </OverViewPlatformImageWrapper>
               </OverViewPlatformWrapper>
