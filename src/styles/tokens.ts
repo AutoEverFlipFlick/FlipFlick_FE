@@ -50,7 +50,7 @@ export const colors = {
     700: '#047857',
     800: '#065f46',
   },
-  /* 필요 시 purple / pink / cyan / yellow / red / indigo 추가 */
+  /* 필요 시 purple / pink / cyan / yellow / red / indigo 추가 */
 } as const
 
 /* 그라데이션 ----------------------------------------------------------- */
