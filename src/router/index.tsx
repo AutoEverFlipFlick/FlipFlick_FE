@@ -64,6 +64,10 @@ import Layout from '@/components/common/layout/BasePageLayout' // 공통 레이�
 import NaverRedirectHandler from '@/pages/member/NaverRedirectHandler'
 import Bolkinator from '@/pages/Bolkinator'
 import SocialSignUp from '@/pages/member/SocialSignUp'
+import Dashboard from '@/pages/admin/Dashboard'
+import UserManagement from '@/pages/admin/UserManagement'
+import ReportManagement from '@/pages/admin/ReportManagement'
+import AdminRoute from '@/components/common/AdminRoute'
 
 const AppRoutes = () => {
   return (
@@ -90,6 +94,32 @@ const AppRoutes = () => {
         <Route path="/movie/detail" element={<MovieDetailPage />} />
         <Route path="/totalsearch" element={<TotalSearch />} />
         <Route path="/bolkinator" element={<Bolkinator />} />
+
+        {/* AdminRoute (관리자만 접근) */}
+        <Route
+          path="/admin/dashboard"
+          element={
+            <AdminRoute>
+              <Dashboard />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/user"
+          element={
+            <AdminRoute>
+              <UserManagement />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/report"
+          element={
+            <AdminRoute>
+              <ReportManagement />
+            </AdminRoute>
+          }
+        />
 
         {/* Public Routes (로그인된 사용자는 접근 불가) */}
         <Route
