@@ -3,6 +3,7 @@
   "success": true,
   "message": "영화 상세 조회 성공",
   "data": {
+    "movieId": 1,
     "tmdbId": 552524,
     "title": "릴로 & 스티치",
     "originalTitle": "Lilo & Stitch",
@@ -11,11 +12,17 @@
     "backgroundImg": "https://image.tmdb.org/t/p/w500/7Zx3wDG5bBtcfk8lcnCWDOLM4Y4.jpg",
     "popcorn": 0,
     "voteAverage": 0,
+    "likeCnt": 0,
+    "hateCnt": 0,
     "releaseDate": "2025-05-17",
     "runtime": 107,
     "productionYear": 2025,
     "productionCountry": "United States of America",
     "ageRating": "ALL",
+    "myLike": false,
+    "myHate": false,
+    "myWatched": false,
+    "myBookmark": false,
     "genres": [
       {
         "tmdbId": 10751,

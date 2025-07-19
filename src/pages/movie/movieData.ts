@@ -1,14 +1,15 @@
-// pages/movieDetail.ts
+// pages/movieData.ts
 
-export interface Platform {
+export interface Providers {
   type: '구매' | '정액제' | '대여';
   name: string;
   logoUrl: string;
 }
 
 export interface Actor {
+  id: number;
   name: string;
-  imageUrl: string;
+  profileImg: string | null;
 }
 
 export interface Review {
@@ -31,10 +32,25 @@ export interface Debate {
 
 export interface Genre {
   tmdbId: number;
-  name: string;
+  genreName: string;
+}
+export interface OverviewData {
+  tmdbId: number;
+  originalTitle: string;
+  runtime: number;
+  productionCountry: string;
+  releaseDate: string;
+
 }
 
-export interface MovieDetailData {
+
+
+export interface LikeHateData {
+  isLiked: boolean;
+  isDisliked: boolean;
+}
+
+export interface MovieData {
   tmdbId: number;
   title: string;
   originalTitle: string;
@@ -49,13 +65,13 @@ export interface MovieDetailData {
   voteAverage: number;
   myRating: number;
   popcorn: number;
-  isLiked: boolean;
-  isDisliked: boolean;
-  likes: number;
-  dislikes: number;
+  myLiked: boolean;
+  myHate: boolean;
+  likeCnt: number;
+  hateCnt: number;
   genres: Genre[];
-  platforms: Platform[];
-  actors: Actor[];
+  providers: Providers[];
+  casts: Actor[];
   images: string[];
   videos: string[];
   reviews: Review[];
