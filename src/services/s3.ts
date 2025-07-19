@@ -4,7 +4,7 @@ export const uploadImage = async (file: File): Promise<string> => {
   const formData = new FormData()
   formData.append('file', file)
 
-  const res = await axiosInstance.post('/s3/image', formData, {
+  const res = await axiosInstance.post('/api/v1/s3/image', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
 
@@ -12,7 +12,7 @@ export const uploadImage = async (file: File): Promise<string> => {
 }
 
 export const deleteImage = async (imageUrl: string) => {
-  return await axiosInstance.delete('/s3/image', {
+  return await axiosInstance.delete('/api/v1/s3/image', {
     data: { url: imageUrl }, // ⚠️ 서버에서 JSON body로 받게 설정
   })
 }
