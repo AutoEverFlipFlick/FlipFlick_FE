@@ -9,6 +9,16 @@ const FixedWrapper = styled.header`
   width: 100%;
   top: 0;
   left: 0;
+
+  /* 1) 래퍼 자체를 border-box로 지정 */
+  box-sizing: border-box;
+
+  /* 2) 자손 · 의사요소까지 상속(inherit)하도록 강제 */
+  *,
+  *::before,
+  *::after {
+    box-sizing: inherit;
+  }
 `
 
 /* 래퍼: 헤더 전체 틀 */
@@ -122,12 +132,12 @@ const BaseHeader = () => {
   const [isFocused, setIsFocused] = useState(false)
   const handleInputFocused = () => {
     console.log('Focused')
-    // setIsFocused(true)
+    setIsFocused(true)
   }
 
   const handleInputBlured = () => {
     console.log('Blured')
-    // setIsFocused(false)
+    setIsFocused(false)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
