@@ -37,7 +37,7 @@ import axios from 'axios'
 const getAccessToken = () => localStorage.getItem('accessToken')
 
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8080/api/v1',
+  baseURL: 'http://localhost:8080',
   // withCredentials: true,
 })
 
