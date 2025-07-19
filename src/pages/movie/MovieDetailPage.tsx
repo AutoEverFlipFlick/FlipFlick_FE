@@ -425,6 +425,7 @@ export default function MovieDetailPage() {
                       createdAt={'1 시간 전'}
                       likes={100}
                       username={'사용자'}
+                      type={'review'}
                     />
                   </DetailReviewCardWrapper>
                 </ReviewDebateList>
@@ -444,6 +445,9 @@ export default function MovieDetailPage() {
                     likes={100}
                     username={'사용자'}
                     comments={10}
+                    images={['https://placehold.co/600x600', 'https://placehold.co/600x600', 'https://placehold.co/600x600', 'https://placehold.co/600x600', 'https://placehold.co/600x600']}
+                    type={'debate'}
+                    isMyPost={true}
                   />
                 </DetailReviewCardWrapper>
               </ReviewDebateList>
