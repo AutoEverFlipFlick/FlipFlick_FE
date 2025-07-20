@@ -1,8 +1,10 @@
+'use client'
+
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import styled, { keyframes } from 'styled-components'
 
-// Keyframes (moved from global for component-specific use)
+// Keyframes
 const pulseAnimation = keyframes`
   0%, 100% { opacity: 1; }
   50% { opacity: 0.7; }
@@ -17,7 +19,9 @@ const pingAnimation = keyframes`
 // Styled Components
 const PageWrapper = styled.div`
   min-height: 100vh;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden; /* 가로 스크롤 방지 */
 `
 
 const Nav = styled.nav`
@@ -27,6 +31,7 @@ const Nav = styled.nav`
   padding: 1.5rem;
   position: relative;
   z-index: 10;
+  flex-shrink: 0; /* Nav 높이가 줄어들지 않도록 설정 */
 `
 
 const NavLeft = styled.div`
@@ -56,15 +61,16 @@ const NavLink = styled.a`
 `
 
 const MainContent = styled.main`
+  flex-grow: 1; /* 남은 공간을 모두 차지하도록 설정 */
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 2rem;
+  justify-content: center; /* 수직 중앙 정렬 */
+  padding: 1rem 2rem;
+  gap: 1rem; /* 요소들 사이의 간격 추가 */
 `
 
 const LogoContainer = styled.div`
-  margin-bottom: 2rem;
   position: relative;
 `
 
@@ -99,7 +105,6 @@ const NeonBorder = styled.div`
 `
 
 const ControlHints = styled.div`
-  margin-bottom: 1rem;
   text-align: center;
   color: #ffcc99;
   font-size: 0.875rem;
@@ -120,19 +125,20 @@ const MobileHintSpan = styled.span`
 const CarouselContainer = styled.div`
   position: relative;
   width: 100%;
-  height: 500px;
+  height: 550px; /* 세로 공간을 조금 더 확보 */
   display: flex;
-  align-items: flex-end;
+  align-items: center; /* 수직 중앙 정렬로 변경 */
   justify-content: center;
   overflow: visible;
   touch-action: pan-y;
   perspective: 1200px;
-  perspective-origin: center 80%;
+  perspective-origin: center 50%; /* perspective 원점을 중앙으로 변경 */
 `
 
 const NavButton = styled.button`
   position: absolute;
-  bottom: 8rem;
+  top: 50%; /* 수직 중앙으로 이동 */
+  transform: translateY(-50%); /* 정확한 중앙 정렬 */
   z-index: 30;
   background-color: rgba(0, 0, 0, 0.7);
   border-radius: 50%;
@@ -168,7 +174,7 @@ const CarouselItemWrapper = styled.div<{
 }>`
   position: absolute;
   cursor: pointer;
-  bottom: 80px;
+  /* bottom 속성 제거, CarouselContainer의 정렬에 맡김 */
   transform-style: preserve-3d;
   will-change: transform, opacity;
   transition: all ${({ transitionDuration }) => transitionDuration}
@@ -189,13 +195,10 @@ const PosterImage = styled.img<{ isCenter: boolean; isActive: boolean }>`
 `
 
 const MovieInfoSection = styled.section`
-  margin-top: 4rem;
   text-align: center;
   max-width: 42rem;
   padding: 0 1rem;
-  @media (max-width: 768px) {
-    margin-top: 2rem;
-  }
+  flex-shrink: 0; /* MovieInfoSection 높이가 줄어들지 않도록 설정 */
 `
 
 const SectionTitle = styled.h2`
@@ -231,6 +234,7 @@ const AmbientLight = styled.div`
   position: fixed;
   inset: 0;
   pointer-events: none;
+  z-index: -1; /* 다른 콘텐츠 뒤로 보내기 */
   & > div {
     position: absolute;
     border-radius: 50%;
@@ -238,39 +242,13 @@ const AmbientLight = styled.div`
   }
 `
 
-// Center Item Effects
-const FloatingGlowEffect = styled.div<{ isActive: boolean }>`
-  position: absolute;
-  inset: 0;
-  border-radius: 0.5rem;
-  background: linear-gradient(45deg, transparent, rgba(255, 107, 53, 0.4), transparent);
-  animation: ${({ isActive }) => (isActive ? 'pulse 1s' : 'pulse 2s')} ease-in-out infinite
-    alternate;
-`
-
-const RotatingGlowRing = styled.div<{
-  isActive: boolean
-  reverse?: boolean
-  inset: string
-  duration: number
-  color: string
-  shadow: string
-}>`
-  position: absolute;
-  inset: ${({ inset }) => inset};
-  border-radius: 0.5rem;
-  border: 2px solid ${({ color }) => color};
-  box-shadow: ${({ shadow }) => shadow};
-  animation: ${({ isActive, reverse, duration }) =>
-    `${reverse ? 'spin-reverse' : 'spin'} ${isActive ? duration / 2 : duration}s linear infinite`};
-`
-
 const MovieTitleAbove = styled.div`
   position: absolute;
-  top: -6rem;
+  bottom: 105%; /* 포스터 바로 위로 위치 조정 */
   left: 50%;
   transform: translateX(-50%);
   text-align: center;
+  width: 100%;
   h3 {
     font-size: 2.25rem;
     font-weight: bold;
@@ -292,7 +270,6 @@ const MovieTitleAbove = styled.div`
     animation: ${pulseAnimation} 2s infinite;
   }
   @media (max-width: 768px) {
-    top: -4rem;
     h3 {
       font-size: 1.5rem;
       margin-bottom: 0.5rem;
@@ -325,178 +302,78 @@ const SpotlightBeam = styled.div<{ isActive: boolean }>`
   }
 `
 
-const ParticlesContainer = styled.div`
-  position: absolute;
-  inset: -4rem;
-  pointer-events: none;
-  @media (max-width: 768px) {
-    inset: -3rem;
-  }
-`
-
-const Particle = styled.div<{ delay: number; duration: number; left: string; top: string }>`
-  position: absolute;
-  width: 0.5rem;
-  height: 0.5rem;
-  background-color: #ff9966;
-  border-radius: 50%;
-  opacity: 0.6;
-  left: ${({ left }) => left};
-  top: ${({ top }) => top};
-  animation: float ${({ duration }) => duration}s ease-in-out infinite ${({ delay }) => delay}s;
-  @media (max-width: 768px) {
-    width: 0.375rem;
-    height: 0.375rem;
-  }
-`
-
-const SpeedIndicatorPing = styled.div`
-  position: absolute;
-  inset: -5rem;
-  border: 2px solid rgba(255, 153, 102, 0.3);
-  border-radius: 0.5rem;
-  animation: ${pingAnimation} 1s cubic-bezier(0, 0, 0.2, 1) infinite;
-  @media (max-width: 768px) {
-    inset: -4rem;
-  }
-`
-
-const NonCenterHoverOverlay = styled.div`
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
-  border-radius: 0.5rem;
-  opacity: 0;
-  transition: opacity 0.3s;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-  padding: 1rem;
-  h3 {
-    color: white;
-    font-weight: 600;
-    font-size: 0.875rem;
-    text-align: center;
-  }
-  div {
-    width: 4rem;
-    height: 2px;
-    background-color: #ff9966;
-    margin-top: 0.5rem;
-  }
-  @media (max-width: 768px) {
-    padding: 0.5rem;
-    h3 {
-      font-size: 0.75rem;
-    }
-    div {
-      width: 3rem;
-    }
-  }
-`
-
 const PosterWrapper = styled.div`
   position: relative;
-  &:hover ${NonCenterHoverOverlay} {
-    opacity: 1;
-  }
-`
-
-const SelectionIndicator = styled.div<{ isActive: boolean }>`
-  position: absolute;
-  bottom: -2.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  div {
-    width: 1.25rem;
-    height: 1.25rem;
-    background: linear-gradient(to right, #ff9966, #ff5e62);
-    border-radius: 50%;
-    box-shadow:
-      0 0 20px #ff6b35,
-      0 0 40px #ff6b35;
-    animation: ${({ isActive }) => (isActive ? 'bounce 1s' : 'bounce 2s')} infinite;
-  }
-  @media (max-width: 768px) {
-    bottom: -2rem;
-    div {
-      width: 1rem;
-      height: 1rem;
-    }
-  }
 `
 
 export default function Component() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isScrolling, setIsScrolling] = useState(false)
   const [isSwiping, setIsSwiping] = useState(false)
-  const scrollTimeoutRef = useRef<NodeJS.Timeout>(null)
+  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastScrollTime = useRef(0)
   const touchStartX = useRef(0)
   const touchStartY = useRef(0)
   const touchStartTime = useRef(0)
   const carouselRef = useRef<HTMLDivElement>(null)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkIsMobile = () => setIsMobile(window.innerWidth < 768)
+    checkIsMobile()
+    window.addEventListener('resize', checkIsMobile)
+    return () => window.removeEventListener('resize', checkIsMobile)
+  }, [])
 
   const movies = [
     {
       id: 1,
       title: 'Pulp Fiction',
-      // 펄프 픽션 (1994)
       poster: 'https://image.tmdb.org/t/p/w342/vQWk5YBFWF4bZaofAbv0tShwBvQ.jpg',
     },
     {
       id: 2,
       title: 'The Godfather',
-      // 대부 (1972)
       poster: 'https://image.tmdb.org/t/p/w342/3bhkrj58Vtu7enYsRolD1fZdja1.jpg',
     },
     {
       id: 3,
       title: 'Casablanca',
-      // 카사블랑카 (1942)
       poster: 'https://image.tmdb.org/t/p/w342/oyGRZVIthHJjc98ekKpeWpDh8Ws.jpg',
     },
     {
       id: 4,
       title: 'Citizen Kane',
-      // 시민 케인 (1941)
       poster: 'https://image.tmdb.org/t/p/w342/sav0jxhqiH0bPr2vZFU0Kjt2nZL.jpg',
     },
     {
       id: 5,
       title: 'Vertigo',
-      // 현기증 (1958)
       poster: 'https://image.tmdb.org/t/p/w342/qFbuT4BhuLvN7Zj4yCJ8Im80mNP.jpg',
     },
     {
       id: 6,
       title: 'Sunset Boulevard',
-      // 선셋 대로 (1950)
       poster: 'https://image.tmdb.org/t/p/w342/sC4Dpmn87oz9AuxZ15Lmip0Ftgr.jpg',
     },
     {
       id: 7,
       title: 'Goodfellas',
-      // 굿펠라스 (1990)
       poster: 'https://image.tmdb.org/t/p/w342/kct4oTX7j2DuOP2sE2nPwIJ80Zr.jpg',
     },
     {
       id: 8,
       title: 'Apocalypse Now',
-      // 지옥의 묵시록 (1979)
       poster: 'https://image.tmdb.org/t/p/w342/gQB8Y5RCMkv2zwzFHbUJX3kAhvA.jpg',
     },
     {
       id: 9,
       title: 'The Shining',
-      // 샤이닝 (1980)
       poster: 'https://image.tmdb.org/t/p/w342/xazWoLealQwEgqZ89MLZklLZD3k.jpg',
     },
     {
       id: 10,
       title: 'Taxi Driver',
-      // 택시 드라이버 (1976)
       poster: 'https://image.tmdb.org/t/p/w342/ekstpH614fwDX8DUln1a2Opz0N8.jpg',
     },
   ] as const
@@ -523,7 +400,7 @@ export default function Component() {
       carouselElement?.removeEventListener('wheel', handleWheel)
       if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
     }
-  }, [movies.length])
+  }, [])
 
   useEffect(() => {
     const handleTouchStart = (e: TouchEvent) => {
@@ -565,7 +442,7 @@ export default function Component() {
       window.removeEventListener('touchmove', handleTouchMove)
       window.removeEventListener('touchend', handleTouchEnd)
     }
-  }, [movies.length])
+  }, [])
 
   return (
     <PageWrapper>
@@ -582,20 +459,17 @@ export default function Component() {
           <NavLink href="#">ABOUT</NavLink>
         </NavRight>
       </Nav> */}
-
       <MainContent>
         {/* <LogoContainer>
           <LogoText>Wurlitzer</LogoText>
           <NeonBorder />
-        </LogoContainer>
-
-        <ControlHints>
+        </LogoContainer> */}
+        {/* <ControlHints>
           <HintSpan>🖱️ Mouse wheel</HintSpan>
           <MobileHintSpan>👆 Swipe left/right</MobileHintSpan>
           <span> or </span>
           <span>🖱️ Click buttons</span>
         </ControlHints> */}
-
         <CarouselContainer ref={carouselRef}>
           <NavButton className="left" onClick={prevMovie}>
             <ChevronLeft color="white" size={24} />
@@ -603,14 +477,13 @@ export default function Component() {
           <NavButton className="right" onClick={nextMovie}>
             <ChevronRight color="white" size={24} />
           </NavButton>
-
           <div
             style={{
               position: 'relative',
               width: '100%',
               height: '100%',
               display: 'flex',
-              alignItems: 'flex-end',
+              alignItems: 'center',
               justifyContent: 'center',
             }}
           >
@@ -623,21 +496,20 @@ export default function Component() {
               const totalAngle = Math.PI * 1.2
               const anglePerStep = totalAngle / 6
               const angle = offset * anglePerStep
-              const radius = typeof window !== 'undefined' && window.innerWidth < 768 ? 280 : 380
+              const radius = isMobile ? 280 : 380
               let translateX, translateY, translateZ, rotateY, scale, opacity
+
               if (isCenter) {
                 translateX = 0
-                translateY = typeof window !== 'undefined' && window.innerWidth < 768 ? -200 : -280
-                translateZ = typeof window !== 'undefined' && window.innerWidth < 768 ? 100 : 150
+                translateY = isMobile ? -60 : -80 // 중앙 포스터의 수직 이동량 감소
+                translateZ = isMobile ? 100 : 150
                 rotateY = 0
-                scale = typeof window !== 'undefined' && window.innerWidth < 768 ? 1.2 : 1.5
+                scale = isMobile ? 1.2 : 1.5
                 opacity = 1
               } else if (absOffset <= 3) {
                 translateX = Math.sin(angle) * radius
-                translateY = -30 + Math.abs(Math.cos(angle)) * 40
-                translateZ =
-                  Math.cos(angle) *
-                  (typeof window !== 'undefined' && window.innerWidth < 768 ? 80 : 120)
+                translateY = 20 + Math.abs(Math.cos(angle)) * 40 // 주변 포스터 위치 조정
+                translateZ = Math.cos(angle) * (isMobile ? 80 : 120)
                 rotateY = angle * (180 / Math.PI) * 0.6
                 scale = Math.max(0.6, 1 - absOffset * 0.15)
                 opacity = Math.max(0.4, 1 - absOffset * 0.2)
@@ -646,7 +518,6 @@ export default function Component() {
               }
               const transform = `translateX(${translateX}px) translateY(${translateY}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`
               const isActive = isScrolling || isSwiping
-
               return (
                 <CarouselItemWrapper
                   key={movie.id}
@@ -660,57 +531,21 @@ export default function Component() {
                     <PosterImage
                       src={movie.poster}
                       alt={movie.title}
-                      width={typeof window !== 'undefined' && window.innerWidth < 768 ? 160 : 200}
-                      height={typeof window !== 'undefined' && window.innerWidth < 768 ? 240 : 300}
+                      width={isMobile ? 160 : 200}
+                      height={isMobile ? 240 : 300}
                       isCenter={isCenter}
                       isActive={isActive}
+                      priority={isCenter}
                     />
-                    {isCenter && (
+                    {/* {isCenter && (
                       <>
-                        {/* <FloatingGlowEffect isActive={isActive} />
-                        <RotatingGlowRing
-                          isActive={isActive}
-                          inset="-1.5rem"
-                          duration={10}
-                          color="rgba(255,107,53,0.7)"
-                          shadow="0 0 40px rgba(255,107,53,0.8), inset 0 0 40px rgba(255,107,53,0.3)"
-                        />
-                        <RotatingGlowRing
-                          isActive={isActive}
-                          inset="-3rem"
-                          duration={15}
-                          color="rgba(255,0,0,0.5)"
-                          shadow="0 0 60px rgba(255,0,0,0.5)"
-                          reverse
-                        /> */}
                         <MovieTitleAbove>
                           <h3>{movie.title}</h3>
                           <div className="divider" />
                           <div className="featuring">★ NOW FEATURING ★</div>
                         </MovieTitleAbove>
                         <SpotlightBeam isActive={isActive} />
-                        {/* <ParticlesContainer>
-                          {[...Array(6)].map((_, i) => (
-                            <Particle
-                              key={i}
-                              left={`${20 + i * 15}%`}
-                              top={`${10 + (i % 2) * 80}%`}
-                              duration={isActive ? 1.5 + i * 0.2 : 3 + i * 0.5}
-                              delay={isActive ? i * 0.2 : i * 0.5}
-                            />
-                          ))}
-                        </ParticlesContainer> */}
-                        {/* {isActive && <SpeedIndicatorPing />}
-                        <SelectionIndicator isActive={isActive}>
-                          <div />
-                        </SelectionIndicator> */}
                       </>
-                    )}
-                    {/* {!isCenter && (
-                      <NonCenterHoverOverlay>
-                        <h3>{movie.title}</h3>
-                        <div />
-                      </NonCenterHoverOverlay>
                     )} */}
                   </PosterWrapper>
                 </CarouselItemWrapper>
@@ -718,7 +553,6 @@ export default function Component() {
             })}
           </div>
         </CarouselContainer>
-
         {/* <MovieInfoSection>
           <SectionTitle>Featured Movie</SectionTitle>
           <MovieTitle>{movies[currentIndex].title}</MovieTitle>
@@ -728,39 +562,38 @@ export default function Component() {
             buttons for precise control. Watch as your selected film rises from the collection to
             take center stage.
           </MovieDescription>
-        </MovieInfoSection>
-
-        <AmbientLight>
-          <div
-            style={{
-              top: '33.33%',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: '24rem',
-              height: '24rem',
-              backgroundColor: 'rgba(255, 107, 53, 0.1)',
-            }}
-          />
-          <div
-            style={{
-              bottom: '25%',
-              left: '25%',
-              width: '16rem',
-              height: '16rem',
-              backgroundColor: 'rgba(255, 0, 0, 0.1)',
-            }}
-          />
-          <div
-            style={{
-              bottom: '33.33%',
-              right: '25%',
-              width: '20rem',
-              height: '20rem',
-              backgroundColor: 'rgba(255, 255, 0, 0.1)',
-            }}
-          />
-        </AmbientLight> */}
+        </MovieInfoSection> */}
       </MainContent>
+      {/* <AmbientLight>
+        <div
+          style={{
+            top: '33.33%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '24rem',
+            height: '24rem',
+            backgroundColor: 'rgba(255, 107, 53, 0.1)',
+          }}
+        />
+        <div
+          style={{
+            bottom: '25%',
+            left: '25%',
+            width: '16rem',
+            height: '16rem',
+            backgroundColor: 'rgba(255, 0, 0, 0.1)',
+          }}
+        />
+        <div
+          style={{
+            bottom: '33.33%',
+            right: '25%',
+            width: '20rem',
+            height: '20rem',
+            backgroundColor: 'rgba(255, 255, 0, 0.1)',
+          }}
+        />
+      </AmbientLight> */}
     </PageWrapper>
   )
 }
