@@ -47,3 +47,8 @@ export const checkNicknameDuplicate = async (nickname: string) => {
   })
   return res.data
 }
+
+export const userInfo = async () => {
+  const res = await axiosInstance.get(`/member/user-info`)
+  return res.data
+}
