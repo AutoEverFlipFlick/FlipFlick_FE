@@ -120,7 +120,7 @@ export const createPlaylist = async (
   playlistData: CreatePlaylistRequest,
 ): Promise<CreatePlaylistResponse> => {
   const response = await axiosInstance.post<CreatePlaylistResponse>(
-    '/playlist/create',
+    '/api/v1/playlist/create',
     playlistData,
   )
   return response.data
@@ -133,7 +133,7 @@ export const getPlaylistDetail = async (
   size: number = 18,
 ): Promise<PlaylistDetailResponse> => {
   const response = await axiosInstance.get<PlaylistDetailResponse>(
-    `/playlist/${playlistId}?page=${page}&size=${size}`,
+    `/api/v1/playlist/${playlistId}?page=${page}&size=${size}`,
   )
   return response.data
 }
@@ -144,7 +144,7 @@ export const getAllPlaylists = async (
   size: number = 20,
   sortBy: SortBy = 'latest',
 ): Promise<PlaylistResponse> => {
-  const response = await axiosInstance.get<PlaylistResponse>('/playlist/all', {
+  const response = await axiosInstance.get<PlaylistResponse>('/api/v1/playlist/all', {
     params: {
       page,
       size,
@@ -159,7 +159,7 @@ export const getMyPlaylists = async (
   page: number = 0,
   size: number = 20,
 ): Promise<PlaylistResponse> => {
-  const response = await axiosInstance.get<PlaylistResponse>('/playlist/my', {
+  const response = await axiosInstance.get<PlaylistResponse>('/api/v1/playlist/my', {
     params: {
       page,
       size,
@@ -173,7 +173,7 @@ export const getBookmarkedPlaylists = async (
   page: number = 0,
   size: number = 20,
 ): Promise<PlaylistResponse> => {
-  const response = await axiosInstance.get<PlaylistResponse>('/playlist/bookmarked', {
+  const response = await axiosInstance.get<PlaylistResponse>('/api/v1/playlist/bookmarked', {
     params: {
       page,
       size,
@@ -188,7 +188,10 @@ export const togglePlaylistBookmark = async (playListId: number): Promise<Bookma
     playListId,
   }
 
-  const response = await axiosInstance.post<BookmarkResponse>('/playlist/bookmark', requestBody)
+  const response = await axiosInstance.post<BookmarkResponse>(
+    '/api/v1/playlist/bookmark',
+    requestBody,
+  )
   return response.data
 }
 
@@ -199,7 +202,7 @@ export const checkBookmarkStatus = async (
 ): Promise<boolean> => {
   try {
     const response = await axiosInstance.get(
-      `/playlist/${playListId}/bookmark/status?userId=${userId}`,
+      `/api/v1/playlist/${playListId}/bookmark/status?userId=${userId}`,
     )
     return response.data.data.isBookmarked
   } catch (error) {
@@ -221,7 +224,7 @@ export interface BookmarkListResponse {
 
 // 사용자 북마크 목록 가져오기 - 수정
 export const getUserBookmarks = async (userId: number): Promise<string[]> => {
-  const response = await axiosInstance.get<BookmarkListResponse>(`/playlist/user/bookmarks`)
+  const response = await axiosInstance.get<BookmarkListResponse>(`/api/v1/playlist/user/bookmarks`)
   return response.data.data.playListIds.map(id => id.toString())
 }
 
@@ -230,7 +233,7 @@ export const searchMovies = async (
   query: string,
   page: number = 1,
 ): Promise<SearchMovieResponse> => {
-  const response = await axiosInstance.post<SearchMovieResponse>('/search/movie', {
+  const response = await axiosInstance.post<SearchMovieResponse>('/api/v1/search/movie', {
     query: query.trim(),
     page: page,
   })
@@ -261,7 +264,7 @@ export const updatePlaylist = async (
   playlistData: UpdatePlaylistRequest,
 ): Promise<UpdatePlaylistResponse> => {
   const response = await axiosInstance.put<UpdatePlaylistResponse>(
-    `/playlist/${playlistId}`,
+    `/api/v1/playlist/${playlistId}`,
     playlistData,
   )
   return response.data
@@ -276,7 +279,9 @@ export interface DeletePlaylistResponse {
 
 // 플레이리스트 삭제
 export const deletePlaylist = async (playlistId: string): Promise<DeletePlaylistResponse> => {
-  const response = await axiosInstance.delete<DeletePlaylistResponse>(`/playlist/${playlistId}`)
+  const response = await axiosInstance.delete<DeletePlaylistResponse>(
+    `/api/v1/playlist/${playlistId}`,
+  )
   return response.data
 }
 
@@ -285,7 +290,7 @@ export const getPlaylistsByNickname = async (
   page: number = 0,
   size: number = 20,
 ): Promise<PlaylistResponse> => {
-  const response = await axiosInstance.get<PlaylistResponse>(`/playlist/user/${nickname}`, {
+  const response = await axiosInstance.get<PlaylistResponse>(`/api/v1/playlist/user/${nickname}`, {
     params: { page, size },
   })
   return response.data

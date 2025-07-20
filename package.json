@@ -19,17 +19,24 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@iconify/react": "^6.0.0",
+<<<<<<< HEAD
     "@mui/material": "^7.2.0",
+=======
+    "apexcharts": "^5.2.0",
+>>>>>>> 4b4a21382d959edd1e0666d66637cc7fc3903078
     "axios": "^1.10.0",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
     "lucide-react": "^0.525.0",
     "react": "^19.1.0",
+    "react-apexcharts": "^1.7.0",
     "react-dom": "^19.1.0",
     "react-responsive": "^10.0.1",
     "react-router-dom": "^7.6.3",
     "react-toastify": "^11.0.5",
-    "styled-components": "^6.1.18"
+    "styled-components": "^6.1.18",
+    "sweetalert2": "^11.22.2",
+    "use-debounce": "^10.0.5"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^4.0.1",

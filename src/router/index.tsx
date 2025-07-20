@@ -63,6 +63,11 @@ import KakaoRedirectHandler from '@/pages/member/KakaoRedirectHandler'
 import Layout from '@/components/common/layout/BasePageLayout' // 공통 레이아웃 컴포넌트가 필요함
 import NaverRedirectHandler from '@/pages/member/NaverRedirectHandler'
 import Bolkinator from '@/pages/Bolkinator'
+import SocialSignUp from '@/pages/member/SocialSignUp'
+import Dashboard from '@/pages/admin/Dashboard'
+import UserManagement from '@/pages/admin/UserManagement'
+import ReportManagement from '@/pages/admin/ReportManagement'
+import AdminRoute from '@/components/common/AdminRoute'
 import MyPageMain from '@/pages/myPage/MyPageMain'
 import MyPageEdit from '@/pages/myPage/MyPageEdit'
 import MyPagePreference from '@/pages/myPage/MyPagePreference'
@@ -74,7 +79,6 @@ import AlarmListener from '@/components/common/AlarmListener'
 const AppRoutes = () => {
   return (
     <AuthProvider>
-      <AlarmListener />
       <Routes>
         {/* Public Routes */}
         <Route
@@ -89,23 +93,40 @@ const AppRoutes = () => {
         <Route
           path="/playlist/:id"
           element={
-            <Layout>
-              <BookmarkProvider>
-                <PlaylistDetail />
-              </BookmarkProvider>
-            </Layout>
+            <BookmarkProvider>
+              <PlaylistDetail />
+            </BookmarkProvider>
           }
         />
         <Route path="/movie/detail" element={<MovieDetailPage />} />
+        <Route path="/totalsearch" element={<TotalSearch />} />
+        <Route path="/bolkinator" element={<Bolkinator />} />
+
+        {/* AdminRoute (관리자만 접근) */}
         <Route
-          path="/totalsearch"
+          path="/admin/dashboard"
           element={
-            <Layout>
-              <TotalSearch />
-            </Layout>
+            <AdminRoute>
+              <Dashboard />
+            </AdminRoute>
           }
         />
-        <Route path="/bolkinator" element={<Bolkinator />} />
+        <Route
+          path="/admin/user"
+          element={
+            <AdminRoute>
+              <UserManagement />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/report"
+          element={
+            <AdminRoute>
+              <ReportManagement />
+            </AdminRoute>
+          }
+        />
 
         {/* Public Routes (로그인된 사용자는 접근 불가) */}
         <Route
@@ -129,6 +150,15 @@ const AppRoutes = () => {
           element={
             <PublicRoute>
               <EmailLogin />
+            </PublicRoute>
+          }
+        />
+
+        <Route
+          path="/signup/social"
+          element={
+            <PublicRoute>
+              <SocialSignUp />
             </PublicRoute>
           }
         />
@@ -176,54 +206,12 @@ const AppRoutes = () => {
 
         <Route path="/oauth/naver/callback" element={<NaverRedirectHandler />} />
 
-        <Route
-          path="/my-page"
-          element={
-            <Layout>
-              <MyPageMain />
-            </Layout>
-          }
-        />
-        <Route
-          path="/my-page-edit"
-          element={
-            <Layout>
-              <MyPageEdit />
-            </Layout>
-          }
-        />
-        <Route
-          path="/my-page-preference"
-          element={
-            <Layout>
-              <MyPagePreference />
-            </Layout>
-          }
-        />
-        <Route
-          path="/my-page-review"
-          element={
-            <Layout>
-              <MyPageReview />
-            </Layout>
-          }
-        />
-        <Route
-          path="/my-page-debate"
-          element={
-            <Layout>
-              <MyPageDebate />
-            </Layout>
-          }
-        />
-        <Route
-          path="/my-page-follow"
-          element={
-            <Layout>
-              <MyPageFollowList />
-            </Layout>
-          }
-        />
+        <Route path="/my-page" element={<MyPageMain />} />
+        <Route path="/my-page-edit" element={<MyPageEdit />} />
+        <Route path="/my-page-preference" element={<MyPagePreference />} />
+        <Route path="/my-page-review" element={<MyPageReview />} />
+        <Route path="/my-page-debate" element={<MyPageDebate />} />
+        <Route path="/my-page-follow" element={<MyPageFollowList />} />
       </Routes>
     </AuthProvider>
   )
