@@ -4,6 +4,7 @@ import { Search } from 'lucide-react'
 import AdminLayout from './AdminLayout'
 import { fetchMembers, updateMemberStatus } from '@/services/admin'
 import Swal from 'sweetalert2'
+import { useDebounce } from 'use-debounce'
 
 interface Member {
   memberId: number
@@ -177,6 +178,7 @@ const UserManagement: React.FC = () => {
   const [page, setPage] = useState(1)
   const [members, setMembers] = useState<Member[]>([])
   const [totalPages, setTotalPages] = useState(0)
+  const [debouncedSearch] = useDebounce(search, 300)
 
   const renderPageButtons = () => {
     const pageButtons = []
@@ -216,7 +218,7 @@ const UserManagement: React.FC = () => {
   useEffect(() => {
     const loadMembers = async () => {
       try {
-        const res = await fetchMembers(page - 1, 10, search)
+        const res = await fetchMembers(page - 1, 10, debouncedSearch)
         setMembers(res.data.content)
         setTotalPages(res.data.totalPages)
       } catch (err) {
@@ -224,7 +226,7 @@ const UserManagement: React.FC = () => {
       }
     }
     loadMembers()
-  }, [page, search])
+  }, [page, debouncedSearch])
 
   const handleStatusUpdate = async (memberId: number, status: string) => {
     try {

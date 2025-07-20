@@ -1,8 +1,26 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import styled, { keyframes } from 'styled-components'
 import { Search } from 'lucide-react'
 import AdminLayout from './AdminLayout'
 import ReportDetailModal from './ReportDetailModal'
+import { fetchReports, handleReport } from '@/services/admin'
+import { useDebounce } from 'use-debounce'
+import Swal from 'sweetalert2'
+
+export interface ReportType {
+  reportId: number
+  reporterNickname: string
+  targetNickname: string
+  type: string
+  content: string
+  targetTitle: string | null
+  targetContent: string
+  handled: string
+  createdAt: string
+  warningCount: number
+  suspensionCount: number
+  targetStatus: string
+}
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(20px); }
@@ -19,6 +37,12 @@ const Container = styled.div`
   background: linear-gradient(135deg, #0f0f23, #1a1a2e, #16213e);
   color: white;
   padding: 0.2rem 2rem 2rem 2rem;
+`
+
+const Cell = styled.div`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `
 
 const Header = styled.div`
@@ -135,7 +159,7 @@ const ActionButtons = styled.div`
   justify-content: center;
 `
 
-const Button = styled.button`
+const Button = styled.button<{ disabled?: boolean }>`
   background: transparent;
   color: #4ecdc4;
   border: 1px solid #4ecdc4;
@@ -148,6 +172,13 @@ const Button = styled.button`
 
   &:hover {
     background: rgba(78, 205, 196, 0.1);
+  }
+
+  &:disabled {
+    color: #888;
+    border-color: #666;
+    background: rgba(255, 255, 255, 0.1);
+    cursor: not-allowed;
   }
 `
 
@@ -172,30 +203,57 @@ const ReportManagement: React.FC = () => {
   const [page, setPage] = useState(1)
   const [filter, setFilter] = useState('전체')
   const [selectedReport, setSelectedReport] = useState<any | null>(null)
+  const [reports, setReports] = useState<ReportType[]>([])
+  const [totalPages, setTotalPages] = useState(0)
+  const [debouncedSearch] = useDebounce(search, 300)
+  const pagesPerGroup = 10
+  const currentGroup = Math.floor((page - 1) / pagesPerGroup) // 0부터 시작
+  const startPage = currentGroup * pagesPerGroup + 1
+  const endPage = Math.min(startPage + pagesPerGroup - 1, totalPages)
 
-  const dummyReports = Array.from({ length: 20 }, (_, i) => ({
-    id: i + 1,
-    date: `2024-07-${(i % 30) + 1}`,
-    reporter: `Reporter${i + 1}`,
-    target: `Target${i + 1}`,
-    type: ['리뷰', '댓글', '게시글'][i % 3],
-    content: '부적절한 언어 사용으로 신고합니다.',
-    status: i % 2 === 0 ? '처리' : '미처리',
-    targetStatus: ['활동중', '경고', '정지'][i % 3],
-    warningCount: i % 4,
-    suspensionCount: i % 2,
-    postContent: '신고된 글 내용 예시입니다.',
-  }))
+  const handleReportAction = async (
+    reportId: number,
+    action: '경고' | '정지' | '차단' | '기각',
+  ) => {
+    try {
+      const confirm = await Swal.fire({
+        title: `${action} 처리할까요?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '확인',
+        cancelButtonText: '취소',
+      })
 
-  const filteredReports = dummyReports.filter(r => {
-    const matchSearch = r.reporter.toLowerCase().includes(search.toLowerCase())
-    const matchStatus = filter === '전체' || r.status === filter
-    return matchSearch && matchStatus
-  })
+      if (!confirm.isConfirmed) return
 
-  const reportsPerPage = 5
-  const paginatedReports = filteredReports.slice((page - 1) * reportsPerPage, page * reportsPerPage)
-  const totalPages = Math.ceil(filteredReports.length / reportsPerPage)
+      await handleReport(reportId, action)
+
+      Swal.fire('처리 완료', `${action} 처리되었습니다.`, 'success')
+
+      // 리스트 갱신
+      const data = await fetchReports(page - 1, 10, debouncedSearch, filter)
+      setReports(data.content)
+      setTotalPages(data.totalPages)
+
+      // 모달이 떠 있는 경우, 해당 report 정보도 갱신
+      const updated = data.content.find((r: ReportType) => r.reportId === reportId)
+      if (selectedReport && selectedReport.reportId === reportId && updated) {
+        setSelectedReport(updated)
+      }
+    } catch (err) {
+      console.error('신고 처리 실패:', err)
+      Swal.fire('오류', '신고 처리 중 오류가 발생했습니다.', 'error')
+    }
+  }
+
+  useEffect(() => {
+    const loadReports = async () => {
+      const data = await fetchReports(page - 1, 10, debouncedSearch, filter)
+      setReports(data.content)
+      setTotalPages(data.totalPages)
+    }
+    loadReports()
+  }, [page, debouncedSearch, filter])
 
   return (
     <AdminLayout>
@@ -213,7 +271,7 @@ const ReportManagement: React.FC = () => {
           <Search size={18} color="#aaa" style={{ marginRight: '0.5rem' }} />
           <Input
             type="text"
-            placeholder="신고자 이름 검색..."
+            placeholder="신고자 또는 피신고자 닉네임 검색"
             value={search}
             onChange={e => {
               setSearch(e.target.value)
@@ -232,37 +290,65 @@ const ReportManagement: React.FC = () => {
             <div>상태</div>
             <div>관리</div>
           </ReportHeader>
-          {paginatedReports.map(report => (
-            <ReportItem key={report.id} onClick={() => setSelectedReport(report)}>
-              <div>{report.date}</div>
-              <div>{report.reporter}</div>
-              <div>{report.target}</div>
-              <div>{report.type}</div>
-              <div>{report.content}</div>
-              <Status status={report.status}>{report.status}</Status>
+          {reports.map(report => (
+            <ReportItem key={report.reportId} onClick={() => setSelectedReport(report)}>
+              <Cell>{new Date(report.createdAt).toLocaleDateString()}</Cell>
+              <Cell>{report.reporterNickname}</Cell>
+              <Cell>{report.targetNickname}</Cell>
+              <Cell>{report.type}</Cell>
+              <Cell>{report.content}</Cell>
+              <Status status={report.handled}>{report.handled}</Status>
               <ActionButtons>
-                <Button>경고</Button>
-                <Button>정지</Button>
-                <Button>차단</Button>
-                <Button>기각</Button>
+                {['경고', '정지', '차단', '기각'].map(action => (
+                  <Button
+                    key={action}
+                    disabled={report.handled === '처리'}
+                    onClick={e => {
+                      e.stopPropagation()
+                      handleReportAction(
+                        report.reportId,
+                        action as '경고' | '정지' | '차단' | '기각',
+                      )
+                    }}
+                  >
+                    {action}
+                  </Button>
+                ))}
               </ActionButtons>
             </ReportItem>
           ))}
         </ReportList>
 
         <Pagination>
-          {Array.from({ length: totalPages }, (_, i) => (
-            <PageButton key={i + 1} $active={page === i + 1} onClick={() => setPage(i + 1)}>
-              {i + 1}
-            </PageButton>
-          ))}
+          {/* 이전 그룹으로 이동 */}
+          {startPage > 1 && <PageButton onClick={() => setPage(startPage - 1)}>&lt;</PageButton>}
+
+          {/* 현재 그룹의 페이지 버튼들 */}
+          {Array.from({ length: endPage - startPage + 1 }, (_, i) => {
+            const pageNumber = startPage + i
+            return (
+              <PageButton
+                key={pageNumber}
+                $active={page === pageNumber}
+                onClick={() => setPage(pageNumber)}
+              >
+                {pageNumber}
+              </PageButton>
+            )
+          })}
+
+          {/* 다음 그룹으로 이동 */}
+          {endPage < totalPages && (
+            <PageButton onClick={() => setPage(endPage + 1)}>&gt;</PageButton>
+          )}
         </Pagination>
 
         {selectedReport && (
           <ReportDetailModal
-            isOpen={!!selectedReport} // 또는 true / false
+            isOpen={!!selectedReport}
             report={selectedReport}
             onClose={() => setSelectedReport(null)}
+            onAction={handleReportAction}
           />
         )}
       </Container>

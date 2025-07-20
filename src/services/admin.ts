@@ -11,7 +11,7 @@ export const fetchPopcornStats = async () => {
 }
 
 export const fetchMembers = async (page: number, size: number, keyword?: string) => {
-  const res = await axiosInstance.get('/api/v1/member/members', {
+  const res = await axiosInstance.get('/api/v1/admin/members', {
     params: {
       page,
       size,
@@ -23,5 +23,24 @@ export const fetchMembers = async (page: number, size: number, keyword?: string)
 
 export const updateMemberStatus = async (memberId: number, status: string) => {
   const res = await axiosInstance.patch(`/api/v1/admin/member/${memberId}/status`, { status })
+  return res.data
+}
+
+export const fetchReports = async (page: number, size: number, keyword: string, status: string) => {
+  const params = {
+    page,
+    size,
+    keyword: keyword || '',
+    status,
+  }
+
+  const res = await axiosInstance.get('/api/v1/admin/reports', { params })
+  return res.data.data
+}
+
+export const handleReport = async (reportId: number, action: '경고' | '정지' | '차단' | '기각') => {
+  const res = await axiosInstance.patch(`/api/v1/admin/report/${reportId}/handle`, {
+    action,
+  })
   return res.data
 }
