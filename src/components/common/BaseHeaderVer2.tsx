@@ -1,10 +1,10 @@
 import styled, { css } from 'styled-components'
-import BaseInput from './common/BaseInput'
+import BaseInput from './BaseInput'
 import { useNavigate } from 'react-router-dom'
 import { useState, useRef, useEffect } from 'react'
 import HomeIcon from '@/assets/category/home.webp'
 import BolkiIcon from '@/assets/category/bolkinator.webp'
-import { Search, CircleUser } from 'lucide-react'
+import { Search } from 'lucide-react'
 import AvatarIcon from '@/assets/icons/profile.png'
 import useTokenObserver from '@/utils/auth/tokenObserver'
 import { userInfo } from '@/services/member'
@@ -323,7 +323,7 @@ const DropdownItem = styled.div`
   }
 `
 
-const Base = () => {
+const BaseHeaderVer2 = () => {
   const navigate = useNavigate()
 
   const [searchContext, setSearchContext] = useState('')
@@ -474,4 +474,4 @@ const Base = () => {
     </Wrapper>
   )
 }
-export default Base
+export default BaseHeaderVer2

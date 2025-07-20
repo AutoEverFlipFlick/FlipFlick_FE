@@ -5,9 +5,7 @@
 import styled from 'styled-components'
 import { Outlet } from 'react-router-dom'
 import { ReactNode } from 'react'
-import BaseHeader from '../BaseHeader'
-import BaseHeaderTest from '@/components/BaseHeaderTest'
-import Base from '@/components/Base'
+import BaseHeaderVer2 from '@/components/common/BaseHeaderVer2'
 
 type MyLayoutProps = {
   children?: ReactNode
@@ -36,7 +34,7 @@ export default function BasePageLayout({ children }: MyLayoutProps) {
 
       <HeaderWrapper>
         <div style={{ display: 'contents' }}>
-          <Base />
+          <BaseHeaderVer2 />
         </div>
       </HeaderWrapper>
 
