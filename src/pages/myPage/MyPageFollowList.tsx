@@ -121,7 +121,7 @@ interface User {
   isFollowing: boolean
 }
 
-const MyPageFollowList = () => {
+const MyPageFollowList: React.FC = () => {
   const navigate = useNavigate()
   const isMobile = useMediaQuery({ query: '(max-width: 767px)' })
   const [users, setUsers] = useState<User[]>([])

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
-import zzanggu from './zzanggu.jpg'
 import { useMediaQuery } from 'react-responsive'
 import BaseContainer from '@/components/common/BaseContainer'
 import settings from '@/assets/settings.svg'
@@ -19,19 +18,26 @@ import {
   checkFollowStatus,
   followUser,
   unfollowUser,
+  getPopcornScore,
+  getUserPopcornScore,
 } from '@/services/memberInfo'
+
+import { getBookmarkCount, getWatchedCount, getLikeCount } from '@/services/moviePreference'
+import { getMyPlaylists, getPlaylistsByNickname } from '@/services/playlist'
+import { getUserReviewsLatest } from '@/services/memberPost'
+import AlarmComponent from '@/components/common/AlarmComponent'
+import AlarmListener from '@/components/common/AlarmListener'
 
 interface IsMobile {
   $ismobile: boolean
 }
 
 const Container = styled.div<IsMobile>`
-  min-height: 100vh;
-  padding: ${props => (props.$ismobile ? '0.9rem' : '2rem')};
+  overflow-x: hidden;
 `
 
-const ContentWrapper = styled.div`
-  max-width: 800px;
+const ContentWrapper = styled.div<IsMobile>`
+  max-width: ${props => (props.$ismobile ? '100%' : '800px')};
   margin: 0 auto;
   overflow-x: hidden;
 `
@@ -143,21 +149,22 @@ const BarBackground = styled.div`
   margin-right: 8px;
 `
 
-const BarFill = styled.div<{ percent: number }>`
+const BarFill = styled.div<{ percent: number; $mounted: boolean }>`
   background: #f5a623;
   height: 100%;
-  width: ${({ percent }) => percent}%;
+  width: ${({ percent, $mounted }) => ($mounted ? `${percent}%` : '0%')};
   border-radius: 4px;
-  transition: width 0.3s;
+  transition: width 1.4s ease-out;
 `
 
-const Marker = styled.div<{ percent: number } & IsMobile>`
+const Marker = styled.div<{ percent: number; $mounted: boolean } & IsMobile>`
   position: absolute;
   top: ${props => (props.$ismobile ? '-12px' : '-18px')};
-  left: ${({ percent }) => percent}%;
+  left: ${({ percent, $mounted }) => ($mounted ? `${percent}%` : '0%')};
   transform: translateX(-50%);
   font-size: 24px;
   line-height: 1;
+  transition: left 1.4s ease-out;
 `
 
 const PopcornImg = styled.img<IsMobile>`
@@ -215,6 +222,7 @@ const Section = styled(BaseContainer)`
   display: flex;
   flex-direction: column;
   height: 300px;
+  overflow: hidden;
 `
 
 const SectionHeader = styled.div<IsMobile>`
@@ -223,13 +231,13 @@ const SectionHeader = styled.div<IsMobile>`
   align-items: center;
   color: #fff;
   margin-bottom: 0.5rem;
-  cursor: pointer;
   font-size: ${props => (props.$ismobile ? '0.9rem' : '1rem')};
 `
 
 const CardList = styled.div`
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding-right: 0.5rem;
   margin-right: 5px;
   margin-top: 5px;
@@ -246,7 +254,6 @@ const Card = styled.div`
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1rem;
-  margin-left: 5px;
 `
 
 const ReviewImage = styled.img`
@@ -261,6 +268,7 @@ const PlaylistImage = styled.img`
   height: 60px;
   border-radius: 4px;
   object-fit: cover;
+  max-width: 100%;
 `
 
 const CardInfo = styled.div`
@@ -269,11 +277,38 @@ const CardInfo = styled.div`
   justify-content: center;
   color: #ccc;
   font-size: 0.9rem;
+  overflow: hidden;
 `
 
 const Rating = styled.div`
   color: #fff;
   margin-bottom: 4px;
+  font-size: 0.8rem;
+`
+
+const CardTitle = styled.div<IsMobile>`
+  color: #fff;
+  font-size: ${props => (props.$ismobile ? '1.3rem' : '1.1rem')};
+  padding-top: 5px;
+  margin-bottom: ${props => (props.$ismobile ? '0.1rem' : '-2px')};
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`
+
+const ReviewContent = styled.div`
+  font-size: 0.8rem;
+  color: #ccc;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  line-height: 1.2em;
+  max-height: 1.2em;
 `
 
 const Title = styled.span`
@@ -304,10 +339,12 @@ function getPopcornIcon(percent: number) {
 
 type TabType = '찜했어요' | '좋아요' | '봤어요'
 
-const MyPageMain = () => {
+const MyPageMain: React.FC = () => {
+  const isMobile = useMediaQuery({ query: '(max-width: 767px)' })
+  const [isLoading, setIsLoading] = useState(true)
+  const [isMounted, setIsMounted] = useState(false)
   const [nickname, setNickname] = useState('')
   const [profileImageUrl, setProfileImageUrl] = useState('')
-  const isMobile = useMediaQuery({ query: '(max-width: 767px)' })
   const navigate = useNavigate()
   const [isFollowing, setIsFollowing] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -316,27 +353,25 @@ const MyPageMain = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(true)
   const searchParams = new URLSearchParams(location.search)
   const userIdParam = searchParams.get('id')
-
+  const [barMounted, setBarMounted] = useState(false)
   const [followerCount, setFollowerCount] = useState<number>(0)
   const [followingCount, setFollowingCount] = useState<number>(0)
-  const popcornPercent = 90
-
+  const [popcornPercent, setPopcornPercent] = useState(0)
+  const [bookmarkCount, setBookmarkCount] = useState(0)
+  const [watchedCount, setWatchedCount] = useState(0)
+  const [likeCount, setLikeCount] = useState(0)
+  const [userReviews, setUserReviews] = useState<reviewArray[]>([])
+  const [reviewTotalCount, setReviewTotalCount] = useState<number>(0)
+  const [playlists, setPlaylists] = useState<playlistArray[]>([])
   const [activeTab, setActiveTab] = useState<TabType>('찜했어요')
   const stats: { num: number; label: TabType }[] = [
-    { num: 32, label: '찜했어요' },
-    { num: 20, label: '좋아요' },
-    { num: 10, label: '봤어요' },
+    { num: bookmarkCount, label: '찜했어요' },
+    { num: likeCount, label: '좋아요' },
+    { num: watchedCount, label: '봤어요' },
   ]
-  const reviews = Array(10).fill({ image: zzanggu, rating: 4.5, text: '정말 귀여워요~!' })
-  const playlists = Array(10).fill({
-    image: zzanggu,
-    title: '플리1',
-    subtitle: '짱구123 · 작품 10',
-  })
 
-  const goPreference = (tab: '찜했어요' | '좋아요' | '봤어요') => {
-    setActiveTab(tab)
-    navigate('/my-page-preference', { state: { tab } })
+  const goPreference = (tab: TabType) => {
+    navigate('/my-page-preference', { state: { tab, ownerId: profileOwnerId } })
   }
 
   const goFollow = (tab: '팔로워' | '팔로잉') => {
@@ -362,16 +397,19 @@ const MyPageMain = () => {
   }
 
   useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  useEffect(() => {
     const infoGet = async () => {
       try {
         const myInfo = await userInfoGet()
         setIsLoggedIn(true)
 
-        if (userIdParam && userIdParam !== String(myInfo.data.data.id) && !isLoggedIn) {
+        if (userIdParam && userIdParam !== String(myInfo.data.data.id)) {
           // 다른 사용자 프로필
           setIsOwnProfile(false)
           const otherRes = await getUserById(userIdParam)
-
           const otherUserId = otherRes.data.data.id
           setProfileOwnerId(otherUserId)
           setNickname(otherRes.data.data.nickname)
@@ -410,138 +448,241 @@ const MyPageMain = () => {
           }
         }
       }
+      setIsLoading(false) // 데이터 다 불러온 뒤 표시
     }
 
     infoGet()
   }, [userIdParam])
 
+  // 좋아요, 찜, 봤어요 개수
+  useEffect(() => {
+    if (!profileOwnerId) return
+    const id = profileOwnerId
+
+    getBookmarkCount(id).then(res => {
+      setBookmarkCount(res.data.data.totalElements)
+    })
+    getWatchedCount(id).then(res => {
+      setWatchedCount(res.data.data.totalElements)
+    })
+    getLikeCount(id).then(res => {
+      setLikeCount(res.data.data.totalElements)
+    })
+  }, [profileOwnerId])
+
+  // 리뷰
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (!nickname) return
+      try {
+        const res = await getUserReviewsLatest(nickname)
+        const content = res.data.data.content
+        setUserReviews(content)
+        setReviewTotalCount(res.data.data.totalElements)
+      } catch (err) {
+        console.error('리뷰 목록 불러오기 실패:', err)
+      }
+    }
+
+    fetchReviews()
+  }, [nickname])
+
+  // 플레이리스트
+  useEffect(() => {
+    setBarMounted(true)
+    if (profileOwnerId === null) return
+
+    const fetchPlaylists = async () => {
+      try {
+        let res
+        if (isOwnProfile) {
+          res = await getMyPlaylists()
+        } else {
+          res = await getPlaylistsByNickname(nickname)
+        }
+        setPlaylists(res.data.content)
+      } catch (err) {
+        console.error('플레이리스트 불러오기 실패', err)
+      }
+    }
+
+    fetchPlaylists()
+  }, [profileOwnerId, isOwnProfile, nickname])
+
+  useEffect(() => {
+    if (profileOwnerId === null) return
+
+    const fetchPopcornScore = async () => {
+      try {
+        let res
+        if (isOwnProfile) {
+          res = await getPopcornScore()
+        } else {
+          res = await getUserPopcornScore(profileOwnerId)
+        }
+        setPopcornPercent(res.popcornScore)
+      } catch (err) {
+        console.error('팝콘지수 불러오기 실패:', err)
+      }
+    }
+
+    fetchPopcornScore()
+  }, [profileOwnerId, isOwnProfile])
+
+  if (!isMounted || isLoading) {
+    return null
+  }
+
   return (
     <Container $ismobile={isMobile}>
-      <ContentWrapper>
-        <Profile $ismobile={isMobile}>
-          <LeftGroup>
-            <ImageUploadWrapper $ismobile={isMobile}>
-              {profileImageUrl && (
-                <UserImage
+      {isLoading ? null : (
+        <>
+          <div>
+            <AlarmComponent />
+            <AlarmListener />
+          </div>
+          <ContentWrapper $ismobile={isMobile}>
+            <Profile $ismobile={isMobile}>
+              <LeftGroup>
+                <ImageUploadWrapper $ismobile={isMobile}>
+                  {profileImageUrl && (
+                    <UserImage
+                      $ismobile={isMobile}
+                      src={selectedFile ? URL.createObjectURL(selectedFile) : profileImageUrl}
+                      alt="프로필 이미지"
+                    />
+                  )}
+                </ImageUploadWrapper>
+                <UserInfo>
+                  <UserName $ismobile={isMobile}>{nickname}</UserName>
+                  <FollowStats $ismobile={isMobile}>
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => goFollow('팔로워')}
+                      onKeyDown={() => {}}
+                    >
+                      팔로워 {followerCount}명
+                    </span>
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => goFollow('팔로잉')}
+                      onKeyDown={() => {}}
+                    >
+                      팔로잉 {followingCount}명
+                    </span>
+                  </FollowStats>
+                </UserInfo>
+              </LeftGroup>
+              {isOwnProfile
+                ? isLoggedIn && (
+                    /* 내 프로필일 때 설정 아이콘 */
+                    <IconButton $ismobile={isMobile} onClick={() => navigate('/my-page-edit')}>
+                      <img src={settings} alt="설정" />
+                    </IconButton>
+                  )
+                : isLoggedIn && (
+                    /* 남 프로필일 때 팔로우/언팔로우 버튼 */
+                    <FollowButton
+                      $ismobile={isMobile}
+                      isFollowing={isFollowing}
+                      onClick={handleFollowToggle}
+                    >
+                      {isFollowing ? '팔로잉' : '팔로우'}
+                    </FollowButton>
+                  )}
+            </Profile>
+            <PopcornSection $ismobile={isMobile}>
+              <BarBackground>
+                <PopcornLabel $ismobile={isMobile}>팝콘 지수</PopcornLabel>
+                <BarFill percent={popcornPercent} $mounted={barMounted} />
+                <Marker $ismobile={isMobile} percent={popcornPercent} $mounted={barMounted}>
+                  <PopcornImg
+                    $ismobile={isMobile}
+                    src={getPopcornIcon(popcornPercent)}
+                    alt={`팝콘 ${popcornPercent}%`}
+                  />
+                </Marker>
+              </BarBackground>
+              <PercentLabel $ismobile={isMobile}>{barMounted ? popcornPercent : 0}</PercentLabel>
+            </PopcornSection>
+            <UserStatsWrapper $ismobile={isMobile}>
+              {stats.map(s => (
+                <StatItem
                   $ismobile={isMobile}
-                  src={selectedFile ? URL.createObjectURL(selectedFile) : profileImageUrl}
-                  alt="프로필 이미지"
-                />
-              )}
-            </ImageUploadWrapper>
-            <UserInfo>
-              <UserName $ismobile={isMobile}>{nickname}</UserName>
-              <FollowStats $ismobile={isMobile}>
-                <span
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => goFollow('팔로워')}
-                  onKeyDown={() => {}}
+                  key={s.label}
+                  active={activeTab === s.label}
+                  onClick={() => {
+                    goPreference(s.label)
+                  }}
                 >
-                  팔로워 {followerCount}명
-                </span>
-                <span
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => goFollow('팔로잉')}
-                  onKeyDown={() => {}}
-                >
-                  팔로잉 {followingCount}명
-                </span>
-              </FollowStats>
-            </UserInfo>
-          </LeftGroup>
-          {isOwnProfile
-            ? isLoggedIn && (
-                /* 내 프로필일 때 설정 아이콘 */
-                <IconButton $ismobile={isMobile} onClick={() => navigate('/my-page-edit')}>
-                  <img src={settings} alt="설정" />
-                </IconButton>
-              )
-            : isLoggedIn && (
-                /* 남 프로필일 때 팔로우/언팔로우 버튼 */
-                <FollowButton
-                  $ismobile={isMobile}
-                  isFollowing={isFollowing}
-                  onClick={handleFollowToggle}
-                >
-                  {isFollowing ? '팔로잉' : '팔로우'}
-                </FollowButton>
-              )}
-        </Profile>
-        <PopcornSection $ismobile={isMobile}>
-          <BarBackground>
-            <PopcornLabel $ismobile={isMobile}>팝콘 지수</PopcornLabel>
-            <BarFill percent={popcornPercent} />
-            <Marker $ismobile={isMobile} percent={popcornPercent}>
-              <PopcornImg
-                $ismobile={isMobile}
-                src={getPopcornIcon(popcornPercent)}
-                alt={`팝콘 ${popcornPercent}%`}
-              />
-            </Marker>
-          </BarBackground>
-          <PercentLabel $ismobile={isMobile}>{popcornPercent}</PercentLabel>
-        </PopcornSection>
-        <UserStatsWrapper $ismobile={isMobile}>
-          {stats.map(s => (
-            <StatItem
-              $ismobile={isMobile}
-              key={s.label}
-              active={activeTab === s.label}
-              onClick={() => {
-                goPreference(s.label)
-              }}
-            >
-              <StatNumber $ismobile={isMobile}>{s.num}</StatNumber>
-              <StatLabel $ismobile={isMobile}>{s.label}</StatLabel>
-            </StatItem>
-          ))}
-        </UserStatsWrapper>
-        <ContentSections $ismobile={isMobile}>
-          <Section>
-            <SectionHeader $ismobile={isMobile} onClick={() => navigate('/my-page-review')}>
-              <span>작성한 리뷰</span>
-              <span>17</span>
-            </SectionHeader>
-            <CardList>
-              {reviews.map((r, i) => (
-                <Card key={i}>
-                  <ReviewImage src={r.image} alt="리뷰 포스터" />
-                  <CardInfo>
-                    <Rating>★ {r.rating}</Rating>
-                    <div>{r.text}</div>
-                  </CardInfo>
-                </Card>
+                  <StatNumber $ismobile={isMobile}>{s.num}</StatNumber>
+                  <StatLabel $ismobile={isMobile}>{s.label}</StatLabel>
+                </StatItem>
               ))}
-            </CardList>
-          </Section>
+            </UserStatsWrapper>
+            <ContentSections $ismobile={isMobile}>
+              <Section>
+                <SectionHeader
+                  $ismobile={isMobile}
+                  onClick={() => navigate('/my-page-review', { state: { nickname } })}
+                >
+                  <span>작성한 리뷰</span>
+                  <span>{reviewTotalCount}</span>
+                </SectionHeader>
+                <CardList>
+                  {userReviews.map(review => (
+                    <Card key={review.reviewId}>
+                      <ReviewImage
+                        src={`https://image.tmdb.org/t/p/w500${review.posterImg}`}
+                        alt="리뷰 포스터"
+                      />
+                      <CardInfo>
+                        <Title>{review.movieTitle}</Title>
+                        <Rating>★ {review.star}</Rating>
+                        <ReviewContent>{review.content}</ReviewContent>
+                      </CardInfo>
+                    </Card>
+                  ))}
+                </CardList>
+              </Section>
 
-          <Section>
-            <SectionHeader $ismobile={isMobile} onClick={() => navigate('/my-page-review')}>
-              <span>플레이리스트</span>
-              <span>17</span>
-            </SectionHeader>
-            <CardList>
-              {playlists.map((p, i) => (
-                <Card key={i}>
-                  <PlaylistImage src={p.image} alt="플리 썸네일" />
-                  <CardInfo>
-                    <Title>{p.title}</Title>
-                    <Subtitle>{p.subtitle}</Subtitle>
-                  </CardInfo>
-                </Card>
-              ))}
-            </CardList>
-          </Section>
-          <SectionFull>
-            <SectionHeader $ismobile={isMobile} onClick={() => navigate('/my-page-debate')}>
-              <span>토론 글</span>
-              <span>17</span>
-            </SectionHeader>
-          </SectionFull>
-        </ContentSections>
-      </ContentWrapper>
+              <Section>
+                <SectionHeader $ismobile={isMobile}>
+                  <span>플레이리스트</span>
+                  <span>{playlists.length}</span>
+                </SectionHeader>
+                <CardList>
+                  {playlists.map(p => (
+                    <Card
+                      key={p.playListId}
+                      style={{ cursor: 'pointer' }}
+                      onClick={() =>
+                        navigate(`/playlist/${p.playListId}${`?id=${profileOwnerId}`}`)
+                      }
+                    >
+                      <PlaylistImage src={p.thumbnailUrl} alt={p.title} />
+                      <CardInfo>
+                        <Title>{p.title}</Title>
+                        <Subtitle>
+                          {p.nickname} · 작품 {p.movieCount}
+                        </Subtitle>
+                      </CardInfo>
+                    </Card>
+                  ))}
+                </CardList>
+              </Section>
+              <SectionFull>
+                <SectionHeader $ismobile={isMobile} onClick={() => navigate('/my-page-debate')}>
+                  <span>토론 글</span>
+                  <span>17</span>
+                </SectionHeader>
+              </SectionFull>
+            </ContentSections>
+          </ContentWrapper>
+        </>
+      )}
     </Container>
   )
 }

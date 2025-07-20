@@ -1,4 +1,3 @@
-// src/services/memberInfo.ts
 import axios from '@/services/axiosInstance'
 import type { AxiosResponse } from 'axios'
 
@@ -54,6 +53,24 @@ export const getFollowersById = (userId: string | number) => {
 // 특정 유저의 팔로잉 리스트
 export const getFollowingsById = (userId: string | number) => {
   return axios.get(`/follow/${userId}/following`)
+}
+
+// export const getPopcornScore = async (userId?: number) => {
+//   if (userId) {
+//     return axios.get(`/api/v1/popcorn/user/${userId}`)
+//   } else {
+//     return axios.get(`/api/v1/popcorn/my`)
+//   }
+// }
+
+export const getPopcornScore = async () => {
+  const res = await axios.get('/popcorn/my')
+  return res.data.data
+}
+
+export const getUserPopcornScore = async (userId: number) => {
+  const res = await axios.get(`/popcorn/user/${userId}`)
+  return res.data.data
 }
 
 export default {

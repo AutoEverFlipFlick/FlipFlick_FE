@@ -1,9 +1,11 @@
-import React, { useState, useCallback, useRef } from 'react'
+import React, { useState, useCallback, useRef, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 import { Pagination } from '@mui/material'
 import { useMediaQuery } from 'react-responsive'
 import BaseContainer from '@/components/common/BaseContainer'
 import movie from './movie.jpg'
+import { getUserReviewsLatest } from '@/services/memberPost'
 
 interface IsMobile {
   $ismobile: boolean
@@ -37,19 +39,6 @@ const FlexRow = styled.div`
 const TotalCount = styled.div`
   color: #fff;
   font-size: 0.9rem;
-`
-
-const SortSelect = styled.select`
-  background: transparent;
-  border: none;
-  color: #fff;
-  padding: 0.3rem 0.6rem;
-  font-size: 0.9rem;
-
-  option {
-    background: #130803;
-    color: #fff;
-  }
 `
 
 const ContentGrid = styled.div<IsMobile>`
@@ -111,51 +100,78 @@ const ReviewTime = styled.div`
   color: #777;
   margin-left: auto;
 `
+const PaginationWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+`
 
-// 더미 리뷰 데이터
-const dummyReviews = Array.from({ length: 17 }, (_, i) => ({
-  id: i,
-  title: '제목',
-  rating: 4.5,
-  text: '너무 귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요워요귀여워요귀여워요~~',
-  time: '1시간 전',
-  image: movie,
-}))
+const PaginationButton = styled.button<{ $active?: boolean }>`
+  background: ${props => (props.$active ? '#ff6b35' : 'transparent')};
+  border: 1px solid ${props => (props.$active ? '#ff6b35' : '#555')};
+  color: ${props => (props.$active ? 'white' : '#ccc')};
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin: 0 0.2rem;
 
-const MyPageReview = () => {
+  &:hover {
+    background: #ff6b35;
+    color: white;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`
+const MobileLoading = styled.div`
+  text-align: center;
+  color: #aaa;
+  padding: 1rem 0;
+`
+
+const MyPageReview: React.FC = () => {
+  const location = useLocation()
   const isMobile = useMediaQuery({ query: '(max-width: 767px)' })
   const [page, setPage] = useState(0)
   const [isLastPage, setIsLastPage] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const pageSize = 8
-  const totalPages = Math.ceil(dummyReviews.length / pageSize)
-  const reviewData = isMobile
-    ? dummyReviews.slice(0, (page + 1) * pageSize)
-    : dummyReviews.slice(page * pageSize, (page + 1) * pageSize)
   const observer = useRef<IntersectionObserver | null>(null)
-  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value - 1)
-  }
+  const [total, setTotal] = useState(0)
+  const [reviews, setReviews] = useState<reviewArray[]>([])
+  const nickname = location.state?.nickname
+  const [loading, setLoading] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const fetchReviews = async () => {
+      setLoading(true)
+      const res = await getUserReviewsLatest(nickname, page, pageSize)
+      const newReviews = res.data.data.content
+      setReviews(newReviews)
+      setTotal(res.data.data.totalElements)
+      setIsLastPage(res.data.data.last)
+      setLoading(false)
+    }
 
-  // 무한스크롤: 마지막 요소 관찰
+    fetchReviews()
+  }, [page])
+
+  // 모바일 무한스크롤
   const lastItemRef = useCallback(
     (node: HTMLDivElement | null) => {
-      if (!isMobile) return
+      if (!isMobile || loading || isLastPage) return
       if (observer.current) observer.current.disconnect()
       observer.current = new IntersectionObserver(entries => {
-        if (entries[0].isIntersecting && !isLastPage) {
-          setIsLoading(true)
-          setPage(prev => {
-            const next = prev + 1
-            if (next >= totalPages - 1) setIsLastPage(true)
-            return next
-          })
-          setIsLoading(false)
+        if (entries[0].isIntersecting) {
+          setPage(prev => prev + 1)
         }
       })
       if (node) observer.current.observe(node)
     },
-    [isMobile, isLastPage, totalPages],
+    [isMobile, loading, isLastPage],
   )
 
   return (
@@ -164,64 +180,73 @@ const MyPageReview = () => {
         <Title>작성한 리뷰</Title>
 
         <FlexRow>
-          <TotalCount>총 {dummyReviews.length}개</TotalCount>
-          <SortSelect value="recent" onChange={() => {}}>
-            <option value="recent">최근 작성순</option>
-          </SortSelect>
+          <TotalCount>총 {total}개</TotalCount>
         </FlexRow>
 
         <ContentGrid $ismobile={isMobile}>
-          {reviewData.map((r, idx, arr) => {
-            // 모바일일 때 마지막 아이템인지 체크
+          {reviews.map((review, idx, arr) => {
             const isLast = isMobile && idx === arr.length - 1
 
             return (
-              // ref를 div에 걸어서 IntersectionObserver로 관찰
-              <div key={r.id} ref={isLast ? lastItemRef : undefined}>
+              <div key={review.id} ref={isLast ? lastItemRef : undefined}>
                 <ReviewCard>
-                  <ReviewImage src={r.image} alt={r.title} />
+                  <ReviewImage
+                    src={`https://image.tmdb.org/t/p/w500${review.posterImg}`}
+                    alt={review.movieTitle}
+                  />
                   <InfoWrap>
-                    <ReviewRating>★ {r.rating}</ReviewRating>
-                    <ReviewTitle>{r.title}</ReviewTitle>
-                    <ReviewText>{r.text}</ReviewText>
-                    <ReviewTime>{r.time}</ReviewTime>
+                    <ReviewRating>★ {review.star}</ReviewRating>
+                    <ReviewTitle>{review.movieTitle}</ReviewTitle>
+                    <ReviewText>{review.content}</ReviewText>
+                    <ReviewTime>{review.createdAt}</ReviewTime>
                   </InfoWrap>
                 </ReviewCard>
               </div>
             )
           })}
         </ContentGrid>
-        {!isMobile && totalPages > 1 && (
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 30 }}>
-            <Pagination
-              count={totalPages}
-              page={page + 1}
-              onChange={handlePageChange}
-              shape="rounded"
-              siblingCount={1}
-              boundaryCount={1}
-              showFirstButton
-              showLastButton
-              sx={{
-                '& .MuiPaginationItem-root': {
-                  color: '#fff',
-                },
-                '& .MuiPaginationItem-root.Mui-selected': {
-                  backgroundColor: '#FF6B3D',
-                  color: '#fff',
-                },
-                '& .MuiPaginationItem-root:hover': {
-                  backgroundColor: '#FF6B3D',
-                  color: '#fff',
-                },
-              }}
-            />
-          </div>
+        {/* 데스크탑 페이징 */}
+        {!isMobile && total > pageSize && (
+          <PaginationWrapper>
+            <PaginationButton disabled={page === 0} onClick={() => setPage(0)}>
+              &lt;&lt;
+            </PaginationButton>
+            <PaginationButton disabled={page === 0} onClick={() => setPage(prev => prev - 1)}>
+              &lt;
+            </PaginationButton>
+
+            {/* 페이지 번호 렌더링 */}
+            {Array.from({ length: Math.min(5, Math.ceil(total / pageSize)) }, (_, i) => {
+              const start = Math.max(0, page - 2)
+              const pageNum = start + i
+              if (pageNum >= Math.ceil(total / pageSize)) return null
+              return (
+                <PaginationButton
+                  key={pageNum}
+                  $active={page === pageNum}
+                  onClick={() => setPage(pageNum)}
+                >
+                  {pageNum + 1}
+                </PaginationButton>
+              )
+            })}
+
+            <PaginationButton
+              disabled={page >= Math.ceil(total / pageSize) - 1}
+              onClick={() => setPage(prev => prev + 1)}
+            >
+              &gt;
+            </PaginationButton>
+            <PaginationButton
+              disabled={page >= Math.ceil(total / pageSize) - 1}
+              onClick={() => setPage(Math.ceil(total / pageSize) - 1)}
+            >
+              &gt;&gt;
+            </PaginationButton>
+          </PaginationWrapper>
         )}
-        {/* 모바일 로딩 인디케이터 */}
-        {isMobile && isLoading && (
-          <div style={{ textAlign: 'center', color: '#aaa', padding: 12 }}>내용 불러오는 중...</div>
-        )}
+        {/* 모바일 로딩 */}
+        {isMobile && loading && <MobileLoading>내용 불러오는 중...</MobileLoading>}
       </ContentWrapper>
     </Container>
   )
