@@ -68,6 +68,7 @@ import Dashboard from '@/pages/admin/Dashboard'
 import UserManagement from '@/pages/admin/UserManagement'
 import ReportManagement from '@/pages/admin/ReportManagement'
 import AdminRoute from '@/components/common/AdminRoute'
+import Home from '@/pages/Home'
 
 const AppRoutes = () => {
   return (
@@ -78,7 +79,7 @@ const AppRoutes = () => {
           path="/"
           element={
             <Layout>
-              <ExamplePage />
+              <Home />
             </Layout>
           }
         />
@@ -188,6 +189,15 @@ const AppRoutes = () => {
             <ProtectedRoute>
               <EditPlaylist />
             </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/example"
+          element={
+            <Layout>
+              <ExamplePage />
+            </Layout>
           }
         />
 
