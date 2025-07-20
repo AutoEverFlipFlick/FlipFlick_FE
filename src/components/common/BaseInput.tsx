@@ -1,4 +1,4 @@
-import { forwardRef, InputHTMLAttributes, useState } from 'react'
+import { forwardRef, HTMLAttributes, InputHTMLAttributes, useState } from 'react'
 
 import styled, { css, keyframes } from 'styled-components'
 
@@ -273,6 +273,7 @@ const Base = styled.input<{
   }
 `
 
+type Divprops = HTMLAttributes<HTMLDivElement>
 interface BaseInputProps extends InputHTMLAttributes<HTMLInputElement> {
   state?: InputState
   inputSize?: InputSize
@@ -280,6 +281,8 @@ interface BaseInputProps extends InputHTMLAttributes<HTMLInputElement> {
   icon?: React.ReactNode
   iconGap?: string
   fullWidth?: boolean
+
+  baseContainerStyle?: Divprops
 }
 
 // 기획의도 : 고정된 스타일이 있으면서 기존 input과 똑같이
@@ -297,6 +300,11 @@ const BaseInput = forwardRef<Omit<HTMLInputElement, 'dangerouslySetInnerHTML'>, 
       children, // 이거 설명은 추창우에게 질문
       onFocus, // 포커스 이벤트 핸들링을 위해서
       onBlur, // 포커스 풀리는 이벤트 핸들링을 위해서
+
+      /* 최외각 컨테이너의 스타일을 넣기 위한 부분 */
+      baseContainerStyle = {},
+
+      /* 나머지 input 전용 스타일을 넘기는 부분 */
       ...rest
     },
     ref,
@@ -324,6 +332,7 @@ const BaseInput = forwardRef<Omit<HTMLInputElement, 'dangerouslySetInnerHTML'>, 
         $inputSize={inputSize}
         $fullWidth={actualWidth}
         $isFocused={isFocused}
+        {...baseContainerStyle}
       >
         <BaseContainer
           $state={actualState}
