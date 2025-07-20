@@ -169,11 +169,11 @@ const ChartBoxHeader = styled.div`
 
 const Dashboard: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<'7D' | '30D' | '90D'>('7D')
-  const [activeStat, setActiveStat] = useState<'user' | 'review' | 'discussion'>('user')
+  const [activeStat, setActiveStat] = useState<'user' | 'review' | 'debate'>('user')
   const [statsData, setStatsData] = useState<{
     user: Record<'7D' | '30D' | '90D', TimeSeriesData[]>
     review: Record<'7D' | '30D' | '90D', TimeSeriesData[]>
-    discussion: Record<'7D' | '30D' | '90D', TimeSeriesData[]>
+    debate: Record<'7D' | '30D' | '90D', TimeSeriesData[]>
   } | null>(null)
   const [popcornStats, setPopcornStats] = useState<PopcornGradeData[]>([])
   const [topMovies, setTopMovies] = useState<{ title: string; reviewCount: number }[]>([])
@@ -214,12 +214,12 @@ const Dashboard: React.FC = () => {
   const statNames = {
     user: ['총 회원 수', '신규 회원 수'],
     review: ['총 리뷰 수', '신규 리뷰 수'],
-    discussion: ['총 토론 수', '신규 토론 수'],
+    debate: ['총 토론 수', '신규 토론 수'],
   }
   const statName = {
     user: ['회원 수'],
     review: ['리뷰 수'],
-    discussion: ['토론 수'],
+    debate: ['토론 수'],
   }
 
   const colorMap: Record<string, string> = {
@@ -239,6 +239,7 @@ const Dashboard: React.FC = () => {
   ]
   const latestUserTotal = statsData?.user?.[activeFilter]?.at(-1)?.totalCount ?? 0
   const latestReviewTotal = statsData?.review?.[activeFilter]?.at(-1)?.totalCount ?? 0
+  const latestDebateTotal = statsData?.debate?.[activeFilter]?.at(-1)?.totalCount ?? 0
 
   const options: ApexOptions = {
     chart: {
@@ -256,10 +257,12 @@ const Dashboard: React.FC = () => {
     xaxis: { categories: data.map(d => d.date), type: 'datetime', labels: { format: 'MM/dd' } },
     yaxis: [
       {
+        min: 0,
         title: { text: series[0].name, style: { color: '#a0a0a0' } },
         labels: { style: { colors: '#a0a0a0' } },
       },
       {
+        min: 0,
         opposite: true,
         title: { text: series[1].name, style: { color: '#a0a0a0' } },
         labels: { style: { colors: '#a0a0a0' } },
@@ -436,16 +439,16 @@ const Dashboard: React.FC = () => {
 
           <StatCard
             $delay={0.3}
-            onClick={() => setActiveStat('discussion')}
+            onClick={() => setActiveStat('debate')}
             style={{
-              border: activeStat === 'discussion' ? '2px solid #f093fb' : undefined,
-              transform: activeStat === 'discussion' ? 'scale(1.03)' : undefined,
+              border: activeStat === 'debate' ? '2px solid #f093fb' : undefined,
+              transform: activeStat === 'debate' ? 'scale(1.03)' : undefined,
             }}
           >
             <StatIcon $color="linear-gradient(45deg, #f093fb, #f5576c)">
               <MessagesSquare size={24} />
             </StatIcon>
-            <StatValue>950</StatValue>
+            <StatValue>{latestDebateTotal}</StatValue>
             <StatLabel>총 토론 수</StatLabel>
           </StatCard>
         </StatsGrid>
