@@ -1,82 +1,50 @@
 // MovieDetailPage.tsx
-import React from "react";
-import styled from "styled-components";
-import {Heart} from "lucide-react";
-import StarRating from "@/components/starRating/StarRating";
+import styled from 'styled-components'
+import BaseContainer from '@/components/common/BaseContainer'
+import ReviewDebateCard from '@/components/feature/movieDetail/ReviewDebateCard'
+
+import {useEffect, useState} from 'react'
+import {MovieData} from './movieData'
+import RatingCard from '@/components/starRating/RatingCard'
+import axios from "axios";
+import {mapToMovieData} from "@/pages/movie/movieDataMapper";
+import MovieDetailHeader from "@/pages/movie/MovieDetailHeader";
 
 const MovieDetailLayout = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 20px;
-`;
+`
 
-const MovieDetailHeader = styled.div`
-    max-width: 900px;
-    margin: 0 auto;
-    min-height: 400px;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    gap: 20px
-`;
+// const MovieDetailHeader = styled.div`
+//     max-width: 1000px;
+//     margin: 0 auto;
+//     min-height: 400px;
+//     padding: 20px 15px 5px 15px;
+//     display: flex;
+//     align-items: center;
+//     gap: 10px;
+// `
 const MovieDetailMain = styled.div`
+    max-width: 900px;
     display: flex;
     flex-direction: column;
     align-items: center;
 `
-const MovieDetailHeaderTitle = styled.div`
-    font-size: 40px;
-    margin-bottom: 20px;
-`
 
-const MovieDetailHeaderImageSwiper = styled.div`
-    display: flex;
-    padding: 10px;
-`
-
-const PostImage = styled.div`
-    min-width: 240px;
-    min-height: 360px;
-    background-color: white;
-`
 
 const PlatFormImage = styled.div`
     min-width: 120px;
     min-height: 120px;
-    background-color: white;
 `
-const MovieDetailHeaderContents = styled.div`
+
+const HeaderContentsContainer = styled(BaseContainer)`
+    margin: 5px 10px;
+    padding: 10px 10px;
     display: flex;
-    flex-direction: column;
-    justify-content: start;
-    width: 720px;
-
-`
-const MovieDetailHeaderRating = styled.div`
-    font-size: 20px;
-`
-const MovieDetailRelease = styled.div`
-    font-size: 20px;
-    margin-bottom: 20px;
-`;
-
-const MovieDetailLikeHate = styled.div`
-    max-width: 400px;
-    width: 400px;
-    height: 40px;
-    margin-bottom: 20px;
-`
-const MovieDetailHeaderPlot = styled.div`
-    margin-bottom: 20px;
 `
 
-const MovieDetailHeaderActorsSwiper = styled.div`
-    margin-bottom: 20px;
-    height: 150px;
-    display: flex;
-    justify-content: start;
-`
 const DetailImage = styled.div`
     margin-bottom: 20px;
     height: 150px;
@@ -85,17 +53,10 @@ const DetailImage = styled.div`
 `
 
 
-const ActorsImageCard = styled.div`
-    width: 110px;
-    height: 165px;
-    background-color: white;
-    margin-right: 10px;
-`
 const MovieDetailMainAction = styled.div`
     max-width: 600px;
-    margin: 0 auto;
-    height: 60px;
-    background-color: #fff;
+    margin: 20px auto;
+    height: 100%;
 `
 
 const MovieDetailMainContent = styled.div`
@@ -115,7 +76,7 @@ const MovieDetailMainContentTab = styled.div`
     flex-direction: row;
     max-width: 900px;
     min-width: 850px;
-    margin: 0 auto;
+    margin: 10px auto;
     height: 30px;
     gap: 50px;
     border-bottom: white 1px solid;
@@ -132,14 +93,16 @@ const OverViewContents = styled.div`
     gap: 20px;
 `
 
-const OverViewContainerWrapper = styled.div`
+const OverViewContainerWrapper = styled(HeaderContentsContainer)`
+
     display: flex;
     flex-direction: row;
     justify-content: space-around;
     align-items: center;
     max-width: 850px;
     min-width: 800px;
-    margin: 10px auto;
+    margin: 20px auto;
+    padding: 30px 20px;
     gap: 20px;
 `
 const OverViewPlatformWrapper = styled.div`
@@ -170,51 +133,41 @@ const OverViewPlatformTab = styled.div`
     justify-content: space-around;
     align-items: center;
     max-width: 400px;
-    //min-width: 300px;
     margin: 0 auto;
     gap: 20px;
-
-
-    //display: flex;
-    //justify-content: space-evenly;
-    //flex-direction: row;
-    //max-width: 900px;
-    //min-width: 850px;
-    //margin: 30px auto;
-    //height: 30px;
-    //gap: 50px;
-    //border-bottom: white 1px solid;
 `
 
 const OverViewContainer = styled.div`
     display: flex;
-    color: #130803;
+    flex-direction: column;
     max-width: 800px;
     min-width: 220px;
     word-wrap: break-word;
-    min-height: 100px;
-    background-color: #f0f0f0;
+    min-height: 40px;
+    max-height: 100px;
     box-sizing: border-box;
-
 `
-const DetailReviewContents = styled.div`
+const ContentsHeader = styled.div`
     display: flex;
-    flex-direction: column;
-    max-width: 850px;
-    min-width: 850px;
-    min-height: 100px;
-    justify-content: start;
+    justify-content: space-between;
     align-items: center;
-    margin: 0 auto;
-    gap: 5px;
+    max-width: 800px;
+    font-weight: bold;
+    width: 100%;
+    min-height: 50px;
+`
+const ContentsTitle = styled.div`
+    font-size: 25px;
+    margin: 20px 0 0 20px;
+
 `
 
-const DetailDebateContents = styled.div`
+const ReviewDebateContents = styled.div`
     display: flex;
     max-width: 800px;
     min-width: 800px;
     min-height: 100px;
-    flex-direction: row-reverse;
+    flex-direction: column;
     justify-content: start;
     align-items: center;
     margin: 0 auto;
@@ -231,7 +184,7 @@ const DetailImageContents = styled.div`
     margin: 0 auto;
     gap: 5px;
 `
-const DetailRatingWrapper = styled.div`
+const RatingWrapper = styled.div`
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
@@ -241,27 +194,26 @@ const DetailRatingWrapper = styled.div`
     margin: 0 auto;
     gap: 10px;
 `
-const TotalRatingContainer = styled.div`
-    min-width: 380px;
-    height: 150px;
-    background-color: #f0f0f0;
+
+const DetailMyReviewCard = styled(BaseContainer)`
+    min-width: 800px;
+    min-height: 100px;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 24px;
-    color: #130803;
 `
+
 const DetailMyReviewWrapper = styled.div`
     width: 100%;
-    min-height: 150px;
-    background-color: #ffffff;
+    min-height: 100px;
+    max-height: 300px;
     display: flex;
-    margin: 5px auto;
+    margin: 0 auto;
     color: #191513;
     justify-content: center;
     align-items: center;
 `
-const DetailReviewListWrapper = styled.div`
+const ContentsListWrapper = styled.div`
     max-width: 800px;
     width: 100%;
     min-height: 100px;
@@ -269,7 +221,7 @@ const DetailReviewListWrapper = styled.div`
     flex-direction: column;
     margin: 10px auto;
 `
-const DetailReviewList = styled.div`
+const ReviewDebateList = styled.div`
     width: 100%;
     min-height: 100px;
     display: flex;
@@ -283,368 +235,231 @@ const DetailReviewCardWrapper = styled.div`
     display: flex;
     margin: 0 auto;
 `
-const DetailReviewCard = styled.div`
-    width: 100%;
-    height: 100%;
-    min-height: 100px;
-    max-width: 800px;
-    background-color: var(--color-primary);
-    margin: 5px auto;
-    padding: 5px 10px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    border-radius: 15px;
-`
 
-const ReviewCardHeader = styled.div`
+const ContentsListTitleTab = styled.div`
+    width: 100%;
+    height: 40px;
     display: flex;
-    flex-direction: row;
     justify-content: space-between;
-    width: 100%;
-    padding: 5px;
-    color: white;
-`
-
-const ReviewCardBody = styled.div`
-    width: 100%;
-    max-width: 760px;
-    padding: 5px 10px;
-    margin: 0 auto;
-    color: white;
-    word-wrap: break-word;
-    min-height: 50px;
-    font-size: 12px;
-    max-height: 110;
-`
-
-const ReviewUserCard = styled.div`
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    padding: 5px;
-    color: white;
-`
-
-const UserImageSmall = styled.div`
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background-color: #f0f0f0;
-    background-image: url('https://via.placeholder.com/30');
-    background-size: cover;
-    background-position: center;
-`
-
-const UserInfoWrapper = styled.div`
-    min-width: 60px;
-    max-width: 100px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: start;
-    color: white;
-    gap: 2px;
-`
-const UserMovieRatingWrapper = styled.div`
-    display: flex;
-    flex-direction: row;
-`
-
-const ReviewUserName = styled.div`
-    font-size: 12px;
-`
-
-const ReviewCreatedAt = styled.div`
-    font-size: 8px;
-`
-
-
-const ReviewCardFooter = styled.div`
-    max-width: 780px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    width: 100%;
-    padding: 5px 10px;
-    color: white;
-`
-const ReviewLikeWrapper = styled.div`
-    padding: 0 10px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 5px;
-`
-
-const DetailReviewListOrderTab = styled.div`
-    width: 100%;
-    height: 30px;
-    display: flex;
-    justify-content: end;
     align-content: center;
-
+    align-items: center;
 `
 
-const ReviewListOrderDropdown = styled.div`
+const ContentsListOrderDropdown = styled.div`
     width: 80px;
     height: 30px;
     display: flex;
+    border-radius: 5px;
     background-color: #191513;
     text-align: center;
     align-items: center;
     justify-content: center;
 `
 
+const TabButton = styled.button<{ $active: boolean }>`
+    all: unset;
+    cursor: pointer;
+    width: 100px;
+    text-align: center;
+    font-size: 20px;
+    color: ${({$active}) => ($active ? '#FE6A3C' : '#fff')};
+    border-bottom: ${({$active}) => ($active ? '3px solid #FE6A3C' : 'none')};
+`
+
+const PlatformTabButton = styled.button<{ $active?: boolean }>`
+    all: unset;
+    cursor: pointer;
+    width: 100px;
+    text-align: center;
+    font-size: 20px;
+    color: ${({$active}) => ($active ? '#FE6A3C' : '#fff')};
+    border-bottom: ${({$active}) => ($active ? '1px solid #FE6A3C' : 'none')};
+`
+
+const ActionButton = styled.button`
+    all: unset;
+    cursor: pointer;
+    background-color: #fe6a3c;
+    color: white;
+    padding: 5px 10px;
+    margin-right: 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+        background-color: #ff854e;
+    }
+`
 
 export default function MovieDetailPage() {
+  const [movieData, setMovieData] = useState<MovieData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState<'overview' | 'review' | 'debate' | 'media'>('overview')
+
+  useEffect(() => {
+    const fetchMovieDetail = async () => {
+      try {
+        //
+        // 여기에 실제 API 호출 코드 작성
+        //const { movieId } = useParams<{ movieId: string }>()
+        // const respons = await fetch(`https://api.flipflick.life//api/v1/movie/view/${movieId}`)
+        // 예시로 fetch를 사용하여 JSON 파일을 불러오는 코드
+        const response = await axios.post('http://localhost:8080/api/v1/movie/view', {
+          tmdbId: 552524,
+        })
+
+        const data = response.data.data
+
+        const mappedData: MovieData = mapToMovieData(data)
+
+        setMovieData(mappedData)
+      } catch (error) {
+        console.error('영화 상세 정보 불러오기 실패:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchMovieDetail()
+  }, [])
+
+
+  if (isLoading || !movieData) {
+    return (
+      <MovieDetailLayout>
+        <p style={{color: 'white'}}>로딩 중입니다...</p>
+        {/* 페이지 구성 자체에 최소 크기가 정해진 영역이 많음 */}
+        {/* 하위 컴포넌트에 예외 처리 추가 필요 */}
+        {/* isLoading, 정의되지 않음, 전달 받은 데이터가 특정 조건에 해당 */}
+      </MovieDetailLayout>
+    )
+  }
+
   return (
     <MovieDetailLayout>
-      <MovieDetailHeader>
-        <MovieDetailHeaderImageSwiper>
-          <PostImage/>
-          {/* 여기에 이미지 슬라이더 컴포넌트를 추가할 수 있습니다. */}
-        </MovieDetailHeaderImageSwiper>
-        <MovieDetailHeaderContents>
-          <MovieDetailHeaderTitle>
-            <p>영화 제목 영역</p>
-          </MovieDetailHeaderTitle>
-          <MovieDetailRelease>
-            <p>출시일 영역</p>
-          </MovieDetailRelease>
-          <MovieDetailHeaderRating>
-            <p>평점 영역 - 평점 영역</p>
-          </MovieDetailHeaderRating>
-          <MovieDetailLikeHate>
-            <p>좋아요 / 싫어요 영역</p>
-          </MovieDetailLikeHate>
-          <MovieDetailHeaderPlot>
-            <p>영화 줄거리 영역</p>
-          </MovieDetailHeaderPlot>
-          <MovieDetailHeaderActorsSwiper>
-            <ActorsImageCard>
-              <p style={{color: 'black'}}>배우 이미지 카드 영역</p>
-            </ActorsImageCard>
-            <ActorsImageCard>
-              <p style={{color: 'black'}}>배우 이미지 카드 영역</p>
-            </ActorsImageCard>
-            <ActorsImageCard>
-              <p style={{color: 'black'}}>배우 이미지 카드 영역</p>
-            </ActorsImageCard>
-            <ActorsImageCard>
-              <p style={{color: 'black'}}>배우 이미지 카드 영역</p>
-            </ActorsImageCard>
-          </MovieDetailHeaderActorsSwiper>
-
-        </MovieDetailHeaderContents>
-      </MovieDetailHeader>
+      <MovieDetailHeader movieData={movieData}/>
       <MovieDetailMainAction>
-        <button>찜하기</button>
-        <button>봤어요</button>
-        <button>플레이리스트 추가</button>
-        <button>수정 요청</button>
+        <ActionButton>찜하기</ActionButton>
+        <ActionButton>봤어요</ActionButton>
+        <ActionButton>플레이리스트 추가</ActionButton>
+        <ActionButton>수정 요청</ActionButton>
       </MovieDetailMainAction>
       <MovieDetailMain>
         <MovieDetailMainContentTab>
-          <button style={{
-            all: 'unset', cursor: 'pointer',
-            borderBottom: '1px solid #FE6A3C',
-            color: '#FE6A3C',
-            width: '100px', textAlign: 'center',
-            fontSize: '20px'
-          }}>개요
-          </button>
-          <button style={{
-            all: 'unset', cursor: 'pointer',
-            // borderBottom: '1px solid',
-            // color:'#FE6A3C',
-            width: '100px', textAlign: 'center',
-            fontSize: '20px'
-          }}>리뷰
-          </button>
-          <button style={{
-            all: 'unset', cursor: 'pointer',
-            // borderBottom: '1px solid',
-            // color:'#FE6A3C',
-            width: '100px', textAlign: 'center',
-            fontSize: '20px'
-          }}>토론장
-          </button>
-          <button style={{
-            all: 'unset', cursor: 'pointer',
-            // borderBottom: '1px solid',
-            // color:'#FE6A3C',
-            width: '100px', textAlign: 'center',
-            fontSize: '20px'
-          }}>사진
-          </button>
+          <TabButton $active={activeTab === 'overview'} onClick={() => setActiveTab('overview')}>
+            개요
+          </TabButton>
+          <TabButton $active={activeTab === 'review'} onClick={() => setActiveTab('review')}>
+            리뷰
+          </TabButton>
+          <TabButton $active={activeTab === 'debate'} onClick={() => setActiveTab('debate')}>
+            토론장
+          </TabButton>
+          <TabButton $active={activeTab === 'media'} onClick={() => setActiveTab('media')}>
+            사진
+          </TabButton>
         </MovieDetailMainContentTab>
         <MovieDetailMainContent>
-          <OverViewContents>
-            <OverViewContainerWrapper>
-              <OverViewContainer>개요 내용 1</OverViewContainer>
-              <OverViewContainer>개요 내용 2</OverViewContainer>
-              <OverViewContainer>개요 내용 3</OverViewContainer>
-            </OverViewContainerWrapper>
-            <OverViewPlatformWrapper>
-              <OverViewPlatformTab>
-                <button style={{
-                  all: 'unset', cursor: 'pointer',
-                  borderBottom: '1px solid #FE6A3C',
-                  color: '#FE6A3C',
-                  width: '100px', textAlign: 'center',
-                  fontSize: '20px'
-                }}>구매
-                </button>
-                <button style={{
-                  all: 'unset', cursor: 'pointer',
-                  // color:'#FE6A3C',
-                  width: '100px', textAlign: 'center',
-                  fontSize: '20px'
-                }}>정액제
-                </button>
-                <button style={{
-                  all: 'unset', cursor: 'pointer',
-                  // color:'#FE6A3C',
-                  width: '100px', textAlign: 'center',
-                  fontSize: '20px'
-                }}>대여
-                </button>
-              </OverViewPlatformTab>
-              <OverViewPlatformImageWrapper>
-                <PlatFormImage>
-                  애플
-                </PlatFormImage>
-                <PlatFormImage>
-                  구글
-                </PlatFormImage>
-                <PlatFormImage>
-                  넷플릭스
-                </PlatFormImage>
-
-              </OverViewPlatformImageWrapper>
-            </OverViewPlatformWrapper>
-          </OverViewContents>
-          <DetailReviewContents>
-            <DetailRatingWrapper>
-              <TotalRatingContainer>전체 평점</TotalRatingContainer>
-              <TotalRatingContainer>평가하기</TotalRatingContainer>
-            </DetailRatingWrapper>
-            <DetailMyReviewWrapper>
-              내 리뷰
-            </DetailMyReviewWrapper>
-            <DetailReviewListWrapper>
-              <DetailReviewListOrderTab>
-                <ReviewListOrderDropdown>
-                  정렬 순서
-                </ReviewListOrderDropdown>
-              </DetailReviewListOrderTab>
-              <DetailReviewList>
-
+          {activeTab === 'overview' && (
+            <OverViewContents>
+              <ContentsListTitleTab>
+                <ContentsTitle>개요</ContentsTitle>
+              </ContentsListTitleTab>
+              <OverViewContainerWrapper>
+                <OverViewContainer>
+                  <p>장르: {movieData.genres.map(genre => genre.genreName).join(', ')}</p>
+                  <p>러닝타임: {movieData.runtime ?? '정보 없음'}분</p>
+                  {/*<p>러닝타임: {movieData.overviewData.runtime}분</p>*/}
+                </OverViewContainer>
+                <OverViewContainer>
+                  <p>개봉일: {movieData.productionYear ?? '미정'}</p>
+                  <p>제작국가: {movieData.productionCountry ?? '정보 없음'}</p>
+                  {/*<p>제작국가: {movieData.overviewData.productionCountry}</p>*/}
+                </OverViewContainer>
+                <OverViewContainer>
+                  <p>연령등급: {movieData.ageRating ?? '정보 없음'}</p>
+                  <p>
+                    평균 평점: {movieData.voteAverage === 0
+                    ? '집계중'
+                    : `${movieData.voteAverage.toFixed(1)}점`}
+                  </p>
+                </OverViewContainer>
+              </OverViewContainerWrapper>
+              <ContentsListTitleTab>
+                <ContentsTitle>플랫폼</ContentsTitle>
+              </ContentsListTitleTab>
+              <OverViewPlatformWrapper>
+                <OverViewPlatformTab>
+                  <PlatformTabButton $active>구매</PlatformTabButton>
+                  <PlatformTabButton>정액제</PlatformTabButton>
+                  <PlatformTabButton>대여</PlatformTabButton>
+                </OverViewPlatformTab>
+                <OverViewPlatformImageWrapper>
+                  <PlatFormImage/>
+                </OverViewPlatformImageWrapper>
+              </OverViewPlatformWrapper>
+            </OverViewContents>
+          )}
+          {activeTab === 'review' && (
+            <ReviewDebateContents>
+              <RatingWrapper>
+                <RatingCard title="전체 평점" rating={movieData.voteAverage} size={40}/>
+                <RatingCard title="평가하기" rating={0} size={40}/>
+              </RatingWrapper>
+              <DetailMyReviewWrapper>
+                <DetailMyReviewCard>내 리뷰</DetailMyReviewCard>
+              </DetailMyReviewWrapper>
+              <ContentsListWrapper>
+                <ContentsListTitleTab>
+                  <ContentsTitle>리뷰</ContentsTitle>
+                  <ContentsListOrderDropdown>정렬 순서</ContentsListOrderDropdown>
+                </ContentsListTitleTab>
+                <ReviewDebateList>
+                  <DetailReviewCardWrapper>
+                    <ReviewDebateCard
+                      rating={4.0}
+                      content={'리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용'}
+                      createdAt={'1 시간 전'}
+                      likes={100}
+                      username={'사용자'}
+                      type={'review'}
+                    />
+                  </DetailReviewCardWrapper>
+                </ReviewDebateList>
+              </ContentsListWrapper>
+            </ReviewDebateContents>
+          )}
+          {activeTab === 'debate' && (
+            <ReviewDebateContents>
+              <ContentsHeader>
+                <ContentsTitle>토론장</ContentsTitle>
+              </ContentsHeader>
+              <ReviewDebateList>
                 <DetailReviewCardWrapper>
-
-                  <DetailReviewCard>
-                    <ReviewCardHeader>
-                      <ReviewUserCard>
-                        <UserImageSmall/>
-                        <UserInfoWrapper>
-                          <ReviewUserName>사용자 이름</ReviewUserName>
-                          <ReviewCreatedAt>작성일</ReviewCreatedAt>
-                        </UserInfoWrapper>
-                        <UserMovieRatingWrapper>
-                          <StarRating rating={0.5} />
-                        </UserMovieRatingWrapper>
-                      </ReviewUserCard>
-
-                    </ReviewCardHeader>
-                    <ReviewCardBody>
-                      리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용리뷰내용
-                    </ReviewCardBody>
-                    <ReviewCardFooter>
-                      <ReviewLikeWrapper>
-                        {/*lucid*/}
-                        <Heart size={15} color={"red"}/>
-                        <p style={{fontSize:'12px'}}>100</p>
-                      </ReviewLikeWrapper>
-                      <button>...</button>
-                    </ReviewCardFooter>
-                  </DetailReviewCard>
+                  <ReviewDebateCard
+                    content={'토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용'}
+                    createdAt={'1 시간 전'}
+                    likes={100}
+                    username={'사용자'}
+                    comments={10}
+                    images={['https://placehold.co/600x600', 'https://placehold.co/600x600', 'https://placehold.co/600x600', 'https://placehold.co/600x600', 'https://placehold.co/600x600']}
+                    type={'debate'}
+                    isMyPost={true}
+                  />
                 </DetailReviewCardWrapper>
-                <DetailReviewCardWrapper>
-                  <DetailReviewCard>
-                    <ReviewCardHeader>
-                      <ReviewUserCard>
-                        <UserImageSmall/>
-                        <UserInfoWrapper>
-                          <ReviewUserName>사용자 이름</ReviewUserName>
-                          <ReviewCreatedAt>작성일</ReviewCreatedAt>
-                        </UserInfoWrapper>
-                        <UserMovieRatingWrapper>
-                          <StarRating rating={0.5}/>
-                        </UserMovieRatingWrapper>
-                      </ReviewUserCard>
-                    </ReviewCardHeader>
-                    <ReviewCardBody>
-                      <p>리뷰 내용 영역</p>
-                    </ReviewCardBody>
-                    <ReviewCardFooter>
-                      <ReviewLikeWrapper>
-                        {/*lucid*/}
-                        <Heart size={15} color={"red"} fill={"red"}/>
-                        <p style={{fontSize:'12px'}}>100</p>
-                      </ReviewLikeWrapper>
-                      <button>...</button>
-                    </ReviewCardFooter>
-                  </DetailReviewCard>
-                </DetailReviewCardWrapper>
-                <DetailReviewCardWrapper>
-                  <DetailReviewCard>
-                    <ReviewCardHeader>
-                      <ReviewUserCard>
-                        <UserImageSmall/>
-                        <UserInfoWrapper>
-                          <ReviewUserName>사용자 이름</ReviewUserName>
-                          <ReviewCreatedAt>작성일</ReviewCreatedAt>
-                        </UserInfoWrapper>
-                        <UserMovieRatingWrapper>
-                          <StarRating rating={0.5}/>
-                        </UserMovieRatingWrapper>
-                      </ReviewUserCard>
-                    </ReviewCardHeader>
-                    <ReviewCardBody>
-                      <p>리뷰 내용 영역</p>
-                    </ReviewCardBody>
-                    <ReviewCardFooter>
-                      <ReviewLikeWrapper>
-                        {/*lucid*/}
-                        <Heart size={15} color={"red"} />
-                        <p style={{fontSize:'12px'}}>100</p>
-                       </ReviewLikeWrapper>
-                      <button>...</button>
-                    </ReviewCardFooter>
-                  </DetailReviewCard>
-                </DetailReviewCardWrapper>
-
-              </DetailReviewList>
-            </DetailReviewListWrapper>
-
-          </DetailReviewContents>
-          <DetailDebateContents>
-            토론장 영역
-          </DetailDebateContents>
-          <DetailImageContents>
-            <DetailImage>
-              영화 이미지 Grid
-            </DetailImage>
-          </DetailImageContents>
+              </ReviewDebateList>
+            </ReviewDebateContents>
+          )}
+          {activeTab === 'media' && (
+            <DetailImageContents>
+              <DetailImage>영화 이미지 Grid</DetailImage>
+            </DetailImageContents>
+          )}
         </MovieDetailMainContent>
-
       </MovieDetailMain>
-
     </MovieDetailLayout>
   )
 }

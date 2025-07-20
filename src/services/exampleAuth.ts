@@ -17,12 +17,12 @@ export interface UserInfo {
 export const useAuthApi = () => {
   // 로그인
   const login = async (email: string, password: string): Promise<AxiosResponse<LoginResponse>> => {
-    return axiosInstance.post<LoginResponse>('/member/login', { email, password })
+    return axiosInstance.post<LoginResponse>('/api/v1/member/login', { email, password })
   }
 
   // 사용자 정보 조회
   const getUserInfo = async (): Promise<AxiosResponse<UserInfo>> => {
-    return axiosInstance.get<UserInfo>('/member/user-info')
+    return axiosInstance.get<UserInfo>('/api/v1/member/user-info')
   }
 
   return {

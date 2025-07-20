@@ -26,7 +26,7 @@ export interface ActorDetailResponse {
 }
 
 export const getActorDetail = async (tmdbId: number): Promise<ActorDetailResponse> => {
-  const response = await axiosInstance.post<ActorDetailResponse>('/cast/view', {
+  const response = await axiosInstance.post<ActorDetailResponse>('/api/v1/cast/view', {
     tmdbId
   });
   return response.data;
