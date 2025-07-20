@@ -9,6 +9,10 @@ import RatingCard from '@/components/starRating/RatingCard'
 import axios from "axios";
 import {mapToMovieData} from "@/pages/movie/movieDataMapper";
 import MovieDetailHeader from "@/pages/movie/MovieDetailHeader";
+import {useAuth} from "@/context/AuthContext";
+import {toast} from "react-toastify";
+import {useParams} from "react-router-dom";
+import BasePageLayout from "@/components/common/layout/BasePageLayout";
 
 const MovieDetailLayout = styled.div`
     display: flex;
@@ -298,23 +302,18 @@ export default function MovieDetailPage() {
   const [movieData, setMovieData] = useState<MovieData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'overview' | 'review' | 'debate' | 'media'>('overview')
+  const { isAuthenticated } = useAuth()
+  const { movieId } = useParams<{ movieId: string }>()
 
   useEffect(() => {
     const fetchMovieDetail = async () => {
       try {
-        //
-        // 여기에 실제 API 호출 코드 작성
-        //const { movieId } = useParams<{ movieId: string }>()
-        // const respons = await fetch(`https://api.flipflick.life//api/v1/movie/view/${movieId}`)
-        // 예시로 fetch를 사용하여 JSON 파일을 불러오는 코드
+        console.log("영화 상세 정보 불러오기 시작, 영화 ID : ", movieId)
         const response = await axios.post('http://localhost:8080/api/v1/movie/view', {
-          tmdbId: 552524,
+          tmdbId: movieId,
         })
-
         const data = response.data.data
-
         const mappedData: MovieData = mapToMovieData(data)
-
         setMovieData(mappedData)
       } catch (error) {
         console.error('영화 상세 정보 불러오기 실패:', error)
@@ -322,7 +321,6 @@ export default function MovieDetailPage() {
         setIsLoading(false)
       }
     }
-
     fetchMovieDetail()
   }, [])
 
@@ -339,6 +337,7 @@ export default function MovieDetailPage() {
   }
 
   return (
+    <BasePageLayout>
     <MovieDetailLayout>
       <MovieDetailHeader movieData={movieData}/>
       <MovieDetailMainAction>
@@ -461,5 +460,6 @@ export default function MovieDetailPage() {
         </MovieDetailMainContent>
       </MovieDetailMain>
     </MovieDetailLayout>
+    </BasePageLayout>
   )
 }

@@ -48,8 +48,8 @@ import ExamplePage from '@/pages/example/ExamplePage'
 import PlaylistPage from '@/pages/playlist/playlist'
 import CreatePlaylist from '@/pages/playlist/CreatePlaylist'
 import PlaylistDetail from '@/pages/playlist/PlaylistDetail'
-import { AuthProvider } from '../context/AuthContext'
-import { BookmarkProvider } from '../context/BookmarkContext'
+import { AuthProvider } from '@/context/AuthContext'
+import { BookmarkProvider } from '@/context/BookmarkContext'
 import ProtectedRoute from '../components/common/ProtectedRoute'
 import PublicRoute from '../components/common/PublicRoute'
 import EditPlaylist from '@/pages/playlist/EditPlaylist'
@@ -94,7 +94,7 @@ const AppRoutes = () => {
         <Route path="/movie/detail" element={<MovieDetailPage />} />
         <Route path="/totalsearch" element={<TotalSearch />} />
         <Route path="/bolkinator" element={<Bolkinator />} />
-
+        <Route path="/movie/detail/:movieId" element={<MovieDetailPage />} />
         {/* AdminRoute (관리자만 접근) */}
         <Route
           path="/admin/dashboard"
