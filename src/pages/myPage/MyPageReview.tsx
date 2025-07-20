@@ -6,6 +6,8 @@ import { useMediaQuery } from 'react-responsive'
 import BaseContainer from '@/components/common/BaseContainer'
 import movie from './movie.jpg'
 import { getUserReviewsLatest } from '@/services/memberPost'
+import { timeForToday } from '@/utils/timeForToday'
+import { Star } from 'lucide-react'
 
 interface IsMobile {
   $ismobile: boolean
@@ -17,7 +19,7 @@ const Container = styled.div`
 `
 
 const ContentWrapper = styled.div`
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
   overflow-x: hidden;
 `
@@ -44,7 +46,7 @@ const TotalCount = styled.div`
 const ContentGrid = styled.div<IsMobile>`
   display: grid;
   grid-template-columns: ${({ $ismobile }) => ($ismobile ? '1fr' : 'repeat(2, 1fr)')};
-  gap: 1rem;
+  gap: 1.5rem;
   margin-bottom: 2rem;
 `
 
@@ -52,18 +54,26 @@ const ReviewCard = styled(BaseContainer)`
   display: flex;
   border-radius: 8px;
   overflow: hidden;
+  padding: 0;
+`
+
+const ImageWrapper = styled.div`
+  flex: 0 0 100px; /* 좌측에 120px 너비 확보 */
 `
 
 const ReviewImage = styled.img`
-  width: 80px;
-  object-fit: cover;
+  width: 100%;
+  height: auto;
+  object-fit: contain; /* 잘리지 않게 전체를 보여줌 */
+  display: block;
 `
 
 const InfoWrap = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 0.8rem;
+  justify-content: space-between;
+  padding: 1rem;
   color: #fff;
 `
 
@@ -74,13 +84,26 @@ const ReviewTitle = styled.div`
   overflow-wrap: break-word;
   word-break: break-word;
   white-space: normal;
+  margin-top: 5px;
   margin-bottom: 0.5rem;
 `
 
 const ReviewRating = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2px;
   color: #fff;
   font-size: 0.9rem;
   align-self: flex-end;
+  padding-top: 0;
+
+  span {
+    font-size: 16px;
+  }
+
+  svg {
+    stroke-width: 1.5;
+  }
 `
 
 const ReviewText = styled.div`
@@ -145,12 +168,19 @@ const MyPageReview: React.FC = () => {
   const nickname = location.state?.nickname
   const [loading, setLoading] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     const fetchReviews = async () => {
       setLoading(true)
       const res = await getUserReviewsLatest(nickname, page, pageSize)
       const newReviews = res.data.data.content
-      setReviews(newReviews)
+
+      if (isMobile) {
+        setReviews(prev => (page === 0 ? newReviews : [...prev, ...newReviews]))
+      } else {
+        setReviews(newReviews)
+      }
+
       setTotal(res.data.data.totalElements)
       setIsLastPage(res.data.data.last)
       setLoading(false)
@@ -186,19 +216,25 @@ const MyPageReview: React.FC = () => {
         <ContentGrid $ismobile={isMobile}>
           {reviews.map((review, idx, arr) => {
             const isLast = isMobile && idx === arr.length - 1
+            const key = review.id ?? `${review.movieTitle}-${idx}`
 
             return (
-              <div key={review.id} ref={isLast ? lastItemRef : undefined}>
+              <div key={key} ref={isLast ? lastItemRef : undefined}>
                 <ReviewCard>
-                  <ReviewImage
-                    src={`https://image.tmdb.org/t/p/w500${review.posterImg}`}
-                    alt={review.movieTitle}
-                  />
+                  <ImageWrapper>
+                    <ReviewImage
+                      src={`https://image.tmdb.org/t/p/w500${review.posterImg}`}
+                      alt={review.movieTitle}
+                    />
+                  </ImageWrapper>
                   <InfoWrap>
-                    <ReviewRating>★ {review.star}</ReviewRating>
+                    <ReviewRating>
+                      <Star fill="yellow" stroke="#yellow" size={18} />
+                      <span>{review.star}</span>
+                    </ReviewRating>
                     <ReviewTitle>{review.movieTitle}</ReviewTitle>
                     <ReviewText>{review.content}</ReviewText>
-                    <ReviewTime>{review.createdAt}</ReviewTime>
+                    <ReviewTime>{timeForToday(review.createdAt)}</ReviewTime>
                   </InfoWrap>
                 </ReviewCard>
               </div>

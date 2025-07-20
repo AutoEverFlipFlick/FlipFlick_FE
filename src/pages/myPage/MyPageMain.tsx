@@ -24,9 +24,10 @@ import {
 
 import { getBookmarkCount, getWatchedCount, getLikeCount } from '@/services/moviePreference'
 import { getMyPlaylists, getPlaylistsByNickname } from '@/services/playlist'
-import { getUserReviewsLatest } from '@/services/memberPost'
+import { getUserReviewsLatest, getUserDebatesLatest } from '@/services/memberPost'
 import AlarmComponent from '@/components/common/AlarmComponent'
 import AlarmListener from '@/components/common/AlarmListener'
+import { useAuth } from '@/context/AuthContext'
 
 interface IsMobile {
   $ismobile: boolean
@@ -254,6 +255,7 @@ const Card = styled.div`
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1rem;
+  cursor: pointer;
 `
 
 const ReviewImage = styled.img`
@@ -343,6 +345,7 @@ const MyPageMain: React.FC = () => {
   const isMobile = useMediaQuery({ query: '(max-width: 767px)' })
   const [isLoading, setIsLoading] = useState(true)
   const [isMounted, setIsMounted] = useState(false)
+  const { user } = useAuth()
   const [nickname, setNickname] = useState('')
   const [profileImageUrl, setProfileImageUrl] = useState('')
   const navigate = useNavigate()
@@ -364,6 +367,7 @@ const MyPageMain: React.FC = () => {
   const [reviewTotalCount, setReviewTotalCount] = useState<number>(0)
   const [playlists, setPlaylists] = useState<playlistArray[]>([])
   const [activeTab, setActiveTab] = useState<TabType>('찜했어요')
+  const [debateTotalCount, setDebateTotalCount] = useState<number>(0)
   const stats: { num: number; label: TabType }[] = [
     { num: bookmarkCount, label: '찜했어요' },
     { num: likeCount, label: '좋아요' },
@@ -410,15 +414,15 @@ const MyPageMain: React.FC = () => {
           // 다른 사용자 프로필
           setIsOwnProfile(false)
           const otherRes = await getUserById(userIdParam)
-          const otherUserId = otherRes.data.data.id
-          setProfileOwnerId(otherUserId)
-          setNickname(otherRes.data.data.nickname)
-          setProfileImageUrl(otherRes.data.data.profileImage)
-          setFollowerCount(otherRes.data.data.followerCount)
-          setFollowingCount(otherRes.data.data.followingCount)
+          const otherUser = otherRes.data.data
+          setProfileOwnerId(otherUser.id)
+          setNickname(otherUser.nickname)
+          setProfileImageUrl(otherUser.profileImage)
+          setFollowerCount(otherUser.followerCount)
+          setFollowingCount(otherUser.followingCount)
 
           // 로그인된 경우에만 팔로우 여부 체크
-          const isFollowing = await checkFollowStatus(otherUserId)
+          const isFollowing = await checkFollowStatus(otherUser.id)
           setIsFollowing(isFollowing)
         } else {
           // 내 프로필
@@ -430,7 +434,7 @@ const MyPageMain: React.FC = () => {
           setFollowingCount(myInfo.data.data.followingCount)
         }
       } catch (e) {
-        console.error('로그인하지 않은 사용자')
+        // console.error('로그인하지 않은 사용자')
         setIsLoggedIn(false)
 
         // 로그인 안 한 상태에서도 상대 프로필은 불러오기
@@ -509,6 +513,7 @@ const MyPageMain: React.FC = () => {
     fetchPlaylists()
   }, [profileOwnerId, isOwnProfile, nickname])
 
+  // 팝콘 지수
   useEffect(() => {
     if (profileOwnerId === null) return
 
@@ -528,6 +533,21 @@ const MyPageMain: React.FC = () => {
 
     fetchPopcornScore()
   }, [profileOwnerId, isOwnProfile])
+
+  useEffect(() => {
+    if (!nickname) return
+
+    const fetchDebateCount = async () => {
+      try {
+        const res = await getUserDebatesLatest(nickname) // page=0, size=1만 불러와도 totalElements 확인 가능
+        setDebateTotalCount(res.data.data.totalElements)
+      } catch (err) {
+        console.error('토론 글 수 불러오기 실패:', err)
+      }
+    }
+
+    fetchDebateCount()
+  }, [nickname])
 
   if (!isMounted || isLoading) {
     return null
@@ -627,13 +647,14 @@ const MyPageMain: React.FC = () => {
                 <SectionHeader
                   $ismobile={isMobile}
                   onClick={() => navigate('/my-page-review', { state: { nickname } })}
+                  style={{ cursor: 'pointer' }}
                 >
                   <span>작성한 리뷰</span>
                   <span>{reviewTotalCount}</span>
                 </SectionHeader>
                 <CardList>
                   {userReviews.map(review => (
-                    <Card key={review.reviewId}>
+                    <Card key={review.reviewId} onClick={() => navigate(`/movie/detail`)}>
                       <ReviewImage
                         src={`https://image.tmdb.org/t/p/w500${review.posterImg}`}
                         alt="리뷰 포스터"
@@ -657,7 +678,6 @@ const MyPageMain: React.FC = () => {
                   {playlists.map(p => (
                     <Card
                       key={p.playListId}
-                      style={{ cursor: 'pointer' }}
                       onClick={() =>
                         navigate(`/playlist/${p.playListId}${`?id=${profileOwnerId}`}`)
                       }
@@ -674,9 +694,13 @@ const MyPageMain: React.FC = () => {
                 </CardList>
               </Section>
               <SectionFull>
-                <SectionHeader $ismobile={isMobile} onClick={() => navigate('/my-page-debate')}>
+                <SectionHeader
+                  $ismobile={isMobile}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => navigate('/my-page-debate', { state: { nickname } })}
+                >
                   <span>토론 글</span>
-                  <span>17</span>
+                  <span>{debateTotalCount}</span>
                 </SectionHeader>
               </SectionFull>
             </ContentSections>

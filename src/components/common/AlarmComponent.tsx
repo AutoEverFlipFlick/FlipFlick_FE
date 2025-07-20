@@ -52,7 +52,7 @@ const AlarmComponent: React.FC = () => {
   const toggleVisible = () => setVisible(v => !v)
 
   useEffect(() => {
-    console.log('userId:', userId)
+    // console.log('userId:', userId)
   }, [userId])
 
   const fetchAlarms = async () => {
@@ -87,7 +87,7 @@ const AlarmComponent: React.FC = () => {
     })
 
     eventSource.onerror = err => {
-      console.error('SSE 오류:', err)
+      // console.error('SSE 오류:', err)
       eventSource.close()
     }
 
