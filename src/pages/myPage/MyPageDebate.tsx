@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { useMediaQuery } from 'react-responsive'
 import zzanggu from './zzanggu.jpg'
 import BaseContainer from '@/components/common/BaseContainer'
-import { getUserDebatesLatest, Debate, SortBy } from '@/services/memberPost'
+import { getUserDebatesBySort, Debate, SortBy } from '@/services/memberPost'
 import { ChevronDown, Heart, MessageSquare, Pencil, Trash2 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { timeForToday } from '@/utils/timeForToday'
@@ -274,17 +274,6 @@ const PaginationButton = styled.button<{ $active?: boolean }>`
   }
 `
 
-const dummyDebate = Array.from({ length: 17 }, (_, i) => ({
-  id: i,
-  movietitle: '스티치',
-  articletitle: '게시글 제목입니다',
-  text: '너무 귀여워요귀여워ssssssssssssssss요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요귀여워요~~',
-  time: '1시간 전',
-  likes: Math.floor(Math.random() * 100),
-  comments: Math.floor(Math.random() * 50),
-  image: zzanggu,
-}))
-
 export default function MyPageDebate() {
   const isMobile = useMediaQuery({ query: '(max-width: 767px)' })
   const [activeTab, setActiveTab] = useState<'내가 쓴 글' | '내가 쓴 댓글'>('내가 쓴 글')
@@ -355,7 +344,7 @@ export default function MyPageDebate() {
   const fetchDebates = async (pageNum = 0) => {
     try {
       setIsLoading(true)
-      const res = await getUserDebatesLatest(nickname, pageNum, pageSize, sortBy)
+      const res = await getUserDebatesBySort(nickname, pageNum, pageSize, sortBy)
       const newData = res.data.data.content
       const total = res.data.data.totalElements
       setTotalElements(total)

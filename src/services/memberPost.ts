@@ -27,22 +27,19 @@ interface PageResponse<T> {
   totalElements: number
 }
 
-/** 사용자 토론 목록 조회 (최신순) */
-export const getUserDebatesLatest = async (nickname: string, page = 0, size = 8) => {
-  return await axios.get<ApiResponse<PageResponse<Debate>>>(
-    `/api/v1/debate/user/${nickname}/latest`,
-    {
-      params: { page, size },
-    },
-  )
-}
+/** 사용자 토론 목록 조회 (정렬별) */
+export const getUserDebatesBySort = async (
+  nickname: string,
+  page = 0,
+  size = 8,
+  sortBy: 'latest' | 'popular',
+) => {
+  const endpoint =
+    sortBy === 'popular'
+      ? `/api/v1/debate/user/${nickname}/popular`
+      : `/api/v1/debate/user/${nickname}/latest`
 
-/** 사용자 토론 목록 조회 (최신순) */
-export const getUserDebatesPopular = async (nickname: string, page = 0, size = 8) => {
-  return await axios.get<ApiResponse<PageResponse<Debate>>>(
-    `/api/v1/debate/user/${nickname}/popular`,
-    {
-      params: { page, size },
-    },
-  )
+  return await axios.get<ApiResponse<PageResponse<Debate>>>(endpoint, {
+    params: { page, size },
+  })
 }

@@ -1,10 +1,8 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import styled from 'styled-components'
-import { Pagination } from '@mui/material'
 import { useMediaQuery } from 'react-responsive'
 import BaseContainer from '@/components/common/BaseContainer'
-import movie from './movie.jpg'
 import { getUserReviewsLatest } from '@/services/memberPost'
 import { timeForToday } from '@/utils/timeForToday'
 import { Star } from 'lucide-react'
@@ -155,6 +153,15 @@ const MobileLoading = styled.div`
   color: #aaa;
   padding: 1rem 0;
 `
+
+interface reviewArray {
+  id: number
+  movieTitle: string
+  posterImg: string
+  content: string
+  star: number
+  createdAt: string
+}
 
 const MyPageReview: React.FC = () => {
   const location = useLocation()

@@ -249,15 +249,16 @@ interface LocationState {
 const MyPagePreference: React.FC = () => {
   const isMobile = useMediaQuery({ query: '(max-width: 767px)' })
   const navigate = useNavigate()
-  const { state } = useLocation<LocationState>()
+  const location = useLocation()
+  const state = location.state as LocationState | undefined
 
   // 페칭 상태
   const [loading, setLoading] = useState(false)
   const [hasLoaded, setHasLoaded] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // 탭·페이징·데이터
   const initialTab = state?.tab ?? '찜했어요'
+  const profileOwnerId = state?.ownerId
   const [activeTab, setActiveTab] = useState<TabType>(initialTab)
 
   const pageSize = 20
@@ -266,7 +267,6 @@ const MyPagePreference: React.FC = () => {
   const [items, setItems] = useState<MovieListItem[]>([])
   const [total, setTotal] = useState(0)
 
-  const profileOwnerId = state?.ownerId
   const observer = useRef<IntersectionObserver | null>(null)
 
   // 데이터 페칭 함수

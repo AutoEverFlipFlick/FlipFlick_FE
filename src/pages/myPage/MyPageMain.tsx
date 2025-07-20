@@ -24,7 +24,7 @@ import {
 
 import { getBookmarkCount, getWatchedCount, getLikeCount } from '@/services/moviePreference'
 import { getMyPlaylists, getPlaylistsByNickname } from '@/services/playlist'
-import { getUserReviewsLatest, getUserDebatesLatest } from '@/services/memberPost'
+import { getUserReviewsLatest, getUserDebatesBySort } from '@/services/memberPost'
 import AlarmComponent from '@/components/common/AlarmComponent'
 import AlarmListener from '@/components/common/AlarmListener'
 import { useAuth } from '@/context/AuthContext'
@@ -288,18 +288,6 @@ const Rating = styled.div`
   font-size: 0.8rem;
 `
 
-const CardTitle = styled.div<IsMobile>`
-  color: #fff;
-  font-size: ${props => (props.$ismobile ? '1.3rem' : '1.1rem')};
-  padding-top: 5px;
-  margin-bottom: ${props => (props.$ismobile ? '0.1rem' : '-2px')};
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`
-
 const ReviewContent = styled.div`
   font-size: 0.8rem;
   color: #ccc;
@@ -341,11 +329,29 @@ function getPopcornIcon(percent: number) {
 
 type TabType = '찜했어요' | '좋아요' | '봤어요'
 
+// 리뷰 아이템 타입
+type reviewArray = {
+  reviewId: number
+  movieTitle: string
+  posterImg: string
+  star: number
+  content: string
+}
+
+// 플레이리스트 아이템 타입
+type playlistArray = {
+  playListId: number
+  title: string
+  thumbnailUrl: string
+  nickname: string
+  movieCount: number
+}
+
 const MyPageMain: React.FC = () => {
   const isMobile = useMediaQuery({ query: '(max-width: 767px)' })
   const [isLoading, setIsLoading] = useState(true)
   const [isMounted, setIsMounted] = useState(false)
-  const { user } = useAuth()
+  // const { user } = useAuth()
   const [nickname, setNickname] = useState('')
   const [profileImageUrl, setProfileImageUrl] = useState('')
   const navigate = useNavigate()
@@ -539,7 +545,7 @@ const MyPageMain: React.FC = () => {
 
     const fetchDebateCount = async () => {
       try {
-        const res = await getUserDebatesLatest(nickname) // page=0, size=1만 불러와도 totalElements 확인 가능
+        const res = await getUserDebatesBySort(nickname, 0, 1, 'latest') // page=0, size=1만 불러와도 totalElements 확인 가능
         setDebateTotalCount(res.data.data.totalElements)
       } catch (err) {
         console.error('토론 글 수 불러오기 실패:', err)
