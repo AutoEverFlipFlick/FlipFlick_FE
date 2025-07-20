@@ -26,7 +26,7 @@ export function getBookmarkList(
   page = 0,
   size = 10,
 ): Promise<AxiosResponse<ApiResponse<MovieListResponseDTO>>> {
-  return axios.get(`/movie/bookmark-list`, { params: { memberId, page, size } })
+  return axios.get(`/api/v1/movie/bookmark-list`, { params: { memberId, page, size } })
 }
 export function getBookmarkCount(
   memberId: number,
@@ -40,7 +40,7 @@ export function getWatchedList(
   page = 0,
   size = 10,
 ): Promise<AxiosResponse<ApiResponse<MovieListResponseDTO>>> {
-  return axios.get(`/movie/watched-list`, { params: { memberId, page, size } })
+  return axios.get(`/api/v1/movie/watched-list`, { params: { memberId, page, size } })
 }
 export function getWatchedCount(
   memberId: number,
@@ -54,7 +54,7 @@ export function getLikeList(
   page = 0,
   size = 10,
 ): Promise<AxiosResponse<ApiResponse<MovieListResponseDTO>>> {
-  return axios.get(`/movie/like-list`, { params: { memberId, page, size } })
+  return axios.get(`/api/v1/movie/like-list`, { params: { memberId, page, size } })
 }
 export function getLikeCount(
   memberId: number,
