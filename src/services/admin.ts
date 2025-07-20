@@ -44,3 +44,8 @@ export const handleReport = async (reportId: number, action: '경고' | '정지'
   })
   return res.data
 }
+
+export const fetchTopReviewedMovies = async () => {
+  const res = await axiosInstance.get('/api/v1/admin/movies/top-review')
+  return res.data
+}

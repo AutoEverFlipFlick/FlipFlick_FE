@@ -4,7 +4,7 @@ import { Users, NotebookPen, MessagesSquare, User, Clapperboard } from 'lucide-r
 import ReactApexChart from 'react-apexcharts'
 import { ApexOptions } from 'apexcharts'
 import AdminLayout from './AdminLayout'
-import { fetchDashboardStats, fetchPopcornStats } from '@/services/admin'
+import { fetchDashboardStats, fetchPopcornStats, fetchTopReviewedMovies } from '@/services/admin'
 
 interface TimeSeriesData {
   date: string
@@ -176,6 +176,7 @@ const Dashboard: React.FC = () => {
     discussion: Record<'7D' | '30D' | '90D', TimeSeriesData[]>
   } | null>(null)
   const [popcornStats, setPopcornStats] = useState<PopcornGradeData[]>([])
+  const [topMovies, setTopMovies] = useState<{ title: string; reviewCount: number }[]>([])
 
   useEffect(() => {
     fetchDashboardStats()
@@ -195,6 +196,14 @@ const Dashboard: React.FC = () => {
       .catch(error => {
         console.error('대시보드 데이터 로드 실패:', error)
       })
+  }, [])
+
+  useEffect(() => {
+    fetchTopReviewedMovies()
+      .then(res => {
+        setTopMovies(res.data) // 응답 구조에 맞게 조정
+      })
+      .catch(err => console.error('Top 영화 조회 실패:', err))
   }, [])
 
   const data: TimeSeriesData[] = statsData?.[activeStat]?.[activeFilter] ?? []
@@ -297,7 +306,7 @@ const Dashboard: React.FC = () => {
   }
   const barSeries = [
     {
-      data: [1200, 1100, 690, 580, 540],
+      data: topMovies.map(movie => movie.reviewCount),
     },
   ]
   const barOptions: ApexOptions = {
@@ -374,7 +383,7 @@ const Dashboard: React.FC = () => {
       onItemHover: { highlightDataSeries: false },
     },
     xaxis: {
-      categories: ['영화1', '영화2', '영화3', '영화4', '영화5'],
+      categories: topMovies.map(movie => movie.title),
       labels: {
         style: {
           colors: '#a0a0a0',
@@ -474,9 +483,14 @@ const Dashboard: React.FC = () => {
             <ChartBoxHeader>
               <Clapperboard size={20} /> 리뷰 많은 영화 Top 5
             </ChartBoxHeader>
-            <div style={{ color: '#000' }}>
-              <ReactApexChart options={barOptions} series={barSeries} type="bar" height={300} />
-            </div>
+
+            {topMovies.length === 0 ? (
+              <p style={{ color: '#ccc', textAlign: 'center' }}>데이터가 없습니다.</p>
+            ) : (
+              <div style={{ color: '#000' }}>
+                <ReactApexChart options={barOptions} series={barSeries} type="bar" height={300} />
+              </div>
+            )}
           </ChartBox>
         </BottomChartSection>
       </Container>
