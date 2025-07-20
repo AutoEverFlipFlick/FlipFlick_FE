@@ -1,167 +1,65 @@
-'use client'
-
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { useState, useEffect, useRef } from 'react'
-import styled, { keyframes } from 'styled-components'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import styled from 'styled-components'
+import JukeboxBg from '@/assets/home/jukebox-bg.png'
 
-// Keyframes
-const pulseAnimation = keyframes`
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-`
-const pingAnimation = keyframes`
-  75%, 100% {
-    transform: scale(1.2);
-    opacity: 0;
-  }
-`
-
-// Styled Components
 const PageWrapper = styled.div`
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow-x: hidden; /* 가로 스크롤 방지 */
-`
-
-const Nav = styled.nav`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
   position: relative;
-  z-index: 10;
-  flex-shrink: 0; /* Nav 높이가 줄어들지 않도록 설정 */
-`
-
-const NavLeft = styled.div`
+  background-color: #100806;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  justify-content: center;
 `
 
-const TrafficLight = styled.div<{ color: string }>`
-  width: 0.75rem;
-  height: 0.75rem;
-  border-radius: 50%;
-  background-color: ${({ color }) => color};
-`
-
-const NavRight = styled.div`
-  display: flex;
-  gap: 2rem;
-`
-
-const NavLink = styled.a`
-  color: #fff;
-  transition: color 0.3s;
-  &:hover {
-    color: #ff9966;
-  }
-`
-
-const MainContent = styled.main`
-  flex-grow: 1; /* 남은 공간을 모두 차지하도록 설정 */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center; /* 수직 중앙 정렬 */
-  padding: 1rem 2rem;
-  gap: 1rem; /* 요소들 사이의 간격 추가 */
-`
-
-const LogoContainer = styled.div`
-  position: relative;
-`
-
-const LogoText = styled.div`
-  font-size: 3.75rem;
-  font-weight: bold;
-  color: transparent;
-  background-clip: text;
-  -webkit-background-clip: text;
-  background-image: linear-gradient(to right, #ff9966, #ff5e62);
-  position: relative;
-  z-index: 10;
-  text-shadow:
-    0 0 5px #ff6b35,
-    0 0 10px #ff6b35,
-    0 0 15px #ff6b35,
-    0 0 20px #ff6b35,
-    0 0 35px #ff6b35,
-    0 0 40px #ff6b35;
-  font-family: serif;
-`
-
-const NeonBorder = styled.div`
-  position: absolute;
-  inset: -1rem;
-  border: 2px solid #ff6b35;
-  border-radius: 9999px;
-  opacity: 0.6;
-  box-shadow:
-    0 0 10px #ff6b35,
-    inset 0 0 10px #ff6b35;
-`
-
-const ControlHints = styled.div`
-  text-align: center;
-  color: #ffcc99;
-  font-size: 0.875rem;
-  animation: ${pulseAnimation} 2s infinite alternate;
-`
-
-const HintSpan = styled.span`
-  @media (max-width: 768px) {
-    display: none;
-  }
-`
-const MobileHintSpan = styled.span`
-  @media (min-width: 769px) {
-    display: none;
-  }
+const JukeboxBackground = styled.img`
+  object-fit: contain;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
 `
 
 const CarouselContainer = styled.div`
-  position: relative;
-  width: 100%;
-  height: 550px; /* 세로 공간을 조금 더 확보 */
+  position: absolute;
   display: flex;
-  align-items: center; /* 수직 중앙 정렬로 변경 */
+  align-items: center;
   justify-content: center;
   overflow: visible;
-  touch-action: pan-y;
   perspective: 1200px;
-  perspective-origin: center 50%; /* perspective 원점을 중앙으로 변경 */
+  perspective-origin: center 90%;
 `
 
 const NavButton = styled.button`
   position: absolute;
-  top: 50%; /* 수직 중앙으로 이동 */
-  transform: translateY(-50%); /* 정확한 중앙 정렬 */
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 30;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.5);
   border-radius: 50%;
-  padding: 1rem;
+  padding: 0.5rem;
   transition: all 0.3s;
-  border: 1px solid rgba(255, 107, 53, 0.3);
+  border: 1px solid rgba(255, 107, 53, 0.2);
   cursor: pointer;
   &:hover {
-    background-color: rgba(255, 107, 53, 0.7);
+    background-color: rgba(255, 107, 53, 0.5);
   }
   &.left {
-    left: 2rem;
+    left: -1rem;
   }
   &.right {
-    right: 2rem;
+    right: -1rem;
   }
+
   @media (max-width: 768px) {
-    padding: 0.75rem;
+    padding: 0.25rem;
     &.left {
-      left: 1rem;
+      left: 0.2rem;
     }
     &.right {
-      right: 1rem;
+      right: 0.2rem;
     }
   }
 `
@@ -174,7 +72,6 @@ const CarouselItemWrapper = styled.div<{
 }>`
   position: absolute;
   cursor: pointer;
-  /* bottom 속성 제거, CarouselContainer의 정렬에 맡김 */
   transform-style: preserve-3d;
   will-change: transform, opacity;
   transition: all ${({ transitionDuration }) => transitionDuration}
@@ -188,122 +85,42 @@ const PosterImage = styled.img<{ isCenter: boolean; isActive: boolean }>`
   border-radius: 0.5rem;
   box-shadow: ${({ isCenter }) =>
     isCenter
-      ? `0 0 80px rgba(255, 107, 53, 1), 0 0 160px rgba(255, 107, 53, 0.8), 0 60px 120px rgba(0, 0, 0, 0.9)`
-      : `0 25px 50px rgba(0, 0, 0, 0.8), 0 15px 30px rgba(0, 0, 0, 0.6)`};
+      ? `0 0 60px rgba(37, 9, 4, 0.9), 0 0 120px rgba(37, 9, 0, 0.7), 0 40px 80px rgba(0, 0, 0, 0.8)`
+      : `0 10px 20px rgba(0, 0, 0, 0.7)`};
   transform-style: preserve-3d;
   filter: ${({ isActive, isCenter }) => (isActive && !isCenter ? 'blur(1px)' : 'none')};
 `
 
-const MovieInfoSection = styled.section`
-  text-align: center;
-  max-width: 42rem;
-  padding: 0 1rem;
-  flex-shrink: 0; /* MovieInfoSection 높이가 줄어들지 않도록 설정 */
-`
-
-const SectionTitle = styled.h2`
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-bottom: 1rem;
-  color: #ff9966;
-  @media (max-width: 768px) {
-    font-size: 1.25rem;
-    margin-bottom: 0.5rem;
-  }
-`
-
-const MovieTitle = styled.h1`
-  font-size: 2.25rem;
-  font-weight: bold;
-  margin-bottom: 1rem;
-  @media (max-width: 768px) {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-  }
-`
-
-const MovieDescription = styled.p`
-  color: #d1d5db;
-  line-height: 1.625;
-  @media (max-width: 768px) {
-    font-size: 0.875rem;
-  }
-`
-
-const AmbientLight = styled.div`
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: -1; /* 다른 콘텐츠 뒤로 보내기 */
-  & > div {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(3rem);
-  }
+const PosterWrapper = styled.div`
+  position: relative;
 `
 
 const MovieTitleAbove = styled.div`
   position: absolute;
-  bottom: 105%; /* 포스터 바로 위로 위치 조정 */
+  bottom: 105%;
   left: 50%;
   transform: translateX(-50%);
   text-align: center;
-  width: 100%;
+  width: 120%;
   h3 {
-    font-size: 2.25rem;
+    font-size: 1.8rem;
     font-weight: bold;
     color: white;
-    margin-bottom: 1rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    text-shadow:
+      0 0 8px #ff6b35,
+      0 0 12px #ff6b35,
+      0 2px 4px rgba(0, 0, 0, 0.7);
   }
-  div.divider {
-    width: 8rem;
-    height: 2px;
-    background: linear-gradient(to right, #ff9966, #ff5e62, #ff9966);
-    margin: 0 auto;
-    border-radius: 9999px;
-  }
-  div.featuring {
-    margin-top: 1rem;
-    font-size: 0.875rem;
-    color: #ffcc99;
-    animation: ${pulseAnimation} 2s infinite;
+  @media (max-width: 1024px) {
+    h3 {
+      font-size: 1.5rem;
+    }
   }
   @media (max-width: 768px) {
     h3 {
-      font-size: 1.5rem;
-      margin-bottom: 0.5rem;
-    }
-    div.divider {
-      width: 6rem;
-    }
-    div.featuring {
-      font-size: 0.75rem;
-      margin-top: 0.5rem;
+      font-size: 1rem;
     }
   }
-`
-
-const SpotlightBeam = styled.div<{ isActive: boolean }>`
-  position: absolute;
-  inset: -6rem;
-  border-radius: 50%;
-  opacity: 0.25;
-  background: radial-gradient(
-    circle,
-    rgba(255, 107, 53, 0.8) 0%,
-    rgba(255, 107, 53, 0.3) 40%,
-    transparent 70%
-  );
-  animation: ${({ isActive }) => (isActive ? 'pulse 2s' : 'pulse 4s')} ease-in-out infinite
-    alternate;
-  @media (max-width: 768px) {
-    inset: -4rem;
-  }
-`
-
-const PosterWrapper = styled.div`
-  position: relative;
 `
 
 export default function Component() {
@@ -316,14 +133,31 @@ export default function Component() {
   const touchStartY = useRef(0)
   const touchStartTime = useRef(0)
   const carouselRef = useRef<HTMLDivElement>(null)
+  const jukeboxRef = useRef<HTMLImageElement>(null)
+  const [carouselStyle, setCarouselStyle] = useState({})
   const [isMobile, setIsMobile] = useState(false)
 
-  useEffect(() => {
-    const checkIsMobile = () => setIsMobile(window.innerWidth < 768)
-    checkIsMobile()
-    window.addEventListener('resize', checkIsMobile)
-    return () => window.removeEventListener('resize', checkIsMobile)
+  const updateLayout = useCallback(() => {
+    if (jukeboxRef.current) {
+      const rect = jukeboxRef.current.getBoundingClientRect()
+      if (rect.width === 0 || rect.height === 0) return
+
+      setCarouselStyle({
+        width: `${rect.width * 0.68}px`,
+        height: `${rect.height * 0.65}px`,
+        top: `${rect.top + rect.height * 0.48}px`,
+        left: `${rect.left + rect.width * 0.5}px`,
+        transform: 'translate(-50%, -50%)',
+      })
+    }
+    setIsMobile(window.innerWidth < 768)
   }, [])
+
+  useEffect(() => {
+    updateLayout()
+    window.addEventListener('resize', updateLayout)
+    return () => window.removeEventListener('resize', updateLayout)
+  }, [updateLayout])
 
   const movies = [
     {
@@ -446,154 +280,97 @@ export default function Component() {
 
   return (
     <PageWrapper>
-      {/* <Nav>
-        <NavLeft>
-          <TrafficLight color="#ff5f56" />
-          <TrafficLight color="#ffbd2e" />
-          <TrafficLight color="#27c93f" />
-          <span style={{ marginLeft: '1rem', color: '#9ca3af' }}>hiternet</span>
-        </NavLeft>
-        <NavRight>
-          <NavLink href="#">HOME</NavLink>
-          <NavLink href="#">REVIEWS</NavLink>
-          <NavLink href="#">ABOUT</NavLink>
-        </NavRight>
-      </Nav> */}
-      <MainContent>
-        {/* <LogoContainer>
-          <LogoText>Wurlitzer</LogoText>
-          <NeonBorder />
-        </LogoContainer> */}
-        {/* <ControlHints>
-          <HintSpan>🖱️ Mouse wheel</HintSpan>
-          <MobileHintSpan>👆 Swipe left/right</MobileHintSpan>
-          <span> or </span>
-          <span>🖱️ Click buttons</span>
-        </ControlHints> */}
-        <CarouselContainer ref={carouselRef}>
-          <NavButton className="left" onClick={prevMovie}>
-            <ChevronLeft color="white" size={24} />
-          </NavButton>
-          <NavButton className="right" onClick={nextMovie}>
-            <ChevronRight color="white" size={24} />
-          </NavButton>
-          <div
-            style={{
-              position: 'relative',
-              width: '100%',
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {movies.map((movie, index) => {
-              let offset = index - currentIndex
-              if (offset > movies.length / 2) offset -= movies.length
-              else if (offset < -movies.length / 2) offset += movies.length
-              const absOffset = Math.abs(offset)
-              const isCenter = offset === 0
-              const totalAngle = Math.PI * 1.2
-              const anglePerStep = totalAngle / 6
-              const angle = offset * anglePerStep
-              const radius = isMobile ? 280 : 380
-              let translateX, translateY, translateZ, rotateY, scale, opacity
+      <JukeboxBackground
+        ref={jukeboxRef}
+        src={JukeboxBg}
+        alt="Wurlitzer Jukebox background"
+        width={1000}
+        height={1238}
+        priority
+        onLoad={updateLayout}
+      />
+      <CarouselContainer ref={carouselRef} style={carouselStyle}>
+        <NavButton className="left" onClick={prevMovie}>
+          <ChevronLeft color="white" size={isMobile ? 16 : 24} />
+        </NavButton>
+        <NavButton className="right" onClick={nextMovie}>
+          <ChevronRight color="white" size={isMobile ? 16 : 24} />
+        </NavButton>
+        <div
+          style={{
+            position: 'relative',
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {movies.map((movie, index) => {
+            let offset = index - currentIndex
+            if (offset > movies.length / 2) offset -= movies.length
+            else if (offset < -movies.length / 2) offset += movies.length
 
-              if (isCenter) {
-                translateX = 0
-                translateY = isMobile ? -60 : -80 // 중앙 포스터의 수직 이동량 감소
-                translateZ = isMobile ? 100 : 150
-                rotateY = 0
-                scale = isMobile ? 1.2 : 1.5
-                opacity = 1
-              } else if (absOffset <= 3) {
-                translateX = Math.sin(angle) * radius
-                translateY = 20 + Math.abs(Math.cos(angle)) * 40 // 주변 포스터 위치 조정
-                translateZ = Math.cos(angle) * (isMobile ? 80 : 120)
-                rotateY = angle * (180 / Math.PI) * 0.6
-                scale = Math.max(0.6, 1 - absOffset * 0.15)
-                opacity = Math.max(0.4, 1 - absOffset * 0.2)
-              } else {
-                return null
-              }
-              const transform = `translateX(${translateX}px) translateY(${translateY}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`
-              const isActive = isScrolling || isSwiping
-              return (
-                <CarouselItemWrapper
-                  key={movie.id}
-                  transform={transform}
-                  opacity={opacity}
-                  zIndex={isCenter ? 25 : 15 - absOffset}
-                  transitionDuration={isActive ? '0.2s' : '0.6s'}
-                  onClick={() => setCurrentIndex(index)}
-                >
-                  <PosterWrapper>
-                    <PosterImage
-                      src={movie.poster}
-                      alt={movie.title}
-                      width={isMobile ? 160 : 200}
-                      height={isMobile ? 240 : 300}
-                      isCenter={isCenter}
-                      isActive={isActive}
-                      priority={isCenter}
-                    />
-                    {/* {isCenter && (
-                      <>
-                        <MovieTitleAbove>
-                          <h3>{movie.title}</h3>
-                          <div className="divider" />
-                          <div className="featuring">★ NOW FEATURING ★</div>
-                        </MovieTitleAbove>
-                        <SpotlightBeam isActive={isActive} />
-                      </>
-                    )} */}
-                  </PosterWrapper>
-                </CarouselItemWrapper>
-              )
-            })}
-          </div>
-        </CarouselContainer>
-        {/* <MovieInfoSection>
-          <SectionTitle>Featured Movie</SectionTitle>
-          <MovieTitle>{movies[currentIndex].title}</MovieTitle>
-          <MovieDescription>
-            Experience classic cinema in our immersive gallery. Use your mouse wheel or swipe
-            left/right on mobile to quickly browse through our collection, or click the navigation
-            buttons for precise control. Watch as your selected film rises from the collection to
-            take center stage.
-          </MovieDescription>
-        </MovieInfoSection> */}
-      </MainContent>
-      {/* <AmbientLight>
-        <div
-          style={{
-            top: '33.33%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '24rem',
-            height: '24rem',
-            backgroundColor: 'rgba(255, 107, 53, 0.1)',
-          }}
-        />
-        <div
-          style={{
-            bottom: '25%',
-            left: '25%',
-            width: '16rem',
-            height: '16rem',
-            backgroundColor: 'rgba(255, 0, 0, 0.1)',
-          }}
-        />
-        <div
-          style={{
-            bottom: '33.33%',
-            right: '25%',
-            width: '20rem',
-            height: '20rem',
-            backgroundColor: 'rgba(255, 255, 0, 0.1)',
-          }}
-        />
-      </AmbientLight> */}
+            if (Math.abs(offset) > 3) {
+              return null
+            }
+
+            const isCenter = offset === 0
+            let translateX, translateY, translateZ, rotateY, scale, opacity
+
+            if (isCenter) {
+              translateX = 0
+              translateY = isMobile ? -20 : -40
+              translateZ = isMobile ? 140 : 200
+              rotateY = 0
+              scale = isMobile ? 1.1 : 1.3
+              opacity = 1
+            } else {
+              const shelfY = isMobile ? 140 : 210
+              const radius = isMobile ? 160 : 250
+              const angle = offset * 0.55
+
+              translateX = Math.sin(angle) * radius
+              translateY = shelfY + Math.abs(Math.cos(angle)) * 15
+              translateZ = Math.cos(angle) * 50 - 60
+              rotateY = Math.sin(angle) * 25
+              scale = 0.7
+              opacity = Math.max(0.4, 1 - Math.abs(offset) * 0.2)
+            }
+
+            const transform = `translateX(${translateX}px) translateY(${translateY}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`
+            const isActive = isScrolling || isSwiping
+
+            return (
+              <CarouselItemWrapper
+                key={movie.id}
+                transform={transform}
+                opacity={opacity}
+                zIndex={isCenter ? 25 : 15 - Math.abs(offset)}
+                transitionDuration={isActive ? '0.2s' : '0.6s'}
+                onClick={() => setCurrentIndex(index)}
+              >
+                <PosterWrapper>
+                  <PosterImage
+                    src={movie.poster}
+                    alt={movie.title}
+                    width={isMobile ? 120 : 180}
+                    height={isMobile ? 180 : 270}
+                    isCenter={isCenter}
+                    isActive={isActive}
+                    priority={isCenter}
+                  />
+                  {/* {isCenter && (
+                    <MovieTitleAbove>
+                      <h3>{movie.title}</h3>
+                    </MovieTitleAbove>
+                  )} */}
+                </PosterWrapper>
+              </CarouselItemWrapper>
+            )
+          })}
+        </div>
+      </CarouselContainer>
     </PageWrapper>
   )
 }
