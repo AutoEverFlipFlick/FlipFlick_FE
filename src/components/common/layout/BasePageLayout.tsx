@@ -18,7 +18,7 @@ const Layout = styled.div`
 
 const Contents = styled.div`
   /* max-width: 800px; */
-  margin: 0 auto;
+  /* margin: 0 auto; */
 `
 
 const HeaderWrapper = styled.div`
@@ -32,14 +32,10 @@ export default function BasePageLayout({ children }: MyLayoutProps) {
     <Layout>
       {/*헤더*/}
 
-      <HeaderWrapper>
-        <div style={{ display: 'contents' }}>
-          <BaseHeaderVer2 />
-        </div>
-      </HeaderWrapper>
+      <BaseHeaderVer2 />
 
       {/*사이드바*/}
-      <Contents style={{ paddingTop: '70px' }}>
+      <Contents>
         {/* 라우터에서 사용도 가능하고 컴포넌트처럼도 사용 가능함 */}
         {/*
          * <Outlet />는 라우터에서 사용되는 컴포넌트로, 현재 경로에 해당하는 자식 컴포넌트를 렌더링

@@ -10,6 +10,13 @@ import useTokenObserver from '@/utils/auth/tokenObserver'
 import { userInfo } from '@/services/member'
 import { Icon } from '@iconify/react'
 
+const HeaderWrapper = styled.div`
+  z-index: 10;
+  position: sticky;
+  top: 0;
+  width: 100%;
+`
+
 const Wrapper = styled.header`
   /* 1) 래퍼 자체를 border-box로 지정 */
   box-sizing: border-box;
@@ -123,14 +130,6 @@ const BackgroundSection = styled.div<{ $isFocused?: boolean }>`
   transition: transform var(--search-transition-duration-fast) var(--search-trasitioin-easing-fast);
   transform-origin: top;
 
-  // 반투명 배경을 위한 속성들
-  background: rgba(19, 8, 3, 0.9);
-  /* background: rgba(255, 255, 255, 0.04); */
-  backdrop-filter: blur(8px);
-
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
-
   ${({ $isFocused }) => {
     return css`
       ${$isFocused &&
@@ -139,6 +138,14 @@ const BackgroundSection = styled.div<{ $isFocused?: boolean }>`
       `}
     `
   }}
+
+  // 반투명 배경을 위한 속성들
+  background: rgba(19, 8, 3, 0.9);
+  /* background: rgba(255, 255, 255, 0.04); */
+  backdrop-filter: blur(8px);
+
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
 `
 
 const CateSection = styled.div<{ $isFocused?: boolean }>`
@@ -387,91 +394,93 @@ const BaseHeaderVer2 = () => {
   }
 
   return (
-    <Wrapper>
-      {/* a 태그 */}
-      <LogoContainer
-        onClick={() => {
-          navigate('/')
-        }}
-      >
-        <Logo />
-        <LogoSmall />
-      </LogoContainer>
+    <HeaderWrapper>
+      <Wrapper>
+        {/* a 태그 */}
+        <LogoContainer
+          onClick={() => {
+            navigate('/')
+          }}
+        >
+          <Logo />
+          <LogoSmall />
+        </LogoContainer>
 
-      {/* form 태그 */}
-      <AbsoluteContainer>
-        <TopSection $isFocused={isFocused}>
-          <div>
-            {/* 4번 항목 */}
-            <CateSection $isFocused={isFocused}>
-              <CateContainer>
-                <CateItemContainer>
-                  <CateIconContainer src={HomeIcon} alt="" style={{ height: '45px' }} />
-                  <CateTextContainer>홈</CateTextContainer>
-                </CateItemContainer>
-                <CateItemContainer>
-                  <CateIconContainer src={BolkiIcon} alt="" />
-                  <CateTextContainer>볼키네이터</CateTextContainer>
-                </CateItemContainer>
-                {/* <CateItemContainer>
-                  <CateIconContainer src="/logo.webp" alt="" />
-                  <CateTextContainer>홈</CateTextContainer>
-                </CateItemContainer> */}
-              </CateContainer>
-            </CateSection>
-            {/* 5번 항목 */}
-            <SearchbarSection $isFocused={isFocused}>
-              <BaseInput
-                ref={SearchbarInputRef}
-                fullWidth
-                baseContainerStyle={isFocused ? {} : { style: { transform: 'Scale(0.55)' } }}
-                onBlur={handleSearbarInputBlured}
-                icon={<Search />}
-                enterKeyHint="search"
-                onChange={e => setSearchContext(e.target.value)}
-                onKeyDown={handleKeyDown}
-              />
-            </SearchbarSection>
-            <MiniSearchbarSection $isFocused={isFocused}>
-              <ActualMiniSearchbar
-                onFocus={handleInputFocused}
-                onBlur={handleInputBlured}
-                icon={<Search />}
-              />
-            </MiniSearchbarSection>
-          </div>
-        </TopSection>
-        <BackgroundSection $isFocused={isFocused} />
-      </AbsoluteContainer>
+        {/* form 태그 */}
+        <AbsoluteContainer>
+          <TopSection $isFocused={isFocused}>
+            <div>
+              {/* 4번 항목 */}
+              <CateSection $isFocused={isFocused}>
+                <CateContainer>
+                  <CateItemContainer>
+                    <CateIconContainer src={HomeIcon} alt="" style={{ height: '45px' }} />
+                    <CateTextContainer>홈</CateTextContainer>
+                  </CateItemContainer>
+                  <CateItemContainer>
+                    <CateIconContainer src={BolkiIcon} alt="" />
+                    <CateTextContainer>볼키네이터</CateTextContainer>
+                  </CateItemContainer>
+                  {/* <CateItemContainer>
+                    <CateIconContainer src="/logo.webp" alt="" />
+                    <CateTextContainer>홈</CateTextContainer>
+                  </CateItemContainer> */}
+                </CateContainer>
+              </CateSection>
+              {/* 5번 항목 */}
+              <SearchbarSection $isFocused={isFocused}>
+                <BaseInput
+                  ref={SearchbarInputRef}
+                  fullWidth
+                  baseContainerStyle={isFocused ? {} : { style: { transform: 'Scale(0.55)' } }}
+                  onBlur={handleSearbarInputBlured}
+                  icon={<Search />}
+                  enterKeyHint="search"
+                  onChange={e => setSearchContext(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                />
+              </SearchbarSection>
+              <MiniSearchbarSection $isFocused={isFocused}>
+                <ActualMiniSearchbar
+                  onFocus={handleInputFocused}
+                  onBlur={handleInputBlured}
+                  icon={<Search />}
+                />
+              </MiniSearchbarSection>
+            </div>
+          </TopSection>
+          <BackgroundSection $isFocused={isFocused} />
+        </AbsoluteContainer>
 
-      <AnanymouseWrapper />
+        <AnanymouseWrapper />
 
-      <ProfileSection>
-        {isLogin ? (
-          <>
-            <Icon icon="mdi:notifications" fontSize={'30px'} style={{ marginRight: '15px' }} />
-            <ProfileInnerBox ref={profileRef} onClick={() => setIsDropdownOpen(prev => !prev)}>
-              {/* 로그인 시 아바타 완전 불투명 */}
-              <p style={{ marginRight: '5px' }}>{profileName}</p>
-              <AvatarContainer src={profileSrc} alt="프로필" style={{ opacity: 1 }} />
+        <ProfileSection>
+          {isLogin ? (
+            <>
+              <Icon icon="mdi:notifications" fontSize={'30px'} style={{ marginRight: '15px' }} />
+              <ProfileInnerBox ref={profileRef} onClick={() => setIsDropdownOpen(prev => !prev)}>
+                {/* 로그인 시 아바타 완전 불투명 */}
+                <p style={{ marginRight: '5px' }}>{profileName}</p>
+                <AvatarContainer src={profileSrc} alt="프로필" style={{ opacity: 1 }} />
 
-              {/* 드롭다운 메뉴 */}
-              {isDropdownOpen && (
-                <DropdownContainer ref={dropdownRef}>
-                  <DropdownItem>프로필 수정</DropdownItem>
-                  <DropdownItem>로그아웃</DropdownItem>
-                </DropdownContainer>
-              )}
+                {/* 드롭다운 메뉴 */}
+                {isDropdownOpen && (
+                  <DropdownContainer ref={dropdownRef}>
+                    <DropdownItem>프로필 수정</DropdownItem>
+                    <DropdownItem>로그아웃</DropdownItem>
+                  </DropdownContainer>
+                )}
+              </ProfileInnerBox>
+            </>
+          ) : (
+            <ProfileInnerBox onClick={() => navigate('/login')}>
+              <LoginButton>로그인</LoginButton>
+              <AvatarContainer src={profileSrc} alt="게스트" style={{ opacity: 0.3 }} />
             </ProfileInnerBox>
-          </>
-        ) : (
-          <ProfileInnerBox onClick={() => navigate('/login')}>
-            <LoginButton>로그인</LoginButton>
-            <AvatarContainer src={profileSrc} alt="게스트" style={{ opacity: 0.3 }} />
-          </ProfileInnerBox>
-        )}
-      </ProfileSection>
-    </Wrapper>
+          )}
+        </ProfileSection>
+      </Wrapper>
+    </HeaderWrapper>
   )
 }
 export default BaseHeaderVer2
