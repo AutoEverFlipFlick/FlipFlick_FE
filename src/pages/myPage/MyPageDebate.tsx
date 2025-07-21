@@ -166,9 +166,9 @@ const Skeleton = styled.div`
   }
 `
 
-const DebateCard = styled(BaseContainer)<IsMobile>`
+const DebateCard = styled(BaseContainer)<{ $$ismobile: boolean }>`
   display: flex;
-  flex-direction: ${({ $ismobile }) => ($ismobile ? 'column' : 'row')};
+  flex-direction: ${props => (props.$$ismobile ? 'column' : 'row')};
   border-radius: 8px;
   position: relative;
   overflow: hidden;
