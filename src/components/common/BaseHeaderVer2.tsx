@@ -16,7 +16,6 @@ import media from '@/utils/breakpoints'
 const DESIGN_WIDTH = 1536
 const DESIGN_HEIGHT = 1024
 
-
 const HeaderWrapper = styled.div`
   z-index: 10;
   position: sticky;
@@ -406,7 +405,7 @@ const TextAvatarContainer = styled.div`
 const BaseHeaderVer2 = () => {
   const navigate = useNavigate()
   const [searchContext, setSearchContext] = useState('')
-  const [isFocused, setIsFocused] = useState(true)
+  const [isFocused, setIsFocused] = useState(false)
   // 토큰 변화 구독
   const token = useTokenObserver()
   const [profileSrc, setProfileSrc] = useState(AvatarIcon)
@@ -605,13 +604,13 @@ const BaseHeaderVer2 = () => {
                 style={isMobile ? { marginRight: '10px' } : { marginRight: '15px' }}
               />
               <ProfileInnerBox ref={profileRef} onClick={() => setIsDropdownOpen(prev => !prev)}>
-                <p style={{ marginRight: '5px' }}>{profileName}</p>
                 {profileSrc === AvatarIcon ? (
                   <TextAvatarContainer>{profileName?.charAt(0) || '유'}</TextAvatarContainer>
                 ) : (
                   <AvatarContainer src={profileSrc} alt="프로필" style={{ opacity: 1 }} />
                 )}
-                
+                <p style={{ marginLeft: '5px' }}>{profileName}</p>
+
                 {isDropdownOpen && (
                   <DropdownContainer ref={dropdownRef}>
                     <DropdownItem>프로필 수정</DropdownItem>
