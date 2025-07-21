@@ -718,7 +718,10 @@ const BaseHeaderVer2 = () => {
                 <Icon
                   icon="mdi:notifications"
                   fontSize={isMobile ? '25px' : '30px'}
-                  style={isMobile ? { marginRight: '10px' } : { marginRight: '15px' }}
+                  style={{
+                    marginRight: isMobile ? '10px' : '15px',
+                    cursor: 'pointer',
+                  }}
                   onClick={() => {
                     setIsAlarmOpen(prev => !prev)
                     fetchAlarms()
