@@ -70,154 +70,166 @@ import ReportManagement from '@/pages/admin/ReportManagement'
 import AdminRoute from '@/components/common/AdminRoute'
 import FindPassword from '@/pages/member/FindPassword'
 import ResetPassword from '@/pages/member/ResetPassword'
+import Home from '@/pages/Home'
+import MyPageMain from '@/pages/myPage/MyPageMain'
+import MyPageEdit from '@/pages/myPage/MyPageEdit'
+import MyPagePreference from '@/pages/myPage/MyPagePreference'
+import MyPageReview from '@/pages/myPage/MyPageReview'
+import MyPageDebate from '@/pages/myPage/MyPageDebate'
+import MyPageFollowList from '@/pages/myPage/MyPageFollowList'
+import AlarmListener from '@/components/common/AlarmListener'
 
 const AppRoutes = () => {
   return (
     <AuthProvider>
-      <Routes>
-        {/* Public Routes */}
-        <Route
-          path="/"
-          element={
-            <Layout>
-              <ExamplePage />
-            </Layout>
-          }
-        />
-        <Route path="/playlist" element={<PlaylistPage />} />
-        <Route
-          path="/playlist/:id"
-          element={
-            <BookmarkProvider>
-              <PlaylistDetail />
-            </BookmarkProvider>
-          }
-        />
-        <Route path="/movie/detail" element={<MovieDetailPage />} />
-        <Route path="/totalsearch" element={<TotalSearch />} />
-        <Route path="/bolkinator" element={<Bolkinator />} />
+      <Layout>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Home />} />
+          <Route path="/playlist" element={<PlaylistPage />} />
+          <Route
+            path="/playlist/:id"
+            element={
+              <BookmarkProvider>
+                <PlaylistDetail />
+              </BookmarkProvider>
+            }
+          />
+          <Route path="/movie/detail" element={<MovieDetailPage />} />
+          <Route path="/totalsearch" element={<TotalSearch />} />
+          <Route path="/bolkinator" element={<Bolkinator />} />
 
-        {/* AdminRoute (관리자만 접근) */}
-        <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-        <Route
-          path="/admin/dashboard"
-          element={
-            <AdminRoute>
-              <Dashboard />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/user"
-          element={
-            <AdminRoute>
-              <UserManagement />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/report"
-          element={
-            <AdminRoute>
-              <ReportManagement />
-            </AdminRoute>
-          }
-        />
+          {/* AdminRoute (관리자만 접근) */}
+          <Route
+            path="/admin/dashboard"
+            element={
+              <AdminRoute>
+                <Dashboard />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/user"
+            element={
+              <AdminRoute>
+                <UserManagement />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/report"
+            element={
+              <AdminRoute>
+                <ReportManagement />
+              </AdminRoute>
+            }
+          />
 
-        {/* Public Routes (로그인된 사용자는 접근 불가) */}
-        <Route
-          path="/login"
-          element={
-            <PublicRoute>
-              <Login />
-            </PublicRoute>
-          }
-        />
-        <Route
-          path="/signup"
-          element={
-            <PublicRoute>
-              <SignUp />
-            </PublicRoute>
-          }
-        />
-        <Route
-          path="/emaillogin"
-          element={
-            <PublicRoute>
-              <EmailLogin />
-            </PublicRoute>
-          }
-        />
+          {/* Public Routes (로그인된 사용자는 접근 불가) */}
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              <PublicRoute>
+                <SignUp />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/emaillogin"
+            element={
+              <PublicRoute>
+                <EmailLogin />
+              </PublicRoute>
+            }
+          />
 
-        <Route
-          path="/signup/social"
-          element={
-            <PublicRoute>
-              <SocialSignUp />
-            </PublicRoute>
-          }
-        />
-        {/* Protected Routes (로그인 필요) */}
-        <Route
-          path="/createplaylist"
-          element={
-            <ProtectedRoute>
-              <CreatePlaylist />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/playlist/:id/edit"
-          element={
-            <ProtectedRoute>
-              <EditPlaylist />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/signup/social"
+            element={
+              <PublicRoute>
+                <SocialSignUp />
+              </PublicRoute>
+            }
+          />
 
-        <Route
-          path="/createplaylist"
-          element={
-            <ProtectedRoute>
-              <CreatePlaylist />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/playlist/:id/edit"
-          element={
-            <ProtectedRoute>
-              <EditPlaylist />
-            </ProtectedRoute>
-          }
-        />
+          {/* Protected Routes (로그인 필요) */}
+          <Route
+            path="/createplaylist"
+            element={
+              <ProtectedRoute>
+                <CreatePlaylist />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/playlist/:id/edit"
+            element={
+              <ProtectedRoute>
+                <EditPlaylist />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route path="/filmography/:tmdbId" element={<Filmography />} />
+          <Route
+            path="/createplaylist"
+            element={
+              <ProtectedRoute>
+                <CreatePlaylist />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/playlist/:id/edit"
+            element={
+              <ProtectedRoute>
+                <EditPlaylist />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/example" element={<ExamplePage />} />
 
-        <Route path="/oauth/kakao/callback" element={<KakaoRedirectHandler />} />
+          <Route path="/filmography/:tmdbId" element={<Filmography />} />
 
-        <Route path="/oauth/naver/callback" element={<NaverRedirectHandler />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
 
-        <Route
-          path="/find-password"
-          element={
-            <PublicRoute>
-              <FindPassword />
-            </PublicRoute>
-          }
-        />
-        <Route
-          path="/reset-password-confirm"
-          element={
-            <PublicRoute>
-              <ResetPassword />
-            </PublicRoute>
-          }
-        />
-      </Routes>
+          <Route path="/oauth/kakao/callback" element={<KakaoRedirectHandler />} />
+
+          <Route path="/oauth/naver/callback" element={<NaverRedirectHandler />} />
+
+          <Route path="/my-page" element={<MyPageMain />} />
+          <Route path="/my-page-edit" element={<MyPageEdit />} />
+          <Route path="/my-page-preference" element={<MyPagePreference />} />
+          <Route path="/my-page-review" element={<MyPageReview />} />
+          <Route path="/my-page-debate" element={<MyPageDebate />} />
+          <Route path="/my-page-follow" element={<MyPageFollowList />} />
+          
+          <Route
+            path="/find-password"
+            element={
+              <PublicRoute>
+                <FindPassword />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/reset-password-confirm"
+            element={
+              <PublicRoute>
+                <ResetPassword />
+              </PublicRoute>
+            }
+          />
+        </Routes>
+      </Layout>
     </AuthProvider>
   )
 }
