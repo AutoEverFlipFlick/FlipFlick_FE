@@ -9,6 +9,7 @@ import AvatarIcon from '@/assets/icons/profile.png'
 import useTokenObserver from '@/utils/auth/tokenObserver'
 import { userInfoGet } from '@/services/memberInfo'
 import { Icon } from '@iconify/react'
+import { logout } from '@/services/member'
 
 const HeaderWrapper = styled.div`
   z-index: 10;
@@ -396,6 +397,20 @@ const BaseHeaderVer2 = () => {
     }
   }
 
+  const handleLogout = async () => {
+    try {
+      await logout()
+      localStorage.removeItem('accessToken')
+      setIsLogin(false)
+      setProfileName('')
+      setProfileSrc(AvatarIcon)
+      setIsDropdownOpen(false)
+      navigate('/')
+    } catch (err) {
+      console.error('로그아웃 실패:', err)
+    }
+  }
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       // 드롭다운이 열려 있고, 클릭한 대상이 드롭다운 내부나 프로필 박스가 아닐 경우
@@ -492,7 +507,7 @@ const BaseHeaderVer2 = () => {
                 {isDropdownOpen && (
                   <DropdownContainer ref={dropdownRef}>
                     <DropdownItem>프로필 수정</DropdownItem>
-                    <DropdownItem>로그아웃</DropdownItem>
+                    <DropdownItem onClick={handleLogout}>로그아웃</DropdownItem>
                   </DropdownContainer>
                 )}
               </ProfileInnerBox>

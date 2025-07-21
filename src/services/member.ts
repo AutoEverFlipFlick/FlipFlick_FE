@@ -68,3 +68,10 @@ export const resetPassword = async (code: string, newPassword: string) => {
   })
   return res.data
 }
+
+export const logout = async () => {
+  const res = await axiosInstance.post('/api/v1/member/logout', null, {
+    withCredentials: true,
+  })
+  return res.data
+}

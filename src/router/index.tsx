@@ -60,7 +60,8 @@ import SignUp from '@/pages/member/SignUp'
 import EmailLogin from '@/pages/member/EmailLogin'
 import Filmography from '@/pages/filmography'
 import KakaoRedirectHandler from '@/pages/member/KakaoRedirectHandler'
-import Layout from '@/components/common/layout/BasePageLayout' // 공통 레이아웃 컴포넌트가 필요함
+import Layout from '@/components/common/layout/BasePageLayout'
+import NoHeaderLayout from '@/components/common/layout/NoHeaderLayout'
 import NaverRedirectHandler from '@/pages/member/NaverRedirectHandler'
 import Bolkinator from '@/pages/Bolkinator'
 import SocialSignUp from '@/pages/member/SocialSignUp'
@@ -77,55 +78,14 @@ import MyPagePreference from '@/pages/myPage/MyPagePreference'
 import MyPageReview from '@/pages/myPage/MyPageReview'
 import MyPageDebate from '@/pages/myPage/MyPageDebate'
 import MyPageFollowList from '@/pages/myPage/MyPageFollowList'
-import AlarmListener from '@/components/common/AlarmListener'
 
 const AppRoutes = () => {
   return (
     <AuthProvider>
-      <Layout>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/playlist" element={<PlaylistPage />} />
-          <Route
-            path="/playlist/:id"
-            element={
-              <BookmarkProvider>
-                <PlaylistDetail />
-              </BookmarkProvider>
-            }
-          />
-          <Route path="/movie/detail" element={<MovieDetailPage />} />
-          <Route path="/totalsearch" element={<TotalSearch />} />
-          <Route path="/bolkinator" element={<Bolkinator />} />
-
-          {/* AdminRoute (관리자만 접근) */}
-          <Route
-            path="/admin/dashboard"
-            element={
-              <AdminRoute>
-                <Dashboard />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/user"
-            element={
-              <AdminRoute>
-                <UserManagement />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/report"
-            element={
-              <AdminRoute>
-                <ReportManagement />
-              </AdminRoute>
-            }
-          />
-
-          {/* Public Routes (로그인된 사용자는 접근 불가) */}
+      <Routes>
+        {/* 헤더 없는 레이아웃 (로그인/회원가입/관리자 등) */}
+        <Route element={<NoHeaderLayout />}>
+          {/* 로그인 관련 */}
           <Route
             path="/login"
             element={
@@ -150,7 +110,6 @@ const AppRoutes = () => {
               </PublicRoute>
             }
           />
-
           <Route
             path="/signup/social"
             element={
@@ -159,59 +118,6 @@ const AppRoutes = () => {
               </PublicRoute>
             }
           />
-
-          {/* Protected Routes (로그인 필요) */}
-          <Route
-            path="/createplaylist"
-            element={
-              <ProtectedRoute>
-                <CreatePlaylist />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/playlist/:id/edit"
-            element={
-              <ProtectedRoute>
-                <EditPlaylist />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/createplaylist"
-            element={
-              <ProtectedRoute>
-                <CreatePlaylist />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/playlist/:id/edit"
-            element={
-              <ProtectedRoute>
-                <EditPlaylist />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route path="/example" element={<ExamplePage />} />
-
-          <Route path="/filmography/:tmdbId" element={<Filmography />} />
-
-          <Route path="*" element={<Navigate to="/" replace />} />
-
-          <Route path="/oauth/kakao/callback" element={<KakaoRedirectHandler />} />
-
-          <Route path="/oauth/naver/callback" element={<NaverRedirectHandler />} />
-
-          <Route path="/my-page" element={<MyPageMain />} />
-          <Route path="/my-page-edit" element={<MyPageEdit />} />
-          <Route path="/my-page-preference" element={<MyPagePreference />} />
-          <Route path="/my-page-review" element={<MyPageReview />} />
-          <Route path="/my-page-debate" element={<MyPageDebate />} />
-          <Route path="/my-page-follow" element={<MyPageFollowList />} />
-          
           <Route
             path="/find-password"
             element={
@@ -228,8 +134,86 @@ const AppRoutes = () => {
               </PublicRoute>
             }
           />
-        </Routes>
-      </Layout>
+
+          {/* 관리자 페이지 */}
+          <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <AdminRoute>
+                <Dashboard />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/user"
+            element={
+              <AdminRoute>
+                <UserManagement />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/report"
+            element={
+              <AdminRoute>
+                <ReportManagement />
+              </AdminRoute>
+            }
+          />
+          {/* 소셜 로그인 콜백 */}
+          <Route path="/oauth/kakao/callback" element={<KakaoRedirectHandler />} />
+          <Route path="/oauth/naver/callback" element={<NaverRedirectHandler />} />
+        </Route>
+
+        {/* 헤더 포함 기본 레이아웃 */}
+        <Route element={<Layout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/playlist" element={<PlaylistPage />} />
+          <Route
+            path="/playlist/:id"
+            element={
+              <BookmarkProvider>
+                <PlaylistDetail />
+              </BookmarkProvider>
+            }
+          />
+          <Route path="/movie/detail" element={<MovieDetailPage />} />
+          <Route path="/totalsearch" element={<TotalSearch />} />
+          <Route path="/bolkinator" element={<Bolkinator />} />
+          <Route path="/example" element={<ExamplePage />} />
+          <Route path="/filmography/:tmdbId" element={<Filmography />} />
+
+          {/* Protected Routes */}
+          <Route
+            path="/createplaylist"
+            element={
+              <ProtectedRoute>
+                <CreatePlaylist />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/playlist/:id/edit"
+            element={
+              <ProtectedRoute>
+                <EditPlaylist />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* 마이페이지 */}
+          <Route path="/my-page" element={<MyPageMain />} />
+          <Route path="/my-page-edit" element={<MyPageEdit />} />
+          <Route path="/my-page-preference" element={<MyPagePreference />} />
+          <Route path="/my-page-review" element={<MyPageReview />} />
+          <Route path="/my-page-debate" element={<MyPageDebate />} />
+          <Route path="/my-page-follow" element={<MyPageFollowList />} />
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
     </AuthProvider>
   )
 }
