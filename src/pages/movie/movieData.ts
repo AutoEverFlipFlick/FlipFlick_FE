@@ -12,24 +12,6 @@ export interface Actor {
   profileImg: string | null;
 }
 
-export interface Review {
-  username: string;
-  createdAt: string;
-  content: string;
-  rating: number;
-  likes: number;
-  isMyPost: boolean;
-}
-
-export interface Debate {
-  username: string;
-  createdAt: string;
-  content: string;
-  likes: number;
-  comments: number;
-  isMyPost: boolean;
-}
-
 export interface Genre {
   tmdbId: number;
   genreName: string;
@@ -40,10 +22,7 @@ export interface OverviewData {
   runtime: number;
   productionCountry: string;
   releaseDate: string;
-
 }
-
-
 
 export interface LikeHateData {
   isLiked: boolean;
@@ -51,6 +30,7 @@ export interface LikeHateData {
 }
 
 export interface MovieData {
+  movieId: number;
   tmdbId: number;
   title: string;
   originalTitle: string;
@@ -65,8 +45,10 @@ export interface MovieData {
   voteAverage: number;
   myRating: number;
   popcorn: number;
-  myLiked: boolean;
+  myLike: boolean;
   myHate: boolean;
+  myWatched: boolean;
+  myBookmark: boolean;
   likeCnt: number;
   hateCnt: number;
   genres: Genre[];
@@ -74,6 +56,4 @@ export interface MovieData {
   casts: Actor[];
   images: string[];
   videos: string[];
-  reviews: Review[];
-  debates: Debate[];
 }

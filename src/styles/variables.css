@@ -85,6 +85,7 @@
    * 헤더에 관한 전역 변수
    */
   --search-padding-inline: 2rem;
+  --search-padding-inline-mobile: 0.75rem;
   --search-transition-duration-fast: 858.3333333333327ms;
   --search-trasitioin-easing-fast: linear(
     0,
