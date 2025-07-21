@@ -1,23 +1,8 @@
-import {MemberResponseDto} from "@/services/memberInfo";
-import {an} from "vitest/dist/chunks/reporters.d.BFLkQcL6";
-
 export interface MemberProfile {
   nickname: string;
   profileImage: string | null;
   popcornScore: number;
 }
-
-// "reviewId": 1,
-//   "content": "와, 진짜 스티치 너무 귀여운거 아니냐? 보송보송한 파란 솜털, 호기심 가득한 큰 눈, 장난기 가득한 웃음",
-//   "star": 4.5,
-//   "spoiler": false,
-//   "likeCnt": 0,
-//   "hateCnt": 0,
-//   "createdAt": "2025-07-21 03:18:00",
-//   "updatedAt": "2025-07-21 03:18:00",
-//   "nickname": "hyeonhc328",
-//   "profileImage": null,
-//   "popcorn": 41
 
 export interface Review {
   member :  MemberProfile;
