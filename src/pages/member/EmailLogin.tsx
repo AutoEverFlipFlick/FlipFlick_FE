@@ -75,6 +75,13 @@ const EmailLogin: React.FC = () => {
       // ✅ accessToken 저장
       localStorage.setItem('accessToken', res.data.accessToken)
 
+      // 커스텀 이벤트 발생 (useTokenObserver가 이걸 감지함)
+      window.dispatchEvent(
+        new CustomEvent('tokenStorage', {
+          detail: { newToken: res.data.accessToken },
+        }),
+      )
+
       // ✅ 로그인 성공 처리
       navigate('/')
       // TODO: 메인 페이지나 홈으로 이동
