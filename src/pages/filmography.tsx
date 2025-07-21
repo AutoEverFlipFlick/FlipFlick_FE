@@ -319,7 +319,7 @@ const TimelinePoint = styled.div`
 `;
 
 const TimelineVerticalLine = styled.div<{ $isOdd: boolean }>`
-  width: 2px;
+  width: ${props => props.$isOdd ? '1.9px' : '2.2px'};
   height: 25px;
   background: linear-gradient(
     ${props => props.$isOdd ? '180deg' : '0deg'},
@@ -329,7 +329,7 @@ const TimelineVerticalLine = styled.div<{ $isOdd: boolean }>`
   );
   position: absolute;
   top: 50%;
-  left: 50%;
+  left: ${props => props.$isOdd ? '50.2%' : '50%'};
   margin-left: -1px;
   margin-top: ${props => props.$isOdd ? '-25px' : '0'};
   z-index: 2;
@@ -438,6 +438,16 @@ const FilmDetails = styled.div`
   h3 {
     margin: 0.5rem 0 0.2rem;
     font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+    max-height: 2.4em; /* line-height * 2 */
+    min-height: 1.2em; /* 최소 1줄 높이 보장 */
   }
 
   p {
@@ -491,8 +501,6 @@ const Filmography: React.FC = () => {
   const handleActorImageError = () => {
     setActorImageLoading(false);
   };
-
-  // 데이터 로드 시 이미지 로딩 상태 초기화
   useEffect(() => {
     if (actorData?.filmographies) {
       const initialLoadingStates = actorData.filmographies.reduce((acc, film) => {
@@ -515,10 +523,29 @@ const Filmography: React.FC = () => {
 
       try {
         setLoading(true);
+        // 상태 초기화
+        setActorImageLoading(true);
+        setImageLoadingStates({});
+        
         const response = await getActorDetail(parseInt(tmdbId));
 
         if (response.success) {
           setActorData(response.data);
+          // 배우 이미지가 없으면 즉시 로딩 상태 false
+          if (!response.data.profileImage) {
+            setActorImageLoading(false);
+          }
+          
+          // 필모그래피 이미지 로딩 상태 설정
+          if (response.data.filmographies && response.data.filmographies.length > 0) {
+            const initialLoadingStates = response.data.filmographies.reduce((acc, film) => {
+              // 이미지가 있는 경우에만 로딩 상태 true
+              acc[film.tmdbId] = !!film.posterImage;
+              return acc;
+            }, {} as { [key: number]: boolean });
+            
+            setImageLoadingStates(initialLoadingStates);
+          }
           setActorImageLoading(true); // 새 배우 데이터 로드 시 이미지 로딩 상태 초기화
         } else {
           setError(response.message || '배우 정보를 불러올 수 없습니다.');
@@ -545,12 +572,8 @@ const Filmography: React.FC = () => {
     };
 
     if (actorData?.filmographies.length) {
-      // 데이터 로드 후 약간의 지연을 두고 체크
       setTimeout(checkScrollNeeded, 100);
-      
-      // 리사이즈 이벤트 리스너 추가
       window.addEventListener('resize', checkScrollNeeded);
-      
       return () => window.removeEventListener('resize', checkScrollNeeded);
     }
   }, [actorData?.filmographies.length]);
@@ -665,8 +688,8 @@ const Filmography: React.FC = () => {
 
             {actorData.filmographies.map((film, index) => {
               const isOdd = (index + 1) % 2 === 1;
-              const isImageLoading = imageLoadingStates[film.tmdbId];
-              
+
+              const isImageLoading = imageLoadingStates[film.tmdbId] ?? false; // 기본값 false
               return (
                 <TimelineItem key={film.tmdbId} $isOdd={isOdd} $needsScroll={needsScroll} $index={index}>
                   <TimelinePoint />
