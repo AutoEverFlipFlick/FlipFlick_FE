@@ -48,12 +48,6 @@ export const checkNicknameDuplicate = async (nickname: string) => {
   return res.data
 }
 
-// 로그인된 유저 정보 가져오기
-export const userInfo = async () => {
-  const res = await axiosInstance.get(`/member/user-info`)
-  return res.data
-}
-
 export const updateSocialInfo = async (data: {
   nickname: string
   profileImage?: string | null

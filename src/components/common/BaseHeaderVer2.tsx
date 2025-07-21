@@ -7,7 +7,7 @@ import BolkiIcon from '@/assets/category/bolkinator.webp'
 import { Search } from 'lucide-react'
 import AvatarIcon from '@/assets/icons/profile.png'
 import useTokenObserver from '@/utils/auth/tokenObserver'
-import { userInfo } from '@/services/member'
+import { userInfoGet } from '@/services/memberInfo'
 import { Icon } from '@iconify/react'
 
 const HeaderWrapper = styled.div`
@@ -348,6 +348,8 @@ const BaseHeaderVer2 = () => {
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    console.log('token 받아짐!!')
+    console.log(token)
     if (!token) {
       setProfileSrc(AvatarIcon)
       return
@@ -355,12 +357,12 @@ const BaseHeaderVer2 = () => {
 
     const fetchProfileImage = async () => {
       try {
-        const response = await userInfo()
+        const response = await userInfoGet()
         console.log(response)
         setIsLogin(true)
-        setProfileName(response.data.nickname)
-        if (response.profileImage) {
-          setProfileSrc(response.data.profileImage)
+        setProfileName(response.data.data.nickname)
+        if (response.data.data.profileImage) {
+          setProfileSrc(response.data.data.profileImage)
         }
       } catch (error) {
         console.log(error)
@@ -388,10 +390,31 @@ const BaseHeaderVer2 = () => {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
+      setIsFocused(false)
       // 검색 키워드로 이동
       navigate(`/totalsearch?query=${encodeURIComponent(searchContext)}&page=1`)
     }
   }
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // 드롭다운이 열려 있고, 클릭한 대상이 드롭다운 내부나 프로필 박스가 아닐 경우
+      if (
+        isDropdownOpen &&
+        dropdownRef.current &&
+        profileRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        !profileRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isDropdownOpen])
 
   return (
     <HeaderWrapper>
@@ -446,6 +469,7 @@ const BaseHeaderVer2 = () => {
                   onBlur={handleInputBlured}
                   icon={<Search />}
                   value={searchContext}
+                  onChange={() => {}}
                 />
               </MiniSearchbarSection>
             </div>
