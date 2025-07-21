@@ -12,8 +12,8 @@ import {useParams} from "react-router-dom";
 import {useOnClickAuth} from "@/hooks/useOnClickAuth";
 import BaseButton from "@/components/common/BaseButton";
 import {Eye, EyeOff, Flag, ListPlus, Star, StarOff} from "lucide-react";
-import {bookmarkMovie, getMovieDetail, getMovieReview, watchedMovie} from "@/services/movieDetail";
-import {mapToReviewData, ReviewData} from "@/pages/movie/reviewData";
+import {bookmarkMovie, getMovieDetail, getMovieReview, getMyMovieReview, watchedMovie} from "@/services/movieDetail";
+import {mapToMyReviewData, mapToReviewData, Review, ReviewData} from "@/pages/movie/reviewData";
 import {MovieData} from "@/pages/movie/movieData";
 import ReviewTextArea from "@/pages/movie/ReviewTextArea";
 import Swal from 'sweetalert2'
@@ -287,7 +287,6 @@ const ActionButton = styled(BaseButton).attrs({
 `
 
 
-
 export default function MovieDetailPage() {
   const [movieData, setMovieData] = useState<MovieData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -301,7 +300,7 @@ export default function MovieDetailPage() {
 
   const onClickAuth = useOnClickAuth()
   const [reviewData, setReviewData] = useState<ReviewData | null>(null)
-  const [myReview, setMyReview] = useState<ReviewData | null>(null)
+  const [myReview, setMyReview] = useState<Review | null>(null)
 
   const handleBookmark = useCallback(
     () =>
@@ -317,7 +316,7 @@ export default function MovieDetailPage() {
             text: !isBookmarked ? '찜 목록에 추가되었습니다.' : '찜 목록에서 제거되었습니다.',
             icon: 'success',
             confirmButtonText: '확인',
-        })
+          })
         } catch {
           await Swal.fire({
             title: '찜 처리 실패',
@@ -396,20 +395,39 @@ export default function MovieDetailPage() {
           console.log("영화 리뷰 불러오기 및 매핑 완료")
         }
       }
-      // const fetchMyReview = async () => {
-      //   if (user) {
-      //     try {
-      //       console.log("내 리뷰 불러오기 시작", "영화 ID : ", tmdbId, "유저 정보 : ", user, isAuthenticated)
-      //       const response = await getUserMovieReview(tmdbId, user)
-      //     }
-      //   } return;
-      // }
+
+      const fetchMyReview = async () => {
+        try {
+          console.log("내 리뷰 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
+          const response = await getMyMovieReview(tmdbId)
+          const data = response.data
+          console.log("내 리뷰 조회됨 : ", data)
+          const mappedData: Review = mapToMyReviewData(data)
+          console.log("내 리뷰 매핑됨 : ", mappedData)
+          setMyReview(mappedData)
+        } catch (error) {
+          console.error('내 리뷰 불러오기 실패:', error)
+        } finally {
+          console.log("내 리뷰 불러오기 및 매핑 완료")
+        }
+      }
 
       try {
-        if (!loading && user) {
+        if (loading) return; // 로딩 중이면 아무것도 하지 않음
+
+        if (isAuthenticated && user) {
+          // 인증된 경우에만 내 리뷰 호출
+          console.log("유저 정보 로딩 완료, 영화 상세 정보 및 리뷰 불러오기 시작")
+          fetchMovieDetail()
+          fetchMovieReview()
+          fetchMyReview()
+        } else {
+          // 비로그인 상태
+          console.log("유저 정보 미인증 상태, 영화 상세 정보 및 리뷰 불러오기 시작")
           fetchMovieDetail()
           fetchMovieReview()
         }
+
       } catch (error) {
         console.error('영화 상세 페이지 정보 불러오기 중 오류 발생:', error)
         setIsLoading(false)
@@ -419,11 +437,12 @@ export default function MovieDetailPage() {
 
     }
     ,
-    [tmdbId, user, loading]
+    [tmdbId, user, loading, isAuthenticated]
   )
 
 
   if (isLoading || !movieData) {
+    console.debug(isLoading)
     return (
       <MovieDetailLayout>
         <p style={{color: 'white'}}>로딩 중입니다...</p>
@@ -470,7 +489,6 @@ export default function MovieDetailPage() {
                 <OverViewContainer>
                   <p>장르: {movieData.genres.map(genre => genre.genreName).join(', ')}</p>
                   <p>러닝타임: {movieData.runtime ?? '정보 없음'}분</p>
-                  {/*<p>러닝타임: {movieData.overviewData.runtime}분</p>*/}
                 </OverViewContainer>
                 <OverViewContainer>
                   <p>개봉일: {movieData.productionYear ?? '미정'}</p>

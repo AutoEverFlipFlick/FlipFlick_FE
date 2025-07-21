@@ -24,6 +24,25 @@ export interface ReviewData {
 
 
 
+export function mapToMyReviewData(data: any): Review {
+  return {
+    member: {
+      nickname: data.nickname,
+      profileImage: data.profileImage,
+      popcornScore: data.popcornScore,
+    },
+    reviewId: data.reviewId,
+    createdAt: data.createdAt,
+    updatedAt: data.updatedAt,
+    content: data.content,
+    rating: data.star,
+    likes: data.likeCnt,
+    hates: data.hateCnt,
+    isMyPost: true, // 현재 사용자의 리뷰이므로 항상 true
+    isSpoiler: data.spoiler || false, // 스포일러 여부
+  };
+}
+
 export function mapToReviewData(data: any, currentUserId?: number, currentUserNickName?: string): ReviewData {
   console.log(currentUserId, currentUserNickName);
   return {

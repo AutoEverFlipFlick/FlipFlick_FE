@@ -45,9 +45,10 @@ interface ReviewTextAreaProps {
   onSuccess?: () => void;
   rating: number; // 평점 추가
   isAuthenticated: boolean; // 인증 여부 추가
+  // 이미 작성됨
 }
 
-export const ReviewTextArea = ({ tmdbId, onSuccess, rating }: ReviewTextAreaProps) => {
+export const ReviewTextArea = ({ tmdbId, onSuccess, rating, isAuthenticated,  }: ReviewTextAreaProps) => {
   const [value, setValue] = useState("");
   const [isSpoiler, setIsSpoiler] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
