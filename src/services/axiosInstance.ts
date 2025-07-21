@@ -78,6 +78,12 @@ axiosInstance.interceptors.response.use(
 
         const newAccessToken = res.data.data.accessToken
         localStorage.setItem('accessToken', newAccessToken)
+        // 커스텀 이벤트 발생 (useTokenObserver가 이걸 감지함)
+        window.dispatchEvent(
+          new CustomEvent('tokenStorage', {
+            detail: { newToken: res.data.data.accessToken },
+          }),
+        )
 
         // 원래 요청에 새 토큰 붙이고 재요청
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`

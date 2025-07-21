@@ -33,6 +33,13 @@ const NaverRedirectHandler: React.FC = () => {
 
           const { accessToken, isNew } = res.data
           localStorage.setItem('accessToken', accessToken)
+
+          // 커스텀 이벤트 발생 (useTokenObserver가 이걸 감지함)
+          window.dispatchEvent(
+            new CustomEvent('tokenStorage', {
+              detail: { newToken: accessToken },
+            }),
+          )
           if (isNew) {
             sessionStorage.setItem('socialType', 'KAKAO')
             navigate('/signup/social') // 닉네임, 이미지 설정 페이지

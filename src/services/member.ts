@@ -48,16 +48,30 @@ export const checkNicknameDuplicate = async (nickname: string) => {
   return res.data
 }
 
-// 로그인된 유저 정보 가져오기
-export const userInfo = async () => {
-  const res = await axiosInstance.get(`/member/user-info`)
-  return res.data
-}
-
 export const updateSocialInfo = async (data: {
   nickname: string
   profileImage?: string | null
 }) => {
   const res = await axiosInstance.patch('/api/v1/member/social-info', data)
+  return res.data
+}
+export const sendResetPasswordLink = async (email: string) => {
+  const res = await axiosInstance.post('/api/v1/password-reset/send-link', { email })
+  return res.data
+}
+
+// 비밀번호 재설정 실행 (code + newPassword)
+export const resetPassword = async (code: string, newPassword: string) => {
+  const res = await axiosInstance.put('/api/v1/password-reset', {
+    code,
+    newPassword,
+  })
+  return res.data
+}
+
+export const logout = async () => {
+  const res = await axiosInstance.post('/api/v1/member/logout', null, {
+    withCredentials: true,
+  })
   return res.data
 }
