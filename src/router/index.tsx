@@ -202,7 +202,16 @@ const AppRoutes = () => {
             }
           />
 
-          {/* 마이페이지 */}
+          <Route path="/example" element={<ExamplePage />} />
+
+          <Route path="/filmography/:tmdbId" element={<div style={{overflowY : 'hidden'}}><Filmography /></div>} />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+
+          <Route path="/oauth/kakao/callback" element={<KakaoRedirectHandler />} />
+
+          <Route path="/oauth/naver/callback" element={<NaverRedirectHandler />} />
+
           <Route path="/my-page" element={<MyPageMain />} />
           <Route path="/my-page-edit" element={<MyPageEdit />} />
           <Route path="/my-page-preference" element={<MyPagePreference />} />
