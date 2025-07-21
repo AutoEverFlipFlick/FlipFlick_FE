@@ -67,13 +67,18 @@ const ReviewCard = styled(BaseContainer)<IsMobile>`
   animation: ${fadeInUp} 0.3s ease both;
 `
 
-const ImageWrapper = styled.div<{ width: string; height: string }>`
+interface ImageWrapperProps {
+  $width: string
+  $height: string
+}
+
+const ImageWrapper = styled.div<ImageWrapperProps & IsMobile>`
   flex: 0 0 100px; /* 좌측에 120px 너비 확보 */
   aspect-ratio: 2 / 3;
   overflow: hidden;
   flex-shrink: 0;
-  width: ${p => p.width};
-  height: ${p => p.width};
+  width: ${p => p.$width};
+  height: ${p => p.$height};
 `
 
 const Skeleton = styled.div`
@@ -188,6 +193,9 @@ const ReviewActions = styled.div`
     span {
       font-size: 0.85rem;
       color: #ccc;
+      display: inline-block;
+      min-width: 2ch;
+      text-align: right;
     }
   }
 `
@@ -243,7 +251,7 @@ const ImageLoader: React.FC<{
   const [loaded, setLoaded] = useState(false)
   const [error, setError] = useState(false)
   return (
-    <ImageWrapper $ismobile={isMobile} width={width} height={height}>
+    <ImageWrapper $ismobile={isMobile} $width={width} $height={height}>
       {!loaded && !error && <Skeleton />}
       {!error && (
         <img
@@ -367,7 +375,7 @@ const MyPageReview: React.FC = () => {
                 <ContentGrid $ismobile={isMobile}>
                   {reviews.map((review, idx, arr) => {
                     const isLast = isMobile && idx === arr.length - 1
-                    const key = review.id ?? `${review.movieTitle}-${idx}`
+                    const key = review.id || `${review.movieTitle}-${idx}`
 
                     return (
                       <div key={key} ref={isLast ? lastItemRef : undefined}>
