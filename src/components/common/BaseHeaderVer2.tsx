@@ -331,6 +331,19 @@ const DropdownItem = styled.div`
   }
 `
 
+const TextAvatarContainer = styled.div`
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  background-color: #999;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1rem;
+`
+
 const BaseHeaderVer2 = () => {
   const navigate = useNavigate()
 
@@ -499,11 +512,13 @@ const BaseHeaderVer2 = () => {
             <>
               <Icon icon="mdi:notifications" fontSize={'30px'} style={{ marginRight: '15px' }} />
               <ProfileInnerBox ref={profileRef} onClick={() => setIsDropdownOpen(prev => !prev)}>
-                {/* 로그인 시 아바타 완전 불투명 */}
                 <p style={{ marginRight: '5px' }}>{profileName}</p>
-                <AvatarContainer src={profileSrc} alt="프로필" style={{ opacity: 1 }} />
+                {profileSrc === AvatarIcon ? (
+                  <TextAvatarContainer>{profileName?.charAt(0) || '유'}</TextAvatarContainer>
+                ) : (
+                  <AvatarContainer src={profileSrc} alt="프로필" style={{ opacity: 1 }} />
+                )}
 
-                {/* 드롭다운 메뉴 */}
                 {isDropdownOpen && (
                   <DropdownContainer ref={dropdownRef}>
                     <DropdownItem>프로필 수정</DropdownItem>
