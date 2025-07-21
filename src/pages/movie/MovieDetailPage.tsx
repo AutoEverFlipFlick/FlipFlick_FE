@@ -461,7 +461,9 @@ export default function MovieDetailPage() {
                       onClick={handleBookmark}>{isBookmarked ? '찜 취소' : '찜하기'}</ActionButton>
         <ActionButton size='small' icon={isWatched ? <EyeOff/> : <Eye/>}
                       onClick={handleView}>{isWatched ? '봤어요 취소' : '봤어요'}</ActionButton>
+        {/* TODO : 플레이리스트 모달 호출 구현하기 */}
         <ActionButton size='small' icon={<ListPlus/>}>플레이리스트 추가</ActionButton>
+        {/* TODO : 수정/신고 모달 호출 구현하기 */}
         <ActionButton size='small' icon={<Flag/>}>수정 요청</ActionButton>
       </MovieDetailMainAction>
       <MovieDetailMain>
@@ -550,23 +552,25 @@ export default function MovieDetailPage() {
                   {/*  isMyPost={true}*/}
                   {/*  />*/}
                   {myReview ? (
+                    <>
+                    {/* TODO : ReviewTextArea 에 내 리뷰 수정 로직 추가 필요 */}
                     <p>내가 작성한 리뷰 있음</p>
-
+                    </>
                   ) : (
                     <ReviewTextArea
                       tmdbId={tmdbId!}
                       // rating={movieData.myRating}
+                      // TODO : 별점 선택 로직 추가하기
                       rating={3.0}
                       isAuthenticated={isAuthenticated}
                       onSuccess={async () => {
                         try {
-                          console.log("내 리뷰 불러오기 시작")
-                          const response = await getMovieReview(tmdbId!, 0)
+                          console.log("리뷰 작성 후 새로고침")
+                          const response = await getMyMovieReview(tmdbId!)
                           const data = response.data
-                          console.log("내 리뷰 조회됨 : ", data)
-                          const mappedData: ReviewData = mapToReviewData(data, user?.id, user?.nickname)
-                          console.log("내 리뷰 매핑됨 : ", mappedData)
+                          const mappedData: Review = mapToMyReviewData(data)
                           setMyReview(mappedData)
+                          console.log("리뷰 작성 후 새로고침 완료")
                         } catch (error) {
                           console.error('내 리뷰 불러오기 실패:', error)
                         }
@@ -578,11 +582,12 @@ export default function MovieDetailPage() {
               <ContentsListWrapper>
                 <ContentsListTitleTab>
                   <ContentsTitle>리뷰</ContentsTitle>
+                  {/* TODO : 정렬 버튼 및 랜더링 구현하기*/}
                   <ContentsListOrderDropdown>정렬 순서</ContentsListOrderDropdown>
                 </ContentsListTitleTab>
                 <ReviewDebateList>
                   <DetailReviewCardWrapper>
-                    {/*자기 리뷰는 래퍼에 안뜨게 해야함*/}
+                    {/* TODO : ReviewTextArea에 수정 로직이 추가되면 자기 리뷰는 래퍼에 안뜨게 해야함*/}
                     {reviewData?.reviews.map(review =>
                       <ReviewDebateCard
                         key={review.reviewId}
@@ -610,6 +615,7 @@ export default function MovieDetailPage() {
               </ContentsHeader>
               <ReviewDebateList>
                 <DetailReviewCardWrapper>
+                  {/* TODO : 토론 정보 불러오고 랜더링 */}
                   <ReviewDebateCard
                     content={'토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용'}
                     createdAt={'1 시간 전'}
@@ -626,6 +632,7 @@ export default function MovieDetailPage() {
           )}
           {activeTab === 'media' && (
             <DetailImageContents>
+              {/* TODO : 영화 이미지와 유튜브 랜더링*/}
               <DetailImage>영화 이미지 Grid</DetailImage>
             </DetailImageContents>
           )}
