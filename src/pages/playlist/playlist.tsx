@@ -3,6 +3,7 @@ import styled, { keyframes } from 'styled-components';
 import BaseButton from '../../components/common/BaseButton';
 import { Plus, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import {
   getAllPlaylists,
   getMyPlaylists,
@@ -18,32 +19,46 @@ const fadeInUp = keyframes`
   to   { opacity: 1; transform: translateY(0); }
 `;
 
+const shimmer = keyframes`
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+`;
+
 const PlaylistContainer = styled.div`
   color: white;
-  min-height: 100vh;
-  max-height: 100vh;
-  padding: 2rem;
+  height: 100vh;
+  max-width: 1200px;
+  margin: 0 auto; /* 중앙정렬 추가 */
+  padding: 1.5rem 2rem;
   font-family: 'Arial', sans-serif;
   overflow-y: auto;
   box-sizing: border-box;
-    -ms-overflow-style: none;
+  -ms-overflow-style: none;
   scrollbar-width: none;
   
   &::-webkit-scrollbar {
     display: none;
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
   }
 `;
 
 const TitleContainer = styled.div`
   display: flex;
   justify-content: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 `;
 
 const Title = styled.h1`
   font-size: 2rem;
   margin: 0;
   font-weight: bold;
+  
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
 `;
 
 const TabContainer = styled.div`
@@ -51,6 +66,12 @@ const TabContainer = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
 `;
 
 const TabButtons = styled.div`
@@ -59,6 +80,7 @@ const TabButtons = styled.div`
   
   @media (max-width: 768px) {
     gap: 1rem;
+    justify-content: center;
   }
 `;
 
@@ -95,12 +117,14 @@ const CountInfo = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  
+  /* 모바일에서도 항상 같은 줄에 유지 */
 `;
 
 const Count = styled.span`
-  font-size: 1rem;
-  color: #ccc;
+  font-size: 0.875rem;
+  color: #9ca3af;
 `;
 
 const SortContainer = styled.div`
@@ -124,6 +148,11 @@ const SortButton = styled.button`
     background: #333;
     color: white;
     border-color: #555;
+  }
+  
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
   }
 `;
 
@@ -168,13 +197,28 @@ const DropdownItem = styled.button<{ $active: boolean }>`
   }
 `;
 
+// TotalSearch와 동일한 그리드 시스템
 const PlaylistGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 2rem;
+  gap: 24px;
+  grid-template-columns: repeat(5, 1fr);
   margin-bottom: 2rem;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
 `;
 
+// TotalSearch와 동일한 카드 스타일
 const PlaylistCard = styled.div`
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
@@ -182,7 +226,6 @@ const PlaylistCard = styled.div`
   animation: ${fadeInUp} 0.3s ease both;
   cursor: pointer; 
   transition: transform 0.2s;
-  position: relative;
   
   &:hover { 
     transform: translateY(-4px); 
@@ -194,46 +237,89 @@ const PlaylistCard = styled.div`
   }
 `;
 
-const ThumbnailContainer = styled.div`
+// TotalSearch와 동일한 이미지 래퍼
+const ImageWrapper = styled.div`
   position: relative;
   width: 100%;
-  height: 200px;
-  overflow: hidden;
-`;
-
-const ImageSkeleton = styled.div`
-  width: 100%;
-  height: 100%;
+  height: 280px;
   background: #333;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #666;
-  font-size: 0.9rem;
+  border-radius: 4px 4px 0 0;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    width: 100px;
+    height: 100px;
+    margin-right: 12px;
+    border-radius: 4px;
+  }
 `;
 
-const Thumbnail = styled.img<{ $loaded: boolean }>`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: ${props => props.$loaded ? 'block' : 'none'};
+// TotalSearch와 동일한 스켈레톤
+const Skeleton = styled.div`
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.1);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
+    animation: ${shimmer} 1.2s infinite;
+  }
 `;
 
-const CardInfo = styled.div`
-  padding: 1rem;
+// TotalSearch와 동일한 카드 바디
+const CardBody = styled.div`
+  padding: 12px;
+
+  @media (max-width: 768px) {
+    flex: 1;
+    padding: 12px 12px 12px 0;
+  }
 `;
 
+// TotalSearch와 동일한 카드 타이틀
 const CardTitle = styled.h3`
-  margin: 0 0 0.5rem 0;
-  font-size: 1.1rem;
-  font-weight: bold;
+  margin: 0 0 6px;
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #fff;
+  
+  @media (max-width: 768px) {
+    font-size: 0.9rem;
+  }
 `;
 
-const CardMeta = styled.div`
+// TotalSearch와 동일한 하단 정보
+const BottomRow = styled.div`
   display: flex;
   justify-content: space-between;
-  color: #aaa;
-  font-size: 0.9rem;
+  margin-top: 8px;
+`;
+
+const CreatorName = styled.div`
+  font-size: 0.875rem;
+  color: #9ca3af;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  margin-right: 8px;
+`;
+
+const MovieCount = styled.div`
+  font-size: 0.875rem;
+  color: #9ca3af;
+  flex-shrink: 0;
 `;
 
 const Pagination = styled.div`
@@ -242,6 +328,11 @@ const Pagination = styled.div`
   align-items: center;
   gap: 0.5rem;
   margin-top: 2rem;
+  
+  @media (max-width: 768px) {
+    gap: 0.25rem;
+    flex-wrap: wrap;
+  }
 `;
 
 const PaginationButton = styled.button<{ $active?: boolean }>`
@@ -262,6 +353,17 @@ const PaginationButton = styled.button<{ $active?: boolean }>`
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    
+    &:hover {
+      background: transparent;
+      color: #ccc;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    width: 36px;
+    height: 36px;
+    font-size: 0.875rem;
   }
 `;
 
@@ -269,14 +371,14 @@ const LoadingMessage = styled.div`
   text-align: center;
   color: #ccc;
   font-size: 1.1rem;
-  margin: 2rem 0;
+  margin: 3rem 0;
 `;
 
 const ErrorMessage = styled.div`
   text-align: center;
   color: #ff4444;
   font-size: 1.1rem;
-  margin: 2rem 0;
+  margin: 3rem 0;
 `;
 
 const EmptyMessage = styled.div`
@@ -286,7 +388,14 @@ const EmptyMessage = styled.div`
   margin: 4rem 0;
 `;
 
-// 이미지 로더 컴포넌트
+// 새 플레이리스트 버튼 컨테이너
+const ButtonContainer = styled.div`
+  @media (max-width: 768px) {
+    display: flex;
+    justify-content: center;
+  }
+`;
+
 const ImageLoader: React.FC<{
   src: string;
   alt: string;
@@ -306,26 +415,37 @@ const ImageLoader: React.FC<{
   };
 
   return (
-    <ThumbnailContainer>
-      {!loaded && !error && (
-        <ImageSkeleton>
-        </ImageSkeleton>
-      )}
+    <ImageWrapper>
+      {!loaded && !error && <Skeleton />}
       {!error && (
-        <Thumbnail
+        <img
           src={src}
           alt={alt}
-          $loaded={loaded}
           onLoad={handleLoad}
           onError={handleError}
+          style={{
+            display: loaded ? 'block' : 'none',
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
         />
       )}
       {error && (
-        <ImageSkeleton>
+        <div style={{
+          width: '100%',
+          height: '100%',
+          background: '#333',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#666',
+          fontSize: '0.9rem'
+        }}>
           이미지 없음
-        </ImageSkeleton>
+        </div>
       )}
-    </ThumbnailContainer>
+    </ImageWrapper>
   );
 };
 
@@ -406,7 +526,7 @@ const PlaylistPage: React.FC = () => {
   }, [activeTab, currentPage, sortBy]);
 
   // 강제 새로고침 버전
-  const handleTabChange = (tab: 'all' | 'my' | 'bookmarked') => {
+  const handleTabChange = async (tab: 'all' | 'my' | 'bookmarked') => {
     if (activeTab === tab) {
       // 같은 탭을 클릭한 경우 강제로 새로고침
       setHasLoaded(false);
@@ -416,8 +536,20 @@ const PlaylistPage: React.FC = () => {
     
     // 로그인이 필요한 탭 확인
     if ((tab === 'my' || tab === 'bookmarked') && !isAuthenticated) {
-      alert('로그인이 필요합니다.');
-      navigate('/login');
+      const result = await Swal.fire({
+        title: '로그인이 필요합니다',
+        text: '해당 기능을 이용하려면 로그인이 필요합니다.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '로그인하러 가기',
+        cancelButtonText: '취소',
+        confirmButtonColor: '#FF7849',
+        cancelButtonColor: '#6c757d'
+      });
+
+      if (result.isConfirmed) {
+        navigate('/login');
+      }
       return;
     }
     
@@ -433,7 +565,7 @@ const PlaylistPage: React.FC = () => {
     setSortBy(newSortBy);
     setCurrentPage(0);
     setIsDropdownOpen(false);
-    setHasLoaded(false); // 추가: 정렬 변경 시 로딩 상태 초기화
+    setHasLoaded(false);
   };
 
   const getSortLabel = (sort: SortBy) => {
@@ -449,10 +581,22 @@ const PlaylistPage: React.FC = () => {
     }
   };
 
-  const handleCreatePlaylist = () => {
+  const handleCreatePlaylist = async () => {
     if (!isAuthenticated) {
-      alert('로그인이 필요합니다.');
-      navigate('/login');
+      const result = await Swal.fire({
+        title: '로그인이 필요합니다',
+        text: '플레이리스트를 생성하려면 로그인이 필요합니다.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '로그인하러 가기',
+        cancelButtonText: '취소',
+        confirmButtonColor: '#FF7849',
+        cancelButtonColor: '#6c757d'
+      });
+
+      if (result.isConfirmed) {
+        navigate('/login');
+      }
       return;
     }
     navigate('/createplaylist');
@@ -460,7 +604,7 @@ const PlaylistPage: React.FC = () => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    setHasLoaded(false); // 추가: 페이지 변경 시 로딩 상태 초기화
+    setHasLoaded(false);
   };
 
   const renderPageNumbers = () => {
@@ -582,13 +726,13 @@ const PlaylistPage: React.FC = () => {
                     alt={playlist.title}
                     onError={() => console.log(`이미지 로딩 실패: ${playlist.title}`)}
                   />
-                  <CardInfo>
+                  <CardBody>
                     <CardTitle>{playlist.title}</CardTitle>
-                    <CardMeta>
-                      <span>{playlist.nickname}</span>
-                      <span>영화 {playlist.movieCount}</span>
-                    </CardMeta>
-                  </CardInfo>
+                    <BottomRow>
+                      <CreatorName>{playlist.nickname}</CreatorName>
+                      <MovieCount>영화 {playlist.movieCount}개</MovieCount>
+                    </BottomRow>
+                  </CardBody>
                 </PlaylistCard>
               ))}
             </PlaylistGrid>
@@ -639,6 +783,3 @@ const PlaylistPage: React.FC = () => {
 };
 
 export default PlaylistPage;
-
-
-

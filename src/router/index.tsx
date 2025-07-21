@@ -197,7 +197,7 @@ const AppRoutes = () => {
 
           <Route path="/example" element={<ExamplePage />} />
 
-          <Route path="/filmography/:tmdbId" element={<Filmography />} />
+          <Route path="/filmography/:tmdbId" element={<div style={{overflowY : 'hidden'}}><Filmography /></div>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
 
