@@ -7,6 +7,7 @@ interface User {
   email: string
   nickname: string
   profileImageUrl?: string
+  profileImage?: string
   role: string
 }
 
