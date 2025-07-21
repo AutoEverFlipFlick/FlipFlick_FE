@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
-import backgroundImage from '@/assets/common/background.webp'
+import backgroundImage from '@/assets/common/background2.webp'
 import BaseInput from '@/components/common/BaseInput'
 import BaseButton from '@/components/common/BaseButton'
 import profileImageDefault from '@/assets/icons/profile.png'
@@ -212,6 +212,13 @@ const SocialSignUp: React.FC = () => {
               }
             }}
             inputSize="small"
+            state={
+              nickname === ''
+                ? 'normal'
+                : isNicknameChecked && isNicknameValid
+                  ? 'success'
+                  : 'error'
+            }
           />
           {isNicknameValid !== null && (
             <Message isError={!isNicknameChecked || !isNicknameValid}>{nicknameMessage}</Message>

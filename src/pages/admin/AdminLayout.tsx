@@ -1,7 +1,10 @@
-import React from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 import { LayoutDashboard, Users, AlertTriangle } from 'lucide-react'
+import { useAuth } from '@/context/AuthContext'
+import { logout } from '@/services/member'
+import { useNavigate } from 'react-router-dom'
 
 const LayoutWrapper = styled.div`
   display: flex;
@@ -30,6 +33,7 @@ const Nav = styled.nav`
   flex-direction: column;
   gap: 1.2rem;
   width: 100%;
+  flex: 1;
 `
 
 const NavLink = styled(Link)<{ $active?: boolean }>`
@@ -50,6 +54,47 @@ const NavLink = styled(Link)<{ $active?: boolean }>`
   }
 `
 
+const ProfileContainer = styled.div`
+  position: relative;
+  cursor: pointer;
+  margin-top: auto;
+  padding-top: 1rem;
+`
+
+const Avatar = styled.img`
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+`
+
+const DropdownMenu = styled.ul`
+  position: absolute;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: white;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  padding: 0.5rem 0;
+  z-index: 999;
+  color: black;
+`
+
+const DropdownItem = styled.li`
+  list-style: none;
+  padding: 0.5rem 1.2rem;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover {
+    background-color: #f2f2f2;
+  }
+`
+
 const ContentWrapper = styled.div`
   flex: 1;
   display: flex;
@@ -62,13 +107,56 @@ const Main = styled.main`
   overflow-y: auto;
 `
 
+const TextAvatar = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #666;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1rem;
+`
+
 interface AdminLayoutProps {
   children: React.ReactNode
 }
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const location = useLocation()
+  const [dropdownVisible, setDropdownVisible] = useState(false)
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownVisible(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
+  const toggleDropdown = () => {
+    setDropdownVisible(prev => !prev)
+  }
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      localStorage.removeItem('accessToken')
+      navigate('/')
+    } catch (err) {
+      console.error('로그아웃 실패:', err)
+    }
+  }
   return (
     <LayoutWrapper>
       <Sidebar>
@@ -86,6 +174,22 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             <AlertTriangle size={18} /> Report
           </NavLink>
         </Nav>
+
+        <ProfileContainer ref={dropdownRef} onClick={toggleDropdown}>
+          {user?.profileImage ? (
+            <Avatar src={user.profileImage} alt="프로필 이미지" />
+          ) : (
+            <TextAvatar>{user?.nickname?.charAt(0) || '유'}</TextAvatar>
+          )}
+
+          {/* ⬇️ 드롭다운 메뉴 조건부 렌더링 추가 */}
+          {dropdownVisible && (
+            <DropdownMenu>
+              <DropdownItem onClick={() => navigate('/')}>홈으로 이동</DropdownItem>
+              <DropdownItem onClick={handleLogout}>로그아웃</DropdownItem>
+            </DropdownMenu>
+          )}
+        </ProfileContainer>
       </Sidebar>
 
       <ContentWrapper>

@@ -530,7 +530,7 @@ const TotalSearch: React.FC = () => {
                 {movies.content.map(m => (
                   <Card
                     key={m.tmdbId}
-                    onClick={() => navigate(`/movie/${m.tmdbId}`)}
+                    onClick={() => navigate(`/movie/detail/${m.tmdbId}`)}
                     $animate={!isMobile || p === 1}
                   >
                     <ImageLoader
@@ -741,9 +741,9 @@ const TotalSearch: React.FC = () => {
                     <InteractiveInfo
                       role="button"
                       tabIndex={0}
-                      onClick={() => navigate(`/users/${u.memberId}`)}
+                      onClick={() => navigate(`/my-page?id=${u.memberId}`)}
                       onKeyDown={e =>
-                        handleKey(e, () => navigate(`/users/${u.memberId}`))
+                        handleKey(e, () => navigate(`/my-page?id=${u.memberId}`))
                       }
                     >
                       <CardTitle>{u.nickname}</CardTitle>

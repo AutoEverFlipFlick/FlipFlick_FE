@@ -55,3 +55,23 @@ export const updateSocialInfo = async (data: {
   const res = await axiosInstance.patch('/api/v1/member/social-info', data)
   return res.data
 }
+export const sendResetPasswordLink = async (email: string) => {
+  const res = await axiosInstance.post('/api/v1/password-reset/send-link', { email })
+  return res.data
+}
+
+// 비밀번호 재설정 실행 (code + newPassword)
+export const resetPassword = async (code: string, newPassword: string) => {
+  const res = await axiosInstance.put('/api/v1/password-reset', {
+    code,
+    newPassword,
+  })
+  return res.data
+}
+
+export const logout = async () => {
+  const res = await axiosInstance.post('/api/v1/member/logout', null, {
+    withCredentials: true,
+  })
+  return res.data
+}

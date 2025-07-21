@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import backgroundImage from '@/assets/common/background.webp'
+import backgroundImage from '@/assets/common/background2.webp'
 import BaseInput from '@/components/common/BaseInput'
 import BaseButton from '@/components/common/BaseButton'
 import { login } from '@/services/member'
@@ -15,7 +15,18 @@ const Wrapper = styled.div`
   align-items: center;
 
   @media (max-width: 768px) {
-    background-size: cover;
+    background: none; // 모바일에서 배경 제거
+  }
+`
+
+const MobileLogo = styled.img`
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+    width: 180px;
+    height: auto;
+    margin-bottom: 32px;
   }
 `
 
@@ -28,7 +39,7 @@ const LoginBox = styled.div`
   align-items: center;
 
   @media (max-width: 768px) {
-    width: 50%;
+    width: 70%;
   }
 `
 
@@ -61,6 +72,11 @@ const LoginButton = styled(BaseButton)`
   height: 48px;
   font-size: 16px;
   min-width: 160px;
+  @media (max-width: 768px) {
+    width: 200px;
+    height: 40px;
+    font-size: 14px;
+  }
 `
 
 const EmailLogin: React.FC = () => {
@@ -95,6 +111,7 @@ const EmailLogin: React.FC = () => {
   return (
     <Wrapper>
       <LoginBox>
+        <MobileLogo src="/logo_full.webp" alt="로고" />
         <InputWrapper>
           <ResponsiveInput
             inputSize="small"
@@ -112,7 +129,9 @@ const EmailLogin: React.FC = () => {
             value={password}
             onChange={e => setPassword(e.target.value)}
           />
-          <FindPasswordText>비밀번호 찾아볼래?</FindPasswordText>
+          <FindPasswordText onClick={() => navigate('/find-password')}>
+            비밀번호 찾아볼래?
+          </FindPasswordText>
         </InputWrapper>
 
         <LoginButton variant="dark" onClick={handleLogin}>
