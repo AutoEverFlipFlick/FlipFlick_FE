@@ -741,9 +741,9 @@ const TotalSearch: React.FC = () => {
                     <InteractiveInfo
                       role="button"
                       tabIndex={0}
-                      onClick={() => navigate(`/users/${u.memberId}`)}
+                      onClick={() => navigate(`/my-page?id=${u.memberId}`)}
                       onKeyDown={e =>
-                        handleKey(e, () => navigate(`/users/${u.memberId}`))
+                        handleKey(e, () => navigate(`/my-page?id=${u.memberId}`))
                       }
                     >
                       <CardTitle>{u.nickname}</CardTitle>
