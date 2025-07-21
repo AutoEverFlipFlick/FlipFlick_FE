@@ -193,14 +193,7 @@ const AppRoutes = () => {
             }
           />
 
-          <Route
-            path="/example"
-            element={
-              <Layout>
-                <ExamplePage />
-              </Layout>
-            }
-          />
+          <Route path="/example" element={<ExamplePage />} />
 
           <Route path="/filmography/:tmdbId" element={<Filmography />} />
 
