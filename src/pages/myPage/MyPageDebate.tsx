@@ -212,20 +212,10 @@ const MovieTitle = styled.div<IsMobile>`
   margin-left: ${({ $ismobile }) => ($ismobile ? '0.5rem' : '0')};
 `
 
-const DebateImage = styled.img<IsMobile>`
-  width: ${({ $ismobile }) => ($ismobile ? '100%' : '100px')};
-  aspect-ratio: ${({ $ismobile }) => ($ismobile ? '4/3' : '4/5')};
-  object-fit: cover;
-  border-radius: 4px;
-  margin-left: ${({ $ismobile }) => ($ismobile ? '0' : '0.8rem')};
-`
-
 const ImageLoader: React.FC<{
   src: string
   alt: string
-  width: string
-  height: string
-}> = ({ src, alt, width, height }) => {
+}> = ({ src, alt }) => {
   const isMobile = useMediaQuery({ query: '(max-width: 767px)' })
   const [loaded, setLoaded] = useState(false)
   const [error, setError] = useState(false)
@@ -560,10 +550,10 @@ export default function MyPageDebate() {
                         <ImageWrapper $ismobile={isMobile}>
                           <MovieTitle $ismobile={isMobile}>{d.movieTitle}</MovieTitle>
                           <Header $ismobile={isMobile}>
-                            <DebateTitle>{d.debateTitle}</DebateTitle>
+                            <DebateTitle $ismobile={isMobile}>{d.debateTitle}</DebateTitle>
                             <TimeStamp>{timeForToday(d.createdAt)}</TimeStamp>
                           </Header>
-                          <ImageLoader src={zzanggu} alt="프로필" width={'auto'} height={'auto'} />
+                          <ImageLoader src={zzanggu} alt="프로필" />
 
                           <DebateText $ismobile={isMobile}>{d.content}</DebateText>
                           <ImageActions $ismobile={isMobile}>
@@ -597,9 +587,9 @@ export default function MyPageDebate() {
                           </TopIcons>
                         )}
                         <ImageWrapper $ismobile={isMobile}>
-                          <MovieTitle>{d.movieTitle}</MovieTitle>
-                          <ImageLoader src={zzanggu} alt="프로필" width={'300px'} height={'auto'} />
-                          <ImageActions>
+                          <MovieTitle $ismobile={isMobile}>{d.movieTitle}</MovieTitle>
+                          <ImageLoader src={zzanggu} alt="프로필" />
+                          <ImageActions $ismobile={isMobile}>
                             <GroupWrapper>
                               <ThumbsUp stroke="#fff" size={20} />
                               <span>{formatCount(d.likeCnt)}</span>
@@ -615,11 +605,11 @@ export default function MyPageDebate() {
                           </ImageActions>
                         </ImageWrapper>
                         <DebateContent $ismobile={isMobile}>
-                          <Header>
-                            <DebateTitle>{d.debateTitle}</DebateTitle>
+                          <Header $ismobile={isMobile}>
+                            <DebateTitle $ismobile={isMobile}>{d.debateTitle}</DebateTitle>
                             <TimeStamp>{timeForToday(d.createdAt)}</TimeStamp>
                           </Header>
-                          <DebateText>{d.content}</DebateText>
+                          <DebateText $ismobile={isMobile}>{d.content}</DebateText>
                         </DebateContent>
                       </DebateCard>
                     </>
