@@ -183,7 +183,6 @@ const ReviewActions = styled.div`
       width: 16px;
       height: 16px;
       stroke: #fff;
-      fill: #fff;
     }
 
     span {

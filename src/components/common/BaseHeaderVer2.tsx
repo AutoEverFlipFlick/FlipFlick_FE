@@ -754,7 +754,7 @@ const BaseHeaderVer2 = () => {
 
                 {isDropdownOpen && (
                   <DropdownContainer ref={dropdownRef}>
-                    <DropdownItem>프로필 수정</DropdownItem>
+                    <DropdownItem onClick={() => navigate('/my-page')}>프로필 수정</DropdownItem>
                     <DropdownItem onClick={handleLogout}>로그아웃</DropdownItem>
                   </DropdownContainer>
                 )}
