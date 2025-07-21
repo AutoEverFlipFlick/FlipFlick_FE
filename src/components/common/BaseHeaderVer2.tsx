@@ -445,6 +445,7 @@ const BaseHeaderVer2 = () => {
                   onFocus={handleInputFocused}
                   onBlur={handleInputBlured}
                   icon={<Search />}
+                  value={searchContext}
                 />
               </MiniSearchbarSection>
             </div>

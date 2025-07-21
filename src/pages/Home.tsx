@@ -286,7 +286,6 @@ export default function Component() {
         alt="Wurlitzer Jukebox background"
         width={1000}
         height={1238}
-        priority
         onLoad={updateLayout}
       />
       <CarouselContainer ref={carouselRef} style={carouselStyle}>
