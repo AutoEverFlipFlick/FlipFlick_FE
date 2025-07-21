@@ -68,6 +68,8 @@ import Dashboard from '@/pages/admin/Dashboard'
 import UserManagement from '@/pages/admin/UserManagement'
 import ReportManagement from '@/pages/admin/ReportManagement'
 import AdminRoute from '@/components/common/AdminRoute'
+import FindPassword from '@/pages/member/FindPassword'
+import ResetPassword from '@/pages/member/ResetPassword'
 
 const AppRoutes = () => {
   return (
@@ -96,6 +98,7 @@ const AppRoutes = () => {
         <Route path="/bolkinator" element={<Bolkinator />} />
 
         {/* AdminRoute (관리자만 접근) */}
+        <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
         <Route
           path="/admin/dashboard"
           element={
@@ -155,7 +158,6 @@ const AppRoutes = () => {
             </PublicRoute>
           }
         />
-
         {/* Protected Routes (로그인 필요) */}
         <Route
           path="/createplaylist"
@@ -198,6 +200,23 @@ const AppRoutes = () => {
         <Route path="/oauth/kakao/callback" element={<KakaoRedirectHandler />} />
 
         <Route path="/oauth/naver/callback" element={<NaverRedirectHandler />} />
+
+        <Route
+          path="/find-password"
+          element={
+            <PublicRoute>
+              <FindPassword />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/reset-password-confirm"
+          element={
+            <PublicRoute>
+              <ResetPassword />
+            </PublicRoute>
+          }
+        />
       </Routes>
     </AuthProvider>
   )
