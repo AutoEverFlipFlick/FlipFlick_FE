@@ -172,9 +172,9 @@ const MovieTitle = styled.h3`
   margin: 0 0 0.25rem 0;
   font-size: 0.9rem;
   color: #fff;
-  overflow: hidden;
+  /* overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: nowrap; */
 `;
 
 const MovieYear = styled.span`
