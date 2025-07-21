@@ -530,7 +530,7 @@ const TotalSearch: React.FC = () => {
                 {movies.content.map(m => (
                   <Card
                     key={m.tmdbId}
-                    onClick={() => navigate(`/movie/${m.tmdbId}`)}
+                    onClick={() => navigate(`/movie/detail/${m.tmdbId}`)}
                     $animate={!isMobile || p === 1}
                   >
                     <ImageLoader
