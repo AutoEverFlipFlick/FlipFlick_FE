@@ -4,7 +4,6 @@ import BaseContainer from '@/components/common/BaseContainer'
 import ReviewDebateCard from '@/components/feature/movieDetail/ReviewDebateCard'
 
 import React, {useCallback, useEffect, useState} from 'react'
-import {MovieData} from './movieData'
 import RatingCard from '@/components/starRating/RatingCard'
 import {mapToMovieData} from "@/pages/movie/movieDataMapper";
 import MovieDetailHeader from "@/pages/movie/MovieDetailHeader";
@@ -14,7 +13,9 @@ import {useParams} from "react-router-dom";
 import {useOnClickAuth} from "@/hooks/useOnClickAuth";
 import BaseButton from "@/components/common/BaseButton";
 import {Eye, EyeOff, Flag, ListPlus, Star, StarOff} from "lucide-react";
-import {bookmarkMovie, getMovieDetail, watchedMovie} from "@/services/movieDetail";
+import {bookmarkMovie, getMovieDetail, getMovieReview, watchedMovie} from "@/services/movieDetail";
+import {mapToReviewData, ReviewData} from "@/pages/movie/reviewData";
+import {MovieData} from "@/pages/movie/movieData";
 
 const MovieDetailLayout = styled.div`
     display: flex;
@@ -211,6 +212,9 @@ const DetailMyReviewCard = styled(BaseContainer)`
     align-items: center;
 `
 
+const ReviewCard = styled(ReviewDebateCard)`
+`
+
 const DetailMyReviewWrapper = styled.div`
     width: 100%;
     min-height: 100px;
@@ -290,6 +294,8 @@ const ActionButton = styled(BaseButton).attrs({
     align-items: center;
 `
 
+
+
 export default function MovieDetailPage() {
   const [movieData, setMovieData] = useState<MovieData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -299,8 +305,11 @@ export default function MovieDetailPage() {
   const [isWatched, setIsWatched] = useState(false)
   const [isBookmarked, setIsBookmarked] = useState(false)
   const {tmdbId} = useParams<{ tmdbId: string }>()
-  const {isAuthenticated} = useAuth()
+  const {user, isAuthenticated, loading} = useAuth()
+
   const onClickAuth = useOnClickAuth()
+  const [reviewData, setReviewData] = useState<ReviewData | null>(null)
+  const [myReview, setMyReview] = useState<ReviewData | null>(null)
 
   const handleBookmark = useCallback(
     () =>
@@ -338,26 +347,66 @@ export default function MovieDetailPage() {
   )
 
   useEffect(() => {
-    const fetchMovieDetail = async () => {
+      const fetchMovieDetail = async () => {
+        try {
+          console.log("영화 상세 정보 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
+          const response = await getMovieDetail(tmdbId)
+          const data = response.data
+          console.log("영화 정보 조회됨 : ", data)
+          const mappedData: MovieData = mapToMovieData(data)
+          console.log("영화 정보 매핑됨 : ", mappedData)
+          setMovieData(mappedData)
+          setIsLiked(mappedData.myLike)
+          setIsWatched(mappedData.myWatched)
+          setIsBookmarked(mappedData.myBookmark)
+        } catch (error) {
+          console.error('영화 상세 정보 불러오기 실패:', error)
+        } finally {
+          console.log("영화 상세 정보 불러오기 및 매핑 완료")
+        }
+      }
+      const fetchMovieReview = async () => {
+        try {
+          console.log("영화 리뷰 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
+          const response = await getMovieReview(tmdbId, 0)
+          const data = response.data
+          console.log("영화 리뷰 조회됨 : ", data)
+          console.log("영화 리뷰 매핑시 사용된 유저 정보 : ", user, isAuthenticated, user?.id)
+          const mappedData: ReviewData = mapToReviewData(data, user?.id, user?.nickname)
+          console.log("영화 리뷰 매핑됨 : ", mappedData)
+          // setMyReview(mappedData)
+          setReviewData(mappedData)
+        } catch (error) {
+          console.error('영화 리뷰 불러오기 실패:', error)
+        } finally {
+          console.log("영화 리뷰 불러오기 및 매핑 완료")
+        }
+      }
+      // const fetchMyReview = async () => {
+      //   if (user) {
+      //     try {
+      //       console.log("내 리뷰 불러오기 시작", "영화 ID : ", tmdbId, "유저 정보 : ", user, isAuthenticated)
+      //       const response = await getUserMovieReview(tmdbId, user)
+      //     }
+      //   } return;
+      // }
+
       try {
-        console.log("영화 상세 정보 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
-        const response = await getMovieDetail(tmdbId)
-        const data = response.data
-        console.log("영화 정보 조회됨 : ", data)
-        const mappedData: MovieData = mapToMovieData(data)
-        console.log("영화 정보 매핑됨 : ", mappedData)
-        setMovieData(mappedData)
-        setIsLiked(mappedData.myLike)
-        setIsWatched(mappedData.myWatched)
-        setIsBookmarked(mappedData.myBookmark)
+        if (!loading && user) {
+          fetchMovieDetail()
+          fetchMovieReview()
+        }
       } catch (error) {
-        console.error('영화 상세 정보 불러오기 실패:', error)
+        console.error('영화 상세 페이지 정보 불러오기 중 오류 발생:', error)
+        setIsLoading(false)
       } finally {
         setIsLoading(false)
       }
+
     }
-    fetchMovieDetail()
-  }, [tmdbId])
+    ,
+    [tmdbId, user, loading]
+  )
 
 
   if (isLoading || !movieData) {
@@ -460,7 +509,31 @@ export default function MovieDetailPage() {
                 <RatingCard title="평가하기" rating={movieData.myRating} size={40}/>
               </RatingWrapper>
               <DetailMyReviewWrapper>
-                <DetailMyReviewCard>내 리뷰</DetailMyReviewCard>
+                <DetailMyReviewCard>
+                  {/*<ReviewCard*/}
+                  {/*  content={movieData.}*/}
+                  {/*  createdAt={'2023-10-01'}*/}
+                  {/*  username={'사용자'}*/}
+                  {/*  type={'review'}*/}
+                  {/*  isMyPost={true}*/}
+                  {/*  />*/}
+                  {myReview ? (
+                    <p>내가 작성한 리뷰 있음</p>
+                    // <ReviewCard
+                    //   content={myReview.content}
+                    //   createdAt={myReview.createdAt}
+                    //   username={myReview.member.nickname}
+                    //   type={'review'}
+                    //   isMyPost={true}
+                    //   likes={myReview.likes}
+                    //   // hates={myReview.hates}
+                    //   rating={myReview.rating}
+                    // />
+                  ) : (
+                    // <ReviewInput />
+                    <p></p>
+                  )}
+                </DetailMyReviewCard>
               </DetailMyReviewWrapper>
               <ContentsListWrapper>
                 <ContentsListTitleTab>
@@ -469,6 +542,21 @@ export default function MovieDetailPage() {
                 </ContentsListTitleTab>
                 <ReviewDebateList>
                   <DetailReviewCardWrapper>
+                    {/*자기 리뷰는 래퍼에 안뜨게 해야함*/}
+                    {reviewData?.reviews.map(review =>
+                      <ReviewDebateCard
+                        key={review.reviewId}
+                        content={review.content}
+                        createdAt={review.createdAt}
+                        username={review.member.nickname}
+                        type={'review'}
+                        isMyPost={review.isMyPost}
+                        likes={review.likes}
+                        // hates={review.hates}
+                        rating={review.rating}
+                      />
+                    )
+                    }
                     {/*<ReviewDebateCard />*/}
                   </DetailReviewCardWrapper>
                 </ReviewDebateList>

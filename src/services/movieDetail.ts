@@ -37,3 +37,13 @@ export const hateMovie = async (movieId: number) => {
   })
   return res.data
 }
+
+export const getMovieReview = async (tmdbId: string | undefined, page: number) => {
+  const res = await axiosInstance.get(`/api/v1/review/movie/${tmdbId}/latest`, {
+    params: {
+      page: page,
+      size: 10, // 페이지당 리뷰 개수
+    }
+  })
+  return res.data
+}

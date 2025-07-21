@@ -192,7 +192,9 @@ const ReviewDebateCard: React.FC<ReviewDebateCardProps> =
     const limitedContent = content.slice(0, maxLength)
     const isLong = limitedContent.length > previewLength
     const displayContent = expanded ? limitedContent : limitedContent.slice(0, previewLength)
-    const isBlur = type === 'review' && isSpoiler && !spoilerRevealed
+
+    // 스포일러 처리
+    const isBlur = isSpoiler && !spoilerRevealed
 
     // 카드 클릭 핸들러 (토론장 이동)
     const handleCardClick = () => {
