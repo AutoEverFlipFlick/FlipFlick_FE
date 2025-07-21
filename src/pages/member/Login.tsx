@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import backgroundImage from '@/assets/common/background.png'
+import backgroundImage from '@/assets/common/background.webp'
 import kakaoIcon from '@/assets/icons/kakao.png'
 import naverIcon from '@/assets/icons/naver.png'
 import { getKaKaoLoginLink, getNaverLoginLink } from '@/utils/auth/authLogin'

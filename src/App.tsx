@@ -3,7 +3,6 @@ import { theme } from '@/styles/theme'
 import { GlobalStyle } from '@/styles/globalStyle'
 
 import { BrowserRouter } from 'react-router-dom'
-import CreatePlaylist from './pages/playlist/CreatePlaylist'
 import AppRoutes from './router'
 
 // styled-components의 GlobalStyle을 사용하여 전역 스타일을 정의

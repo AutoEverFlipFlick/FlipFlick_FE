@@ -1,4 +1,4 @@
-// styles/theme.ts
+// src/styles/theme.ts
 export const theme = {
   fontFamily: 'var(--font-base)',
   fontWeight: 400,
