@@ -9,6 +9,8 @@ import AvatarIcon from '@/assets/icons/profile.png'
 import useTokenObserver from '@/utils/auth/tokenObserver'
 import { userInfoGet } from '@/services/memberInfo'
 import { Icon } from '@iconify/react'
+import { getAlarms, markAlarmAsRead, subscribeToAlarmStream } from '@/services/alarm'
+import BaseContainer from './BaseContainer'
 
 const HeaderWrapper = styled.div`
   z-index: 10;
@@ -330,6 +332,78 @@ const DropdownItem = styled.div`
   }
 `
 
+const AlarmDropdown = styled(BaseContainer)`
+  position: absolute;
+  top: 120%;
+  right: -120px;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  min-width: 240px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 0.25rem 0;
+
+  /* ✅ 반응형 폭 조절 */
+  width: 240px;
+  max-width: calc(100vw - 20px); /* 화면 줄어들면 자동으로 안으로 밀림 */
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 0.25rem 0;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`
+
+const AlarmItem = styled.div`
+  padding: 0.75rem 1rem;
+  color: #ccc;
+  font-size: 0.8rem;
+  white-space: normal;
+  word-break: break-word;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #333;
+    color: white;
+  }
+
+  &:active {
+    color: #ff7849;
+  }
+
+  &:not(:last-child) {
+    border-bottom: 1px solid #3a3a3a;
+  }
+`
+
+const AlarmBadge = styled.div`
+  position: absolute;
+  top: -4px;
+  right: 8px;
+  background-color: red;
+  color: white;
+  font-size: 10px;
+  padding: 2px 5px;
+  border-radius: 50%;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`
+
+const EmptyAlarmMessage = styled.div`
+  padding: 0.75rem 1rem;
+  font-size: 0.8rem;
+  color: #999;
+  text-align: center;
+`
+
 const BaseHeaderVer2 = () => {
   const navigate = useNavigate()
 
@@ -340,12 +414,18 @@ const BaseHeaderVer2 = () => {
   const token = useTokenObserver()
   const [profileSrc, setProfileSrc] = useState(AvatarIcon)
   const [profileName, setProfileName] = useState('')
+  const [userId, setUserId] = useState<number | null>(null)
   const [isLogin, setIsLogin] = useState(false)
 
   // 드롭다운 열림 여부
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const profileRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // 알람 열림
+  const [isAlarmOpen, setIsAlarmOpen] = useState(false)
+  const [alarms, setAlarms] = useState<any[]>([])
+  const alarmRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     console.log('token 받아짐!!')
@@ -364,6 +444,7 @@ const BaseHeaderVer2 = () => {
         if (response.data.data.profileImage) {
           setProfileSrc(response.data.data.profileImage)
         }
+        setUserId(response.data.data.id)
       } catch (error) {
         console.log(error)
       }
@@ -396,6 +477,38 @@ const BaseHeaderVer2 = () => {
     }
   }
 
+  const fetchAlarms = async () => {
+    if (!userId) return
+    try {
+      const res = await getAlarms(userId)
+      setAlarms(res)
+    } catch (error) {
+      console.error('알림 불러오기 실패:', error)
+      setAlarms([])
+    }
+  }
+
+  const handleRead = async (alarmId: number) => {
+    await markAlarmAsRead(alarmId)
+    setAlarms(prev => prev.filter(a => a.id !== alarmId))
+  }
+
+  useEffect(() => {
+    if (userId) {
+      fetchAlarms()
+    }
+  }, [userId])
+
+  useEffect(() => {
+    if (!userId) return
+
+    const es = subscribeToAlarmStream(userId, newAlarm => {
+      setAlarms(prev => (prev.some(a => a.id === newAlarm.id) ? prev : [newAlarm, ...prev]))
+    })
+
+    return () => es.close()
+  }, [userId])
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       // 드롭다운이 열려 있고, 클릭한 대상이 드롭다운 내부나 프로필 박스가 아닐 경우
@@ -408,13 +521,21 @@ const BaseHeaderVer2 = () => {
       ) {
         setIsDropdownOpen(false)
       }
+      if (isAlarmOpen && alarmRef.current && !alarmRef.current.contains(event.target as Node)) {
+        setIsAlarmOpen(false)
+      }
     }
 
     document.addEventListener('mousedown', handleClickOutside)
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [isDropdownOpen])
+  }, [isDropdownOpen, isAlarmOpen])
+
+  const toggleAlarm = () => {
+    setIsAlarmOpen(prev => !prev)
+    fetchAlarms()
+  }
 
   return (
     <HeaderWrapper>
@@ -482,7 +603,30 @@ const BaseHeaderVer2 = () => {
         <ProfileSection>
           {isLogin ? (
             <>
-              <Icon icon="mdi:notifications" fontSize={'30px'} style={{ marginRight: '15px' }} />
+              <div style={{ position: 'relative' }}>
+                <Icon
+                  icon="mdi:notifications"
+                  fontSize={'30px'}
+                  style={{ marginRight: '15px', cursor: 'pointer' }}
+                  onClick={toggleAlarm}
+                />
+                {alarms.length > 0 && (
+                  <AlarmBadge>{alarms.length > 99 ? '99+' : alarms.length}</AlarmBadge>
+                )}
+                {isAlarmOpen && (
+                  <AlarmDropdown ref={alarmRef as React.RefObject<HTMLDivElement>} as="div">
+                    {Array.isArray(alarms) && alarms.length === 0 && (
+                      <EmptyAlarmMessage>알림이 없습니다</EmptyAlarmMessage>
+                    )}
+                    {Array.isArray(alarms) &&
+                      alarms.map(alarm => (
+                        <AlarmItem key={alarm.id} onClick={() => handleRead(alarm.id)}>
+                          {alarm.content}
+                        </AlarmItem>
+                      ))}
+                  </AlarmDropdown>
+                )}
+              </div>
               <ProfileInnerBox ref={profileRef} onClick={() => setIsDropdownOpen(prev => !prev)}>
                 {/* 로그인 시 아바타 완전 불투명 */}
                 <p style={{ marginRight: '5px' }}>{profileName}</p>

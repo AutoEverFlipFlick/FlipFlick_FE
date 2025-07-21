@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
 import styled from 'styled-components'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useMediaQuery } from 'react-responsive'
@@ -88,6 +88,25 @@ const ProfileImg = styled.img`
   object-fit: cover;
 `
 
+const Avatar = styled.div<{ size: number }>`
+  width: ${({ size }) => size}px;
+  height: ${({ size }) => size}px;
+  border-radius: 50%;
+  background: #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: ${({ size }) => size / 2.5}px;
+  color: #fff;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`
+
 const InfoText = styled.div`
   display: flex;
   flex-direction: column;
@@ -113,6 +132,61 @@ const FollowButton = styled.button<{ following: boolean }>`
   font-size: 0.9rem;
 `
 
+const PaginationWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+`
+
+const PaginationButton = styled.button<{ $active?: boolean }>`
+  background: ${props => (props.$active ? '#ff6b35' : 'transparent')};
+  border: 1px solid ${props => (props.$active ? '#ff6b35' : '#555')};
+  color: ${props => (props.$active ? 'white' : '#ccc')};
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin: 0 0.2rem;
+
+  &:hover {
+    background: #ff6b35;
+    color: white;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`
+
+const MobileLoading = styled.div`
+  text-align: center;
+  color: #aaa;
+  padding: 1rem 0;
+`
+
+// 누락된 상태 컴포넌트
+const LoadingMessage = styled.div`
+  text-align: center;
+  color: #ccc;
+  font-size: 1.1rem;
+  margin: 2rem 0;
+`
+const ErrorMessage = styled.div`
+  text-align: center;
+  color: #ff4444;
+  font-size: 1.1rem;
+  margin: 2rem 0;
+`
+
+const EmptyMessage = styled.div`
+  text-align: center;
+  color: #ccc;
+  font-size: 1rem;
+  margin: 2rem 0;
+`
+
 interface User {
   id: number
   name: string
@@ -132,6 +206,15 @@ const MyPageFollowList: React.FC = () => {
   const tabFromState = location.state?.tab || '팔로워'
   const [activeTab, setActiveTab] = useState<'팔로워' | '팔로잉'>(tabFromState)
   const profileId = searchParams.get('id') // URL에 ?id=2 식으로 넘어오는 회원 ID
+
+  const [page, setPage] = useState(0)
+  const [isLastPage, setIsLastPage] = useState(false)
+  const pageSize = 20
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(false)
+  const [total, setTotal] = useState(0)
+
+  const observer = useRef<IntersectionObserver | null>(null)
 
   const goToProfile = (id: number) => {
     navigate(`/my-page?id=${id}`)
@@ -163,52 +246,66 @@ const MyPageFollowList: React.FC = () => {
     )
   }
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        let loginId: number | null = null
-        try {
-          const userRes = await userInfoGet()
-          loginId = userRes.data.data.id
-          setMyId(loginId)
-        } catch (e) {
-          // 로그인 안 된 경우 userInfoGet 실패 → myId는 null 유지
-          console.log('로그인 안 됨: 팔로우 상태는 체크 안 함')
-        }
+  const fetchItems = async () => {
+    if (!profileId || loading) return
+    setLoading(true)
+    setError(false)
+    try {
+      const idNum = Number(profileId)
+      const res =
+        activeTab === '팔로워'
+          ? await getFollowersById(idNum, page, pageSize)
+          : await getFollowingsById(idNum, page, pageSize)
 
-        if (!profileId) return
+      setTotal(res.data.data.totalElements)
+      const loginRes = await userInfoGet()
+      const loginId = loginRes.data.data.id
+      setMyId(loginId)
 
-        const idNum = Number(profileId)
-        const res =
-          activeTab === '팔로워' ? await getFollowersById(idNum) : await getFollowingsById(idNum)
+      const mapped = await Promise.all(
+        res.data.data.content.map(async (user: any) => {
+          let isFollowing = false
+          if (loginId !== null) {
+            isFollowing = await checkFollowStatus(user.id).catch(() => false)
+          }
+          return {
+            id: user.id,
+            name: user.nickname,
+            profileImg: user.profileImage,
+            followerCount: user.followerCount,
+            isFollowing,
+          }
+        }),
+      )
 
-        const mapped = await Promise.all(
-          res.data.data.map(async (user: any) => {
-            let isFollowing = false
-            if (loginId !== null) {
-              try {
-                isFollowing = await checkFollowStatus(user.id)
-              } catch (err) {
-                console.warn(`팔로우 상태 확인 실패: ${user.id}`, err)
-              }
-            }
-            return {
-              id: user.id,
-              name: user.nickname,
-              profileImg: user.profileImage,
-              followerCount: user.followerCount,
-              isFollowing,
-            }
-          }),
-        )
-
-        setUsers(mapped)
-      } catch (error) {
-        console.error('팔로우 리스트 불러오기 실패', error)
-      }
+      setUsers(mapped)
+      setIsLastPage(res.data.data.last)
+    } catch (e) {
+      console.error(e)
+      setError(true)
+    } finally {
+      setLoading(false)
     }
-    fetchData()
-  }, [activeTab, profileId])
+  }
+
+  // 탭·페이지 변경 시마다 즉각 호출
+  useEffect(() => {
+    fetchItems()
+  }, [activeTab, page])
+
+  const lastItemRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (!isMobile || loading || isLastPage) return
+      if (observer.current) observer.current.disconnect()
+      observer.current = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting) {
+          setPage(prev => prev + 1)
+        }
+      })
+      if (node) observer.current.observe(node)
+    },
+    [isMobile, loading, isLastPage],
+  )
 
   return (
     <Container>
@@ -230,31 +327,91 @@ const MyPageFollowList: React.FC = () => {
             팔로잉
           </Tab>
         </Tabs>
+        {loading && <LoadingMessage>사용자를 불러오는 중입니다...</LoadingMessage>}
+        {error && <ErrorMessage>사용자를 불러오는 중 오류가 발생했습니다.</ErrorMessage>}
 
-        <UserList $ismobile={isMobile}>
-          {users.map(user => (
-            <UserItem key={user.id} onClick={() => goToProfile(user.id)}>
-              <LeftInfo>
-                <ProfileImg src={user.profileImg} />
-                <InfoText>
-                  <Name $ismobile={isMobile}>{user.name}</Name>
-                  <FollowerText $ismobile={isMobile}>팔로워 {user.followerCount}</FollowerText>
-                </InfoText>
-              </LeftInfo>
-              {myId !== null && user.id !== myId && (
-                <FollowButton
-                  following={user.isFollowing}
-                  onClick={e => {
-                    e.stopPropagation() // ← 여기서 부모 onClick 전파 차단
-                    toggleFollow(user.id)
-                  }}
+        {!loading && !error && (
+          <>
+            {users.length === 0 ? (
+              <EmptyMessage>표시할 유저가 없습니다.</EmptyMessage>
+            ) : (
+              <UserList $ismobile={isMobile}>
+                {users.map((user, idx) => {
+                  const isLast = isMobile && idx === users.length - 1
+                  return (
+                    <UserItem key={user.id} onClick={() => goToProfile(user.id)}>
+                      <LeftInfo>
+                        {user.profileImg &&
+                        user.profileImg !== 'null' &&
+                        user.profileImg !== 'string' ? (
+                          <ProfileImg src={user.profileImg} alt="프로필 이미지" />
+                        ) : (
+                          <Avatar size={70}>{user.name.charAt(0)}</Avatar>
+                        )}
+                        <InfoText>
+                          <Name $ismobile={isMobile}>{user.name}</Name>
+                          <FollowerText $ismobile={isMobile}>
+                            팔로워 {user.followerCount}
+                          </FollowerText>
+                        </InfoText>
+                      </LeftInfo>
+                      {myId !== null && user.id !== myId && (
+                        <FollowButton
+                          following={user.isFollowing}
+                          onClick={e => {
+                            e.stopPropagation() // ← 여기서 부모 onClick 전파 차단
+                            toggleFollow(user.id)
+                          }}
+                        >
+                          {user.isFollowing ? '팔로잉' : '팔로우'}
+                        </FollowButton>
+                      )}
+                    </UserItem>
+                  )
+                })}
+              </UserList>
+            )}
+            {/*  페이지네이션 여기에 넣기 */}
+            {!isMobile && total > pageSize && (
+              <PaginationWrapper>
+                <PaginationButton disabled={page === 0} onClick={() => setPage(0)}>
+                  &lt;&lt;
+                </PaginationButton>
+                <PaginationButton disabled={page === 0} onClick={() => setPage(prev => prev - 1)}>
+                  &lt;
+                </PaginationButton>
+                {Array.from({ length: Math.min(5, Math.ceil(total / pageSize)) }, (_, i) => {
+                  const start = Math.max(0, page - 2)
+                  const pageNum = start + i
+                  if (pageNum >= Math.ceil(total / pageSize)) return null
+                  return (
+                    <PaginationButton
+                      key={pageNum}
+                      $active={page === pageNum}
+                      onClick={() => setPage(pageNum)}
+                    >
+                      {pageNum + 1}
+                    </PaginationButton>
+                  )
+                })}
+                <PaginationButton
+                  disabled={page >= Math.ceil(total / pageSize) - 1}
+                  onClick={() => setPage(prev => prev + 1)}
                 >
-                  {user.isFollowing ? '팔로잉' : '팔로우'}
-                </FollowButton>
-              )}
-            </UserItem>
-          ))}
-        </UserList>
+                  &gt;
+                </PaginationButton>
+                <PaginationButton
+                  disabled={page >= Math.ceil(total / pageSize) - 1}
+                  onClick={() => setPage(Math.ceil(total / pageSize) - 1)}
+                >
+                  &gt;&gt;
+                </PaginationButton>
+              </PaginationWrapper>
+            )}
+            {/* 모바일 로딩 */}
+            {isMobile && loading && <MobileLoading>내용 불러오는 중...</MobileLoading>}
+          </>
+        )}
       </ContentWrapper>
     </Container>
   )

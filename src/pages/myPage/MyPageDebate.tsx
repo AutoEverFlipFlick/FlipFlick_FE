@@ -1,26 +1,39 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
-import styled from 'styled-components'
+import styled, { keyframes } from 'styled-components'
 import { useMediaQuery } from 'react-responsive'
 import zzanggu from './zzanggu.jpg'
 import BaseContainer from '@/components/common/BaseContainer'
 import { getUserDebatesBySort, Debate, SortBy } from '@/services/memberPost'
-import { ChevronDown, Heart, MessageSquare, Pencil, Trash2 } from 'lucide-react'
+import { ChevronDown, MessageSquare, Pencil, Trash2, ThumbsUp, ThumbsDown } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { timeForToday } from '@/utils/timeForToday'
+import { useNavigate } from 'react-router-dom'
 
 interface IsMobile {
   $ismobile: boolean
 }
 
+const shimmer = keyframes`
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+`
+const fadeInUp = keyframes`
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+`
+
 const Container = styled.div`
   min-height: 100vh;
   padding: 2rem;
+  overflow-x: hidden;
 `
 const ContentWrapper = styled.div`
   max-width: 1200px;
   margin: 0 auto;
   overflow-x: hidden;
+  box-sizing: border-box;
+  width: 100%;
 `
 
 // 페이지 이름
@@ -32,31 +45,31 @@ const Title = styled.h2<IsMobile>`
 `
 
 // 탭
-const TabNav = styled.div<IsMobile>`
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  text-align: center;
-  justify-content: ${p => (p.$ismobile ? 'space-around' : 'left')};
-`
-const TabItem = styled.span<{ $active: boolean } & IsMobile>`
-  position: relative;
-  cursor: pointer;
-  padding-bottom: 0.5rem;
-  color: ${({ $active }) => ($active ? '#FF7849' : '#9CA3AF')};
-  font-weight: ${({ $active }) => ($active ? 600 : 400)};
-  font-size: ${props => (props.$ismobile ? '0.9rem' : '1.1rem')};
-  &:after {
-    content: '';
-    position: absolute;
-    bottom: -4px;
-    left: 0;
-    width: ${({ $active }) => ($active ? '100%' : '0')};
-    height: 2px;
-    background: #ff7849;
-    transition: width 0.3s;
-  }
-`
+// const TabNav = styled.div<IsMobile>`
+//   display: flex;
+//   gap: 1rem;
+//   margin-bottom: 1rem;
+//   text-align: center;
+//   justify-content: ${p => (p.$ismobile ? 'space-around' : 'left')};
+// `
+// const TabItem = styled.span<{ $active: boolean } & IsMobile>`
+//   position: relative;
+//   cursor: pointer;
+//   padding-bottom: 0.5rem;
+//   color: ${({ $active }) => ($active ? '#FF7849' : '#9CA3AF')};
+//   font-weight: ${({ $active }) => ($active ? 600 : 400)};
+//   font-size: ${props => (props.$ismobile ? '0.9rem' : '1.1rem')};
+//   &:after {
+//     content: '';
+//     position: absolute;
+//     bottom: -4px;
+//     left: 0;
+//     width: ${({ $active }) => ($active ? '100%' : '0')};
+//     height: 2px;
+//     background: #ff7849;
+//     transition: width 0.3s;
+//   }
+// `
 const FlexRow = styled.div`
   display: flex;
   justify-content: space-between;
@@ -134,52 +147,119 @@ const DropdownItem = styled.button<{ $active: boolean }>`
 `
 const ContentGrid = styled.div<IsMobile>`
   display: grid;
-  grid-template-columns: ${({ $ismobile }) => ($ismobile ? '1fr' : 'repeat(2, 1fr)')};
+  grid-template-columns: ${({ $ismobile }) =>
+    $ismobile ? '1fr' : 'repeat(auto-fit, minmax(400px, 1fr))'};
   gap: 1rem;
   margin-bottom: 2rem;
 `
-const DebateCard = styled(BaseContainer)`
+
+const Skeleton = styled.div`
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.1);
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: ${shimmer} 1.2s infinite;
+  }
+`
+
+const DebateCard = styled(BaseContainer)<IsMobile>`
   display: flex;
+  flex-direction: ${({ $ismobile }) => ($ismobile ? 'column' : 'row')};
   border-radius: 8px;
   position: relative;
   overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  height: auto;
+  animation: ${fadeInUp} 0.3s ease both;
 `
-const TopIcons = styled.div`
-  position: absolute;
-  top: 12px;
-  right: 12px;
+const TopIcons = styled.div<IsMobile>`
+  position: ${({ $ismobile }) => ($ismobile ? 'absolute' : 'absolute')};
+  top: ${({ $ismobile }) => ($ismobile ? '12px' : '12px')};
+  right: ${({ $ismobile }) => ($ismobile ? '12px' : '12px')};
   display: flex;
   gap: 8px;
   z-index: 2;
+
   & > span {
     cursor: pointer;
     color: #fff;
     font-size: 1rem;
   }
 `
-const ImageWrapper = styled.div`
-  width: 100px;
+const ImageWrapper = styled.div<IsMobile>`
+  width: ${({ $ismobile }) => ($ismobile ? '100%' : '140px')};
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 8px;
+  padding: ${({ $ismobile }) => ($ismobile ? '0.7rem' : '8px')};
+  box-sizing: border-box;
 `
-const MovieTitle = styled.div`
+
+const MovieTitle = styled.div<IsMobile>`
   width: 100%;
   font-size: 1rem;
   font-weight: bold;
   color: #fff;
-  margin-left: 5px;
   white-space: nowrap;
+  margin-left: ${({ $ismobile }) => ($ismobile ? '0.5rem' : '0')};
 `
+
 const DebateImage = styled.img<IsMobile>`
-  width: 100px;
-  aspect-ratio: ${p => (p.$ismobile ? 'auto' : '2/3')};
+  width: ${({ $ismobile }) => ($ismobile ? '100%' : '100px')};
+  aspect-ratio: ${({ $ismobile }) => ($ismobile ? '4/3' : '4/5')};
   object-fit: cover;
   border-radius: 4px;
+  margin-left: ${({ $ismobile }) => ($ismobile ? '0' : '0.8rem')};
 `
-const ImageActions = styled.div`
+
+const ImageLoader: React.FC<{
+  src: string
+  alt: string
+  width: string
+  height: string
+}> = ({ src, alt, width, height }) => {
+  const isMobile = useMediaQuery({ query: '(max-width: 767px)' })
+  const [loaded, setLoaded] = useState(false)
+  const [error, setError] = useState(false)
+
+  return (
+    <ImageWrapper $ismobile={isMobile} style={{ position: 'relative' }}>
+      {!loaded && !error && <Skeleton />}
+      {!error && (
+        <img
+          src={src}
+          alt={alt}
+          onLoad={() => setLoaded(true)}
+          onError={() => setError(true)}
+          style={{
+            display: loaded ? 'block' : 'none',
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            borderRadius: '3px',
+          }}
+        />
+      )}
+      {error && (
+        <img
+          src={zzanggu} // fallback image
+          alt="fallback"
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+      )}
+    </ImageWrapper>
+  )
+}
+
+const ImageActions = styled.div<IsMobile>`
   display: flex;
   justify-content: flex-start;
   gap: 10px;
@@ -187,6 +267,7 @@ const ImageActions = styled.div`
   color: #fff;
   width: 100%;
   margin-top: 4px;
+  position: static;
 `
 
 const GroupWrapper = styled.span`
@@ -198,37 +279,49 @@ const GroupWrapper = styled.span`
 
   svg {
     stroke-width: 1.5;
+    flex-shrink: 0;
   }
 
   span {
     font-size: 16px;
+    display: inline-block;
+    min-width: 14px;
   }
 `
 
-const DebateContent = styled.div`
+const DebateContent = styled.div<IsMobile>`
   flex: 1;
-  padding: 1rem;
+  padding: ${({ $ismobile }) => ($ismobile ? '1rem 1rem 1.5rem 1rem' : '1rem')};
   display: flex;
   flex-direction: column;
   color: #fff;
-  margin-top: 25px;
+  margin-top: ${({ $ismobile }) => ($ismobile ? '0' : '25px')};
   word-break: break-word;
+  box-sizing: border-box;
+  width: 100%;
 `
-const Header = styled.div`
+
+const Header = styled.div<IsMobile>`
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 4px;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 10px;
 `
-const DebateTitle = styled.div`
+const DebateTitle = styled.div<IsMobile>`
   flex: 1;
   margin: 0;
   min-width: 0;
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: bold;
-  word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  margin-top: 5px;
+  margin-left: ${({ $ismobile }) => ($ismobile ? '0.3rem' : '0')};
 `
 const TimeStamp = styled.div`
   flex-shrink: 0;
@@ -236,13 +329,14 @@ const TimeStamp = styled.div`
   font-size: 0.75rem;
   color: #777;
 `
-const DebateText = styled.div`
+const DebateText = styled.div<IsMobile>`
   font-size: 0.85rem;
-  margin-top: 1rem;
+  margin: ${({ $ismobile }) => ($ismobile ? '0.7rem' : '0')};
+  margin-top: 0.7rem;
   color: #ccc;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: ${({ $ismobile }) => ($ismobile ? '1' : '3')};
   overflow: hidden;
 `
 
@@ -274,9 +368,31 @@ const PaginationButton = styled.button<{ $active?: boolean }>`
   }
 `
 
+// 누락된 상태 컴포넌트
+const LoadingMessage = styled.div`
+  text-align: center;
+  color: #ccc;
+  font-size: 1rem;
+  margin: 2rem 0;
+`
+const ErrorMessage = styled.div`
+  text-align: center;
+  color: #ff4444;
+  font-size: 1.1rem;
+  margin: 2rem 0;
+`
+
+const EmptyMessage = styled.div`
+  text-align: center;
+  color: #ccc;
+  font-size: 1rem;
+  margin: 2rem 0;
+`
+
 export default function MyPageDebate() {
   const isMobile = useMediaQuery({ query: '(max-width: 767px)' })
-  const [activeTab, setActiveTab] = useState<'내가 쓴 글' | '내가 쓴 댓글'>('내가 쓴 글')
+  const navigate = useNavigate()
+  // const [activeTab, setActiveTab] = useState<'내가 쓴 글' | '내가 쓴 댓글'>('내가 쓴 글')
   const [debates, setDebates] = useState<Debate[]>([])
   const [page, setPage] = useState(0)
   const [totalElements, setTotalElements] = useState(0)
@@ -291,6 +407,7 @@ export default function MyPageDebate() {
   const dropdownRef = useRef<HTMLDivElement>(null)
   const [currentPage, setCurrentPage] = useState(0)
   const [hasLoaded, setHasLoaded] = useState(false)
+  const [hasError, setHasError] = useState(false)
   const { user } = useAuth()
   const totalPages = Math.ceil(totalElements / pageSize)
 
@@ -344,6 +461,7 @@ export default function MyPageDebate() {
   const fetchDebates = async (pageNum = 0) => {
     try {
       setIsLoading(true)
+      setHasError(false)
       const res = await getUserDebatesBySort(nickname, pageNum, pageSize, sortBy)
       const newData = res.data.data.content
       const total = res.data.data.totalElements
@@ -354,8 +472,10 @@ export default function MyPageDebate() {
       } else {
         setDebates(newData)
       }
+      setHasLoaded(true)
     } catch (err) {
       console.error(err)
+      setHasError(true)
     } finally {
       setIsLoading(false)
     }
@@ -373,11 +493,15 @@ export default function MyPageDebate() {
     }
   }, [page, isMobile, nickname])
 
+  const formatCount = (count: number): string => {
+    return count > 99 ? '99+' : count.toString()
+  }
+
   return (
     <Container>
       <ContentWrapper>
         <Title $ismobile={isMobile}>토론장 활동 내역</Title>
-        <TabNav $ismobile={isMobile}>
+        {/* <TabNav $ismobile={isMobile}>
           {(['내가 쓴 글', '내가 쓴 댓글'] as const).map(tab => (
             <TabItem
               key={tab}
@@ -388,7 +512,7 @@ export default function MyPageDebate() {
               {tab}
             </TabItem>
           ))}
-        </TabNav>
+        </TabNav> */}
         <FlexRow>
           <TotalCount>총 {totalElements}개</TotalCount>
           <SortContainer ref={dropdownRef}>
@@ -408,49 +532,103 @@ export default function MyPageDebate() {
             </DropdownMenu>
           </SortContainer>
         </FlexRow>
-        <ContentGrid $ismobile={isMobile}>
-          {debates.map((d, idx) => {
-            const isLast = isMobile && idx === debates.length - 1
-            const isOwner = user?.nickname === nickname
-            return (
-              <div key={d.debateId} ref={isLast ? lastItemRef : undefined}>
-                <DebateCard>
-                  {isOwner && (
-                    <TopIcons>
-                      <span>
-                        <Pencil size={20} />
-                      </span>
-                      <span>
-                        <Trash2 size={20} />
-                      </span>
-                    </TopIcons>
+        {isLoading && !hasLoaded && <LoadingMessage>토론 글을 불러오는 중입니다...</LoadingMessage>}
+        {hasError && <ErrorMessage>토론 글을 불러오는 중 오류가 발생했습니다.</ErrorMessage>}
+        {!isLoading && !hasError && hasLoaded && debates.length === 0 && (
+          <EmptyMessage>작성한 토론 글이 없습니다.</EmptyMessage>
+        )}
+        {!isLoading && !hasError && hasLoaded && debates.length > 0 && (
+          <ContentGrid $ismobile={isMobile}>
+            {debates.map((d, idx) => {
+              const isLast = isMobile && idx === debates.length - 1
+              const isOwner = user?.nickname === nickname
+              return (
+                <div key={d.debateId} ref={isLast ? lastItemRef : undefined}>
+                  {isMobile ? (
+                    <>
+                      <DebateCard $ismobile={isMobile}>
+                        {isOwner && (
+                          <TopIcons $ismobile={isMobile}>
+                            <span>
+                              <Pencil size={20} onClick={() => navigate('/')} />
+                            </span>
+                            <span>
+                              <Trash2 size={20} onClick={() => navigate('/')} />
+                            </span>
+                          </TopIcons>
+                        )}
+                        <ImageWrapper $ismobile={isMobile}>
+                          <MovieTitle $ismobile={isMobile}>{d.movieTitle}</MovieTitle>
+                          <Header $ismobile={isMobile}>
+                            <DebateTitle>{d.debateTitle}</DebateTitle>
+                            <TimeStamp>{timeForToday(d.createdAt)}</TimeStamp>
+                          </Header>
+                          <ImageLoader src={zzanggu} alt="프로필" width={'auto'} height={'auto'} />
+
+                          <DebateText $ismobile={isMobile}>{d.content}</DebateText>
+                          <ImageActions $ismobile={isMobile}>
+                            <GroupWrapper>
+                              <ThumbsUp stroke="#fff" size={20} />
+                              <span>{formatCount(d.likeCnt)}</span>
+                            </GroupWrapper>
+                            <GroupWrapper>
+                              <ThumbsDown stroke="#fff" size={20} />
+                              <span>{formatCount(d.hateCnt)}</span>
+                            </GroupWrapper>
+                            <GroupWrapper>
+                              <MessageSquare stroke="#fff" size={20} />
+                              <span>{formatCount(d.commentCount)}</span>
+                            </GroupWrapper>
+                          </ImageActions>
+                        </ImageWrapper>
+                      </DebateCard>
+                    </>
+                  ) : (
+                    <>
+                      <DebateCard $ismobile={isMobile}>
+                        {isOwner && (
+                          <TopIcons $ismobile={isMobile}>
+                            <span>
+                              <Pencil size={20} />
+                            </span>
+                            <span>
+                              <Trash2 size={20} />
+                            </span>
+                          </TopIcons>
+                        )}
+                        <ImageWrapper $ismobile={isMobile}>
+                          <MovieTitle>{d.movieTitle}</MovieTitle>
+                          <ImageLoader src={zzanggu} alt="프로필" width={'300px'} height={'auto'} />
+                          <ImageActions>
+                            <GroupWrapper>
+                              <ThumbsUp stroke="#fff" size={20} />
+                              <span>{formatCount(d.likeCnt)}</span>
+                            </GroupWrapper>
+                            <GroupWrapper>
+                              <ThumbsDown stroke="#fff" size={20} />
+                              <span>{formatCount(d.hateCnt)}</span>
+                            </GroupWrapper>
+                            <GroupWrapper>
+                              <MessageSquare stroke="#fff" size={20} />
+                              <span>{formatCount(d.commentCount)}</span>
+                            </GroupWrapper>
+                          </ImageActions>
+                        </ImageWrapper>
+                        <DebateContent $ismobile={isMobile}>
+                          <Header>
+                            <DebateTitle>{d.debateTitle}</DebateTitle>
+                            <TimeStamp>{timeForToday(d.createdAt)}</TimeStamp>
+                          </Header>
+                          <DebateText>{d.content}</DebateText>
+                        </DebateContent>
+                      </DebateCard>
+                    </>
                   )}
-                  <ImageWrapper>
-                    <MovieTitle>TEST영화제목</MovieTitle>
-                    <DebateImage $ismobile={isMobile} src={zzanggu} alt="이름" />
-                    <ImageActions>
-                      <GroupWrapper>
-                        <Heart fill="#e74c3c" stroke="#e74c3c" size={20} />
-                        <span>{d.likeCnt}</span>
-                      </GroupWrapper>
-                      <GroupWrapper>
-                        <MessageSquare fill="#fff" stroke="#fff" size={20} />
-                        <span>{d.likeCnt}</span>
-                      </GroupWrapper>
-                    </ImageActions>
-                  </ImageWrapper>
-                  <DebateContent>
-                    <Header>
-                      <DebateTitle>TEST제목</DebateTitle>
-                      <TimeStamp>{timeForToday(d.createdAt)}</TimeStamp>
-                    </Header>
-                    <DebateText>{d.content}</DebateText>
-                  </DebateContent>
-                </DebateCard>
-              </div>
-            )
-          })}
-        </ContentGrid>
+                </div>
+              )
+            })}
+          </ContentGrid>
+        )}
         {!isMobile && totalPages > 1 && (
           <PaginationWrapper>
             <PaginationButton disabled={page === 0} onClick={() => setPage(0)}>
