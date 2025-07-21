@@ -536,7 +536,7 @@ export default function MyPageDebate() {
                 <div key={d.debateId} ref={isLast ? lastItemRef : undefined}>
                   {isMobile ? (
                     <>
-                      <DebateCard $ismobile={isMobile}>
+                      <DebateCard $$ismobile={isMobile}>
                         {isOwner && (
                           <TopIcons $ismobile={isMobile}>
                             <span>
@@ -575,7 +575,7 @@ export default function MyPageDebate() {
                     </>
                   ) : (
                     <>
-                      <DebateCard $ismobile={isMobile}>
+                      <DebateCard $$ismobile={isMobile}>
                         {isOwner && (
                           <TopIcons $ismobile={isMobile}>
                             <span>
