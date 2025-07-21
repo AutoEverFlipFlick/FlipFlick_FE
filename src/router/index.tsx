@@ -102,7 +102,7 @@ const AppRoutes = () => {
         <Route path="/movie/detail" element={<MovieDetailPage />} />
         <Route path="/totalsearch" element={<TotalSearch />} />
         <Route path="/bolkinator" element={<Bolkinator />} />
-        <Route path="/movie/detail/:movieId" element={<MovieDetailPage />} />
+        <Route path="/movie/detail/:tmdbId" element={<MovieDetailPage />} />
         {/* AdminRoute (관리자만 접근) */}
         <Route
           path="/admin/dashboard"

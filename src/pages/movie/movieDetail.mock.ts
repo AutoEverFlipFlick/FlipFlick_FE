@@ -17,7 +17,7 @@ export const mockMovieDetailData: MovieData = {
   voteAverage: 4.3, // UI에서 평균 평점
   myRating: 3.5, // 아직 API에 없음. mock으로 추가
   popcorn: 0, // 좋아요 수 (가정), API 명세 불명확
-  myLiked: true, // 아직 API에 없음. mock
+  myLike: true, // 아직 API에 없음. mock
   myHate: false, // 아직 API에 없음. mock
   likeCnt: 432, // UI에 명시적으로 필요한 필드로 mock
   hateCnt: 12, // mock

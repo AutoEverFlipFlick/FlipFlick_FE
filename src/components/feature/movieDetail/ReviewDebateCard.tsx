@@ -142,8 +142,8 @@ const Thumbnail = styled.img`
     object-fit: cover;
 `
 const MainImage = styled.img`
-    width: 600px;
-    height: 600px;
+    width: 400px;
+    height: 400px;
     border-radius: 8px;
     object-fit: cover;
 `

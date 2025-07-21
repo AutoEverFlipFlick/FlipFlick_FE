@@ -3,6 +3,7 @@ import { MovieData, Genre, Actor, Review, Debate, Providers } from "@/pages/movi
 
 export function mapToMovieData(data: any): MovieData {
   return {
+    movieId: data.movieId,
     tmdbId: data.tmdbId,
     title: data.title,
     originalTitle: data.originalTitle,
@@ -17,8 +18,10 @@ export function mapToMovieData(data: any): MovieData {
     voteAverage: data.voteAverage,
     myRating: data.myRating ?? 0,
     popcorn: data.popcorn,
-    myLiked: data.myLike,
+    myLike: data.myLike,
     myHate: data.myHate,
+    myWatched: data.myWatched,
+    myBookmark: data.myBookmark,
     likeCnt: data.likeCnt,
     hateCnt: data.hateCnt,
     genres: (data.genres ?? []).map((g: any): Genre => ({

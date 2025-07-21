@@ -51,6 +51,7 @@ export interface LikeHateData {
 }
 
 export interface MovieData {
+  movieId: number;
   tmdbId: number;
   title: string;
   originalTitle: string;
@@ -65,8 +66,10 @@ export interface MovieData {
   voteAverage: number;
   myRating: number;
   popcorn: number;
-  myLiked: boolean;
+  myLike: boolean;
   myHate: boolean;
+  myWatched: boolean;
+  myBookmark: boolean;
   likeCnt: number;
   hateCnt: number;
   genres: Genre[];

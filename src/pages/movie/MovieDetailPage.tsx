@@ -3,16 +3,18 @@ import styled from 'styled-components'
 import BaseContainer from '@/components/common/BaseContainer'
 import ReviewDebateCard from '@/components/feature/movieDetail/ReviewDebateCard'
 
-import {useEffect, useState} from 'react'
+import React, {useCallback, useEffect, useState} from 'react'
 import {MovieData} from './movieData'
 import RatingCard from '@/components/starRating/RatingCard'
-import axios from "axios";
 import {mapToMovieData} from "@/pages/movie/movieDataMapper";
 import MovieDetailHeader from "@/pages/movie/MovieDetailHeader";
 import {useAuth} from "@/context/AuthContext";
 import {toast} from "react-toastify";
 import {useParams} from "react-router-dom";
-import BasePageLayout from "@/components/common/layout/BasePageLayout";
+import {useOnClickAuth} from "@/hooks/useOnClickAuth";
+import BaseButton from "@/components/common/BaseButton";
+import {Eye, EyeOff, Flag, ListPlus, Star, StarOff} from "lucide-react";
+import {bookmarkMovie, getMovieDetail, watchedMovie} from "@/services/movieDetail";
 
 const MovieDetailLayout = styled.div`
     display: flex;
@@ -58,9 +60,11 @@ const DetailImage = styled.div`
 
 
 const MovieDetailMainAction = styled.div`
-    max-width: 600px;
+    display: flex;
+    max-width: 700px;
     margin: 20px auto;
     height: 100%;
+    gap: 10px;
 `
 
 const MovieDetailMainContent = styled.div`
@@ -280,41 +284,72 @@ const PlatformTabButton = styled.button<{ $active?: boolean }>`
     border-bottom: ${({$active}) => ($active ? '1px solid #FE6A3C' : 'none')};
 `
 
-const ActionButton = styled.button`
-    all: unset;
-    cursor: pointer;
-    background-color: #fe6a3c;
-    color: white;
-    padding: 5px 10px;
-    margin-right: 10px;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 600;
-    text-align: center;
-    transition: background-color 0.2s ease;
-
-    &:hover {
-        background-color: #ff854e;
-    }
+const ActionButton = styled(BaseButton).attrs({
+  size: 'small',
+})`
+    align-items: center;
 `
 
 export default function MovieDetailPage() {
   const [movieData, setMovieData] = useState<MovieData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'overview' | 'review' | 'debate' | 'media'>('overview')
-  const { isAuthenticated } = useAuth()
-  const { movieId } = useParams<{ movieId: string }>()
+  const [activePlatformTab, setActivePlatformTab] = useState<'구매' | '정액제' | '대여'>('구매')
+  const [isLiked, setIsLiked] = useState(false)
+  const [isWatched, setIsWatched] = useState(false)
+  const [isBookmarked, setIsBookmarked] = useState(false)
+  const {tmdbId} = useParams<{ tmdbId: string }>()
+  const {isAuthenticated} = useAuth()
+  const onClickAuth = useOnClickAuth()
+
+  const handleBookmark = useCallback(
+    () =>
+      onClickAuth(async () => {
+        const movieId = movieData?.movieId
+        if (!movieId) return
+        console.log('Bookmark 눌림', isBookmarked)
+        setIsBookmarked(prev => !prev)
+        try {
+          await bookmarkMovie(movieId)
+          toast.success(!isBookmarked ? '찜 완료' : '찜 취소')
+        } catch {
+          toast.error('처리에 실패했어요.')
+          setIsBookmarked(prev => !prev)
+        }
+      })(),
+    [onClickAuth, movieData?.movieId, isBookmarked],
+  )
+
+  const handleView = useCallback(
+    () =>
+      onClickAuth(async () => {
+        const movieId = movieData?.movieId
+        if (!movieId) return
+        setIsWatched(prev => !prev)
+        try {
+          await watchedMovie(movieId)
+          toast.success(!isWatched ? '봤어요' : '봤어요 취소')
+        } catch {
+          toast.error('처리에 실패했어요.')
+          setIsWatched(prev => !prev)
+        }
+      })(),
+    [onClickAuth, movieData?.movieId, isWatched],
+  )
 
   useEffect(() => {
     const fetchMovieDetail = async () => {
       try {
-        console.log("영화 상세 정보 불러오기 시작, 영화 ID : ", movieId)
-        const response = await axios.post('http://localhost:8080/api/v1/movie/view', {
-          tmdbId: movieId,
-        })
-        const data = response.data.data
+        console.log("영화 상세 정보 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
+        const response = await getMovieDetail(tmdbId)
+        const data = response.data
+        console.log("영화 정보 조회됨 : ", data)
         const mappedData: MovieData = mapToMovieData(data)
+        console.log("영화 정보 매핑됨 : ", mappedData)
         setMovieData(mappedData)
+        setIsLiked(mappedData.myLike)
+        setIsWatched(mappedData.myWatched)
+        setIsBookmarked(mappedData.myBookmark)
       } catch (error) {
         console.error('영화 상세 정보 불러오기 실패:', error)
       } finally {
@@ -322,7 +357,7 @@ export default function MovieDetailPage() {
       }
     }
     fetchMovieDetail()
-  }, [])
+  }, [tmdbId])
 
 
   if (isLoading || !movieData) {
@@ -337,14 +372,15 @@ export default function MovieDetailPage() {
   }
 
   return (
-    <BasePageLayout>
     <MovieDetailLayout>
       <MovieDetailHeader movieData={movieData}/>
       <MovieDetailMainAction>
-        <ActionButton>찜하기</ActionButton>
-        <ActionButton>봤어요</ActionButton>
-        <ActionButton>플레이리스트 추가</ActionButton>
-        <ActionButton>수정 요청</ActionButton>
+        <ActionButton size='small' icon={isBookmarked ? <StarOff/> : <Star/>}
+                      onClick={handleBookmark}>{isBookmarked ? '찜 취소' : '찜하기'}</ActionButton>
+        <ActionButton size='small' icon={isWatched ? <EyeOff/> : <Eye/>}
+                      onClick={handleView}>{isWatched ? '봤어요 취소' : '봤어요'}</ActionButton>
+        <ActionButton size='small' icon={<ListPlus/>}>플레이리스트 추가</ActionButton>
+        <ActionButton size='small' icon={<Flag/>}>수정 요청</ActionButton>
       </MovieDetailMainAction>
       <MovieDetailMain>
         <MovieDetailMainContentTab>
@@ -392,12 +428,27 @@ export default function MovieDetailPage() {
               </ContentsListTitleTab>
               <OverViewPlatformWrapper>
                 <OverViewPlatformTab>
-                  <PlatformTabButton $active>구매</PlatformTabButton>
-                  <PlatformTabButton>정액제</PlatformTabButton>
-                  <PlatformTabButton>대여</PlatformTabButton>
+                  <PlatformTabButton
+                    $active={activePlatformTab === '구매'}
+                    onClick={() => setActivePlatformTab('구매')}>
+                    구매</PlatformTabButton>
+                  <PlatformTabButton
+                    $active={activePlatformTab === '정액제'}
+                    onClick={() => setActivePlatformTab('정액제')}>
+                    구독</PlatformTabButton>
+                  <PlatformTabButton
+                    $active={activePlatformTab === '대여'}
+                    onClick={() => setActivePlatformTab('대여')}>
+                    대여</PlatformTabButton>
                 </OverViewPlatformTab>
                 <OverViewPlatformImageWrapper>
-                  <PlatFormImage/>
+                  {movieData.providers
+                    .filter(provider => provider.type === activePlatformTab)
+                    .map(provider => (
+                      <PlatFormImage key={provider.name}>
+                        <img src={provider.logoUrl} alt={provider.name} style={{width: '100px', height: '100px'}}/>
+                      </PlatFormImage>
+                    ))}
                 </OverViewPlatformImageWrapper>
               </OverViewPlatformWrapper>
             </OverViewContents>
@@ -406,7 +457,7 @@ export default function MovieDetailPage() {
             <ReviewDebateContents>
               <RatingWrapper>
                 <RatingCard title="전체 평점" rating={movieData.voteAverage} size={40}/>
-                <RatingCard title="평가하기" rating={0} size={40}/>
+                <RatingCard title="평가하기" rating={movieData.myRating} size={40}/>
               </RatingWrapper>
               <DetailMyReviewWrapper>
                 <DetailMyReviewCard>내 리뷰</DetailMyReviewCard>
@@ -418,14 +469,7 @@ export default function MovieDetailPage() {
                 </ContentsListTitleTab>
                 <ReviewDebateList>
                   <DetailReviewCardWrapper>
-                    <ReviewDebateCard
-                      rating={4.0}
-                      content={'리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용'}
-                      createdAt={'1 시간 전'}
-                      likes={100}
-                      username={'사용자'}
-                      type={'review'}
-                    />
+                    {/*<ReviewDebateCard />*/}
                   </DetailReviewCardWrapper>
                 </ReviewDebateList>
               </ContentsListWrapper>
@@ -460,6 +504,5 @@ export default function MovieDetailPage() {
         </MovieDetailMainContent>
       </MovieDetailMain>
     </MovieDetailLayout>
-    </BasePageLayout>
   )
 }

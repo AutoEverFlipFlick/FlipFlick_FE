@@ -1,8 +1,14 @@
 import styled from 'styled-components'
 // 필요한 styled-components와 타입, 예: MovieData
-import { MovieData } from '@/pages/movie/movieData'
+import {MovieData} from '@/pages/movie/movieData'
 import BaseContainer from "@/components/common/BaseContainer";
-
+import BaseButton from "@/components/common/BaseButton";
+import {ThumbsDown, ThumbsUp} from "lucide-react";
+import popcornImg from '@/assets/popcorn/popcorn7.png'
+import {useCallback, useEffect, useState} from "react";
+import {toast} from "react-toastify";
+import {useOnClickAuth} from "@/hooks/useOnClickAuth";
+import {hateMovie, likeMovie} from "@/services/movieDetail";
 
 const MovieDetailHeaderImageSwiper = styled.div`
     display: flex;
@@ -35,8 +41,8 @@ const MovieDetailHeaderRating = styled(HeaderContentsContainer)`
     justify-content: space-around;
     align-items: center;
     text-align: center;
-    font-size: 20px;
-    min-height: 50px;
+    font-size: 15px;
+    min-height: 30px;
     width: 200px;
 `
 
@@ -47,11 +53,11 @@ const MovieDetailRelease = styled(HeaderContentsContainer)`
 `
 
 const MovieDetailLikeHate = styled(HeaderContentsContainer)`
-    max-width: 200px;
-    width: 200px;
+    width: 500px;
     height: 40px;
-    justify-content: space-around;
+    justify-content: space-evenly;
     align-items: center;
+    display: flex;
 `
 const MovieDetailHeaderPlot = styled(HeaderContentsContainer)`
     font-size: 12px;
@@ -75,7 +81,6 @@ const ActorsImageCard = styled(BaseContainer)`
     justify-content: center;
     margin-right: 10px;
 `
-
 
 const ActorImage = styled.div<{ $imageUrl: string }>`
     background-image: url(${({$imageUrl}) => $imageUrl});
@@ -110,12 +115,98 @@ const HeaderWrapper = styled.div`
     gap: 10px;
 `
 
+const LikeButton = styled(BaseButton)`
+    max-height: 40px;
+    width: 150px;
+    display: flex;
+    justify-content: space-evenly;
+`
+const HateButton = styled(BaseButton)`
+    max-height: 40px;
+    width: 150px;
+    display: flex;
+    justify-content: space-evenly;
+`
+const FFPopcorn = styled.div`
+    background-image: url(${popcornImg});
+    background-size: cover;
+    width: 20px;
+    height: 20px;
+`
+
 type Props = {
   movieData: MovieData
 }
 
 
-const MovieDetailHeader = ({ movieData }: Props) => {
+const MovieDetailHeader = ({movieData}: Props) => {
+  const [isLiked, setIsLiked] = useState(false)
+  const [isHated, setIsHated] = useState(false)
+  const [likeCnt, setLikeCnt] = useState(0)
+  const [hateCnt, setHateCnt] = useState(0)
+
+  const onclickAuth = useOnClickAuth()
+
+
+  useEffect(() => {
+    const setMyLikeHate = () => {
+      setIsLiked(movieData.myLike)
+      setIsHated(movieData.myHate)
+      setLikeCnt(movieData.likeCnt)
+      setHateCnt(movieData.hateCnt)
+    }
+    setMyLikeHate()
+  }, [movieData])
+
+  const handleLikeClick = useCallback(
+    () => onclickAuth(async () => {
+      const movieId = movieData?.movieId
+      if (!movieId) return
+      console.log('Like 눌림', isLiked)
+      setIsLiked(!isLiked)
+      if (!isLiked) {
+        setLikeCnt(prev => prev + 1)
+      } else {
+        setLikeCnt(prev => prev - 1)
+      }
+      if (isHated) {
+        setIsHated(false)
+        setHateCnt(prev => prev - 1)
+      }
+      try {
+        await likeMovie(movieId)
+        toast.success(!isLiked ? '좋아요 완료' : '좋아요 취소')
+      } catch {
+        toast.error('처리에 실패했어요.')
+        setIsLiked(prev => !prev)
+      }
+    })(), [isLiked, isHated, movieData?.movieId, onclickAuth],
+  )
+  const handleHateClick = useCallback(
+    () => onclickAuth(async () => {
+      const movieId = movieData?.movieId
+      if (!movieId) return
+      console.log('Hate 눌림', isLiked)
+      setIsHated(!isHated)
+      if (!isHated) {
+        setHateCnt(prev => prev + 1)
+      } else {
+        setHateCnt(prev => prev - 1)
+      }
+      if (isLiked) {
+        setIsLiked(false)
+        setLikeCnt(prev => prev - 1)
+      }
+      try {
+        await hateMovie(movieId)
+        toast.success(!isLiked ? '좋아요 완료' : '좋아요 취소')
+      } catch {
+        toast.error('처리에 실패했어요.')
+        setIsLiked(prev => !prev)
+      }
+    })(), [isLiked, isHated, movieData?.movieId, onclickAuth],
+  )
+
   return (
     <HeaderWrapper>
       <MovieDetailHeaderImageSwiper>
@@ -126,19 +217,19 @@ const MovieDetailHeader = ({ movieData }: Props) => {
           <p>{movieData.title ?? '제목 정보 없음'}</p>
         </MovieDetailHeaderTitle>
         <MovieDetailRelease>
-          <p style={{fontWeight: "bold"}}>개봉일</p> <p> {movieData.releaseDate ?? '미정'}</p>
+          <p> {movieData.releaseDate ?? '미정'}</p>
         </MovieDetailRelease>
         <MovieDetailHeaderRating>
-          <p>🌽</p> <p>{movieData.popcorn === 0 ? '집계중' : `${movieData.popcorn} 점`}</p>
+          <FFPopcorn/> <p>{movieData.popcorn === 0 ? '집계중' : `${movieData.popcorn} 점`}</p>
           <p>/</p>
           <p>⭐</p> <p>{movieData.voteAverage === 0 ? '집계중' : `${movieData.voteAverage.toFixed(1)} 점`}</p>
         </MovieDetailHeaderRating>
+        {movieData.myLike}
         <MovieDetailLikeHate>
-          <p>👍</p>
-          <p>{movieData.likeCnt}</p>
-          <p>/</p>
-          <p>👎</p>
-          <p>{movieData.hateCnt}</p>
+          <LikeButton icon={<ThumbsUp/>} size='small' variant={isLiked ? 'pink' : 'dark'}
+                      onClick={handleLikeClick}>{likeCnt}</LikeButton>
+          <HateButton icon={<ThumbsDown/>} size='small' variant={isHated ? 'blue' : 'dark'}
+                      onClick={handleHateClick}>{hateCnt}</HateButton>
         </MovieDetailLikeHate>
         <MovieDetailHeaderPlot>
           <p>{movieData.overview}</p>
