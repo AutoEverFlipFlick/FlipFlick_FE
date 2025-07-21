@@ -357,7 +357,6 @@ export default function Component() {
                     height={isMobile ? 180 : 270}
                     isCenter={isCenter}
                     isActive={isActive}
-                    priority={isCenter}
                   />
                   {/* {isCenter && (
                     <MovieTitleAbove>
