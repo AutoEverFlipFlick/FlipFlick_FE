@@ -6,6 +6,7 @@ import styled from 'styled-components'
 import { Outlet } from 'react-router-dom'
 import { ReactNode } from 'react'
 import BaseHeaderVer2 from '@/components/common/BaseHeaderVer2'
+import AlarmListener from '../AlarmListener'
 
 type MyLayoutProps = {
   children?: ReactNode
@@ -30,6 +31,7 @@ const HeaderWrapper = styled.div`
 export default function BasePageLayout({ children }: MyLayoutProps) {
   return (
     <Layout>
+      <AlarmListener />
       {/*헤더*/}
 
       <BaseHeaderVer2 />

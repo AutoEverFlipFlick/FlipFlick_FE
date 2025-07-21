@@ -46,13 +46,13 @@ export const unfollowUser = async (targetId: number) => {
 }
 
 // 특정 유저의 팔로워 리스트
-export const getFollowersById = (userId: string | number) => {
-  return axios.get(`/api/v1/follow/${userId}/follower`)
+export const getFollowersById = (userId: string | number, page: number, size: number) => {
+  return axios.get(`/api/v1/follow/${userId}/follower?page=${page}&size=${size}`)
 }
 
 // 특정 유저의 팔로잉 리스트
-export const getFollowingsById = (userId: string | number) => {
-  return axios.get(`/api/v1/follow/${userId}/following`)
+export const getFollowingsById = (userId: string | number, page: number, size: number) => {
+  return axios.get(`/api/v1/follow/${userId}/following?page=${page}&size=${size}`)
 }
 
 // export const getPopcornScore = async (userId?: number) => {

@@ -20,6 +20,10 @@ export interface Debate {
   createdAt: string
   likeCnt: number
   image: string
+  debateTitle: string
+  movieTitle: string
+  hateCnt: number
+  commentCount: number
 }
 
 interface PageResponse<T> {
@@ -27,7 +31,7 @@ interface PageResponse<T> {
   totalElements: number
 }
 
-/** 사용자 토론 목록 조회 (정렬별) */
+// 사용자 토론 목록 조회 (정렬별)
 export const getUserDebatesBySort = async (
   nickname: string,
   page = 0,
@@ -42,4 +46,9 @@ export const getUserDebatesBySort = async (
   return await axios.get<ApiResponse<PageResponse<Debate>>>(endpoint, {
     params: { page, size },
   })
+}
+
+// 특정 토론의 댓글 개수 조회
+export const getDebateCommentCount = async (debateId: number) => {
+  return await axios.get<ApiResponse<number>>(`/api/v1/debate/comments/${debateId}/count`)
 }
