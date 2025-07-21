@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import backgroundImage from '@/assets/common/background.webp'
+import backgroundImage from '@/assets/common/background2.webp'
 import BaseInput from '@/components/common/BaseInput'
 import BaseButton from '@/components/common/BaseButton'
 import profileImageDefault from '@/assets/icons/profile.png'
@@ -8,6 +8,7 @@ import cameraIcon from '@/assets/icons/camera.png'
 import { signup, checkEmailDuplicate, checkNicknameDuplicate } from '@/services/member'
 import { uploadImage, deleteImage } from '@/services/s3'
 import { useNavigate } from 'react-router-dom'
+import Swal from 'sweetalert2'
 
 const Wrapper = styled.div`
   width: 100vw;
@@ -17,7 +18,17 @@ const Wrapper = styled.div`
   justify-content: center;
   align-items: center;
   @media (max-width: 768px) {
-    background-size: cover;
+    background: none; // 모바일에서 배경 제거
+  }
+`
+const MobileLogo = styled.img`
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+    width: 180px;
+    height: auto;
+    margin-bottom: 32px;
   }
 `
 
@@ -30,7 +41,7 @@ const FormBox = styled.div`
   width: 450px;
 
   @media (max-width: 768px) {
-    width: 50%;
+    width: 70%;
   }
 `
 
@@ -39,6 +50,12 @@ const SubmitButton = styled(BaseButton)`
   height: 48px;
   font-size: 16px;
   min-width: 160px;
+  @media (max-width: 768px) {
+    width: 60%;
+    height: 40px;
+    font-size: 14px;
+    min-width: unset;
+  }
 `
 
 const ResponsiveInput = styled(BaseInput)`
@@ -206,7 +223,12 @@ const SignUp: React.FC = () => {
 
       const response = await signup(payload)
       console.log('회원가입 성공:', response)
-      alert('회원가입이 완료되었습니다!')
+      await Swal.fire({
+        icon: 'success',
+        title: '회원가입 성공!',
+        text: '이제 로그인해보세요!',
+        confirmButtonColor: '#4CAF50',
+      })
       navigate('/login')
       // 이후 로그인 페이지 이동 등 처리
     } catch (error) {
@@ -312,6 +334,7 @@ const SignUp: React.FC = () => {
   return (
     <Wrapper>
       <FormBox>
+        <MobileLogo src="/logo_full.webp" alt="로고" />
         <InputGroup>
           <ResponsiveInput
             placeholder="이메일"
@@ -329,6 +352,7 @@ const SignUp: React.FC = () => {
               }
             }}
             inputSize="small"
+            state={email ? (!isEmailChecked || !isEmailValid ? 'error' : 'success') : undefined}
           />
           {isEmailValid !== null && (
             <Message isError={!isEmailChecked || !isEmailValid}>{emailMessage}</Message>
@@ -345,6 +369,7 @@ const SignUp: React.FC = () => {
               validatePassword(value)
             }}
             inputSize="small"
+            state={password ? (!isPasswordValid ? 'error' : 'success') : undefined}
           />
           {isPasswordValid !== null && (
             <Message isError={!isPasswordValid}>{passwordMessage}</Message>
@@ -362,6 +387,7 @@ const SignUp: React.FC = () => {
               validateConfirmPassword(value)
             }}
             inputSize="small"
+            state={confirmPassword ? (!isPasswordMatch ? 'error' : 'success') : undefined}
           />
           {isPasswordMatch !== null && (
             <Message isError={!isPasswordMatch}>{confirmMessage}</Message>
@@ -385,6 +411,9 @@ const SignUp: React.FC = () => {
               }
             }}
             inputSize="small"
+            state={
+              nickname ? (!isNicknameChecked || !isNicknameValid ? 'error' : 'success') : undefined
+            }
           />
           {isNicknameValid !== null && (
             <Message isError={!isNicknameChecked || !isNicknameValid}>{nicknameMessage}</Message>

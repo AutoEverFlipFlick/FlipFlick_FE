@@ -68,6 +68,8 @@ import Dashboard from '@/pages/admin/Dashboard'
 import UserManagement from '@/pages/admin/UserManagement'
 import ReportManagement from '@/pages/admin/ReportManagement'
 import AdminRoute from '@/components/common/AdminRoute'
+import FindPassword from '@/pages/member/FindPassword'
+import ResetPassword from '@/pages/member/ResetPassword'
 import Home from '@/pages/Home'
 import MyPageMain from '@/pages/myPage/MyPageMain'
 import MyPageEdit from '@/pages/myPage/MyPageEdit'
@@ -209,6 +211,23 @@ const AppRoutes = () => {
           <Route path="/my-page-review" element={<MyPageReview />} />
           <Route path="/my-page-debate" element={<MyPageDebate />} />
           <Route path="/my-page-follow" element={<MyPageFollowList />} />
+          
+          <Route
+            path="/find-password"
+            element={
+              <PublicRoute>
+                <FindPassword />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/reset-password-confirm"
+            element={
+              <PublicRoute>
+                <ResetPassword />
+              </PublicRoute>
+            }
+          />
         </Routes>
       </Layout>
     </AuthProvider>
