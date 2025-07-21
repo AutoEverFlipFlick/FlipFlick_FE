@@ -8,7 +8,6 @@ import RatingCard from '@/components/starRating/RatingCard'
 import {mapToMovieData} from "@/pages/movie/movieDataMapper";
 import MovieDetailHeader from "@/pages/movie/MovieDetailHeader";
 import {useAuth} from "@/context/AuthContext";
-import {toast} from "react-toastify";
 import {useParams} from "react-router-dom";
 import {useOnClickAuth} from "@/hooks/useOnClickAuth";
 import BaseButton from "@/components/common/BaseButton";
@@ -16,6 +15,8 @@ import {Eye, EyeOff, Flag, ListPlus, Star, StarOff} from "lucide-react";
 import {bookmarkMovie, getMovieDetail, getMovieReview, watchedMovie} from "@/services/movieDetail";
 import {mapToReviewData, ReviewData} from "@/pages/movie/reviewData";
 import {MovieData} from "@/pages/movie/movieData";
+import ReviewTextArea from "@/pages/movie/ReviewTextArea";
+import Swal from 'sweetalert2'
 
 const MovieDetailLayout = styled.div`
     display: flex;
@@ -24,15 +25,6 @@ const MovieDetailLayout = styled.div`
     padding: 20px;
 `
 
-// const MovieDetailHeader = styled.div`
-//     max-width: 1000px;
-//     margin: 0 auto;
-//     min-height: 400px;
-//     padding: 20px 15px 5px 15px;
-//     display: flex;
-//     align-items: center;
-//     gap: 10px;
-// `
 const MovieDetailMain = styled.div`
     max-width: 900px;
     display: flex;
@@ -320,9 +312,21 @@ export default function MovieDetailPage() {
         setIsBookmarked(prev => !prev)
         try {
           await bookmarkMovie(movieId)
-          toast.success(!isBookmarked ? '찜 완료' : '찜 취소')
+          await Swal.fire({
+            title: !isBookmarked ? '찜 완료' : '찜 취소',
+            text: !isBookmarked ? '찜 목록에 추가되었습니다.' : '찜 목록에서 제거되었습니다.',
+            icon: 'success',
+            confirmButtonText: '확인',
+        })
         } catch {
-          toast.error('처리에 실패했어요.')
+          await Swal.fire({
+            title: '찜 처리 실패',
+            text: '찜 목록에 추가하는 데 실패했습니다. 다시 시도해주세요.',
+            icon: 'error',
+            confirmButtonText: '확인',
+          })
+          console.error('찜 처리 실패')
+
           setIsBookmarked(prev => !prev)
         }
       })(),
@@ -337,9 +341,19 @@ export default function MovieDetailPage() {
         setIsWatched(prev => !prev)
         try {
           await watchedMovie(movieId)
-          toast.success(!isWatched ? '봤어요' : '봤어요 취소')
+          await Swal.fire({
+            title: !isWatched ? '봤어요' : '봤어요 취소',
+            text: !isWatched ? '봤어요 목록에 추가되었습니다.' : '봤어요 목록에서 제거되었습니다.',
+            icon: 'success',
+            confirmButtonText: '확인',
+          })
         } catch {
-          toast.error('처리에 실패했어요.')
+          await Swal.fire({
+            title: '봤어요 처리 실패',
+            text: '봤어요 목록에 추가하는 데 실패했습니다. 다시 시도해주세요.',
+            icon: 'error',
+            confirmButtonText: '확인',
+          })
           setIsWatched(prev => !prev)
         }
       })(),
@@ -519,19 +533,27 @@ export default function MovieDetailPage() {
                   {/*  />*/}
                   {myReview ? (
                     <p>내가 작성한 리뷰 있음</p>
-                    // <ReviewCard
-                    //   content={myReview.content}
-                    //   createdAt={myReview.createdAt}
-                    //   username={myReview.member.nickname}
-                    //   type={'review'}
-                    //   isMyPost={true}
-                    //   likes={myReview.likes}
-                    //   // hates={myReview.hates}
-                    //   rating={myReview.rating}
-                    // />
+
                   ) : (
-                    // <ReviewInput />
-                    <p></p>
+                    <ReviewTextArea
+                      tmdbId={tmdbId!}
+                      // rating={movieData.myRating}
+                      rating={3.0}
+                      isAuthenticated={isAuthenticated}
+                      onSuccess={async () => {
+                        try {
+                          console.log("내 리뷰 불러오기 시작")
+                          const response = await getMovieReview(tmdbId!, 0)
+                          const data = response.data
+                          console.log("내 리뷰 조회됨 : ", data)
+                          const mappedData: ReviewData = mapToReviewData(data, user?.id, user?.nickname)
+                          console.log("내 리뷰 매핑됨 : ", mappedData)
+                          setMyReview(mappedData)
+                        } catch (error) {
+                          console.error('내 리뷰 불러오기 실패:', error)
+                        }
+                      }}
+                    />
                   )}
                 </DetailMyReviewCard>
               </DetailMyReviewWrapper>

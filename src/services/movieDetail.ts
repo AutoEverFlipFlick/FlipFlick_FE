@@ -47,3 +47,15 @@ export const getMovieReview = async (tmdbId: string | undefined, page: number) =
   })
   return res.data
 }
+
+export interface ReviewParams {
+  tmdbId: number;
+  star: number;
+  content: string;
+  spoiler: boolean;
+}
+
+export const createMovieReview = async (params: ReviewParams) => {
+  const res = await axiosInstance.post(`/api/v1/review/create`, params)
+  return res.data
+}

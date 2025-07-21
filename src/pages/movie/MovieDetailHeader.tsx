@@ -6,9 +6,9 @@ import BaseButton from "@/components/common/BaseButton";
 import {ThumbsDown, ThumbsUp} from "lucide-react";
 import popcornImg from '@/assets/popcorn/popcorn7.png'
 import {useCallback, useEffect, useState} from "react";
-import {toast} from "react-toastify";
 import {useOnClickAuth} from "@/hooks/useOnClickAuth";
 import {hateMovie, likeMovie} from "@/services/movieDetail";
+import Swal from 'sweetalert2';
 
 const MovieDetailHeaderImageSwiper = styled.div`
     display: flex;
@@ -175,9 +175,17 @@ const MovieDetailHeader = ({movieData}: Props) => {
       }
       try {
         await likeMovie(movieId)
-        toast.success(!isLiked ? '좋아요 완료' : '좋아요 취소')
+        await Swal.fire({
+          icon: 'success',
+          title: !isLiked ? '좋아요 완료' : '좋아요 취소',
+          confirmButtonText: '확인',
+        })
       } catch {
-        toast.error('처리에 실패했어요.')
+        await Swal.fire({
+          icon: 'error',
+          title: '처리에 실패했어요.',
+          confirmButtonText: '확인',
+        })
         setIsLiked(prev => !prev)
       }
     })(), [isLiked, isHated, movieData?.movieId, onclickAuth],
@@ -199,9 +207,17 @@ const MovieDetailHeader = ({movieData}: Props) => {
       }
       try {
         await hateMovie(movieId)
-        toast.success(!isLiked ? '좋아요 완료' : '좋아요 취소')
+        await Swal.fire({
+            icon: 'success',
+            title: !isHated ? '싫어요 완료' : '싫어요 취소',
+            confirmButtonText: '확인',
+          })
       } catch {
-        toast.error('처리에 실패했어요.')
+        await Swal.fire({
+          icon: 'error',
+          title: '처리에 실패했어요.',
+          confirmButtonText: '확인',
+        })
         setIsLiked(prev => !prev)
       }
     })(), [isLiked, isHated, movieData?.movieId, onclickAuth],
