@@ -10,10 +10,12 @@ import AvatarIcon from '@/assets/icons/profile.png'
 import useTokenObserver from '@/utils/auth/tokenObserver'
 import { userInfoGet } from '@/services/memberInfo'
 import { Icon } from '@iconify/react'
+import { logout } from '@/services/member'
 import media from '@/utils/breakpoints'
 
 const DESIGN_WIDTH = 1536
 const DESIGN_HEIGHT = 1024
+
 
 const HeaderWrapper = styled.div`
   z-index: 10;
@@ -387,6 +389,20 @@ const DropdownItem = styled.div`
     background: #f5f5f5;
   }
 `
+
+const TextAvatarContainer = styled.div`
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  background-color: #999;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1rem;
+`
+
 const BaseHeaderVer2 = () => {
   const navigate = useNavigate()
   const [searchContext, setSearchContext] = useState('')
@@ -453,6 +469,21 @@ const BaseHeaderVer2 = () => {
       navigate(`/totalsearch?query=${encodeURIComponent(searchContext)}&page=1`)
     }
   }
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      localStorage.removeItem('accessToken')
+      setIsLogin(false)
+      setProfileName('')
+      setProfileSrc(AvatarIcon)
+      setIsDropdownOpen(false)
+      navigate('/')
+    } catch (err) {
+      console.error('로그아웃 실패:', err)
+    }
+  }
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       // 드롭다운이 열려 있고, 클릭한 대상이 드롭다운 내부나 프로필 박스가 아닐 경우
@@ -574,14 +605,17 @@ const BaseHeaderVer2 = () => {
                 style={isMobile ? { marginRight: '10px' } : { marginRight: '15px' }}
               />
               <ProfileInnerBox ref={profileRef} onClick={() => setIsDropdownOpen(prev => !prev)}>
-                {/* 로그인 시 아바타 완전 불투명 */}
-                {!isMobile && <p style={{ marginRight: '5px' }}>{profileName}</p>}
-                <AvatarContainer src={profileSrc} alt="프로필" style={{ opacity: 1 }} />
-                {/* 드롭다운 메뉴 */}
+                <p style={{ marginRight: '5px' }}>{profileName}</p>
+                {profileSrc === AvatarIcon ? (
+                  <TextAvatarContainer>{profileName?.charAt(0) || '유'}</TextAvatarContainer>
+                ) : (
+                  <AvatarContainer src={profileSrc} alt="프로필" style={{ opacity: 1 }} />
+                )}
+                
                 {isDropdownOpen && (
                   <DropdownContainer ref={dropdownRef}>
                     <DropdownItem>프로필 수정</DropdownItem>
-                    <DropdownItem>로그아웃</DropdownItem>
+                    <DropdownItem onClick={handleLogout}>로그아웃</DropdownItem>
                   </DropdownContainer>
                 )}
               </ProfileInnerBox>
