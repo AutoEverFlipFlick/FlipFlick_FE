@@ -119,7 +119,10 @@ const ImageContainer = styled.div`
 
 // 메인 컴포넌트
 const ExamplePage = () => {
+  type InputState = 'normal' | 'disable' | 'error' | 'success'
+
   const [loadingButtons, setLoadingButtons] = useState<Set<string>>(new Set())
+  const [stateButtons, setStateButtons] = useState<InputState>('normal')
 
   const handleLoadingClick = (buttonId: string) => {
     setLoadingButtons(prev => new Set(prev).add(buttonId))
@@ -345,6 +348,61 @@ const ExamplePage = () => {
         <Section>
           <ImageContainer>
             <Section>
+              <SectionTitle>데모</SectionTitle>
+              <Grid $columns={4}>
+                <ButtonDemo>
+                  <DemoLabel>Normal</DemoLabel>
+                  <BaseButton
+                    size="small"
+                    onClick={() => {
+                      setStateButtons('normal')
+                    }}
+                  >
+                    기본
+                  </BaseButton>
+                </ButtonDemo>
+                <ButtonDemo>
+                  <DemoLabel>Disabled</DemoLabel>
+                  <BaseButton
+                    size="small"
+                    variant="yellow"
+                    onClick={() => {
+                      setStateButtons('disable')
+                    }}
+                  >
+                    비활성화
+                  </BaseButton>
+                </ButtonDemo>
+                <ButtonDemo>
+                  <DemoLabel>Success</DemoLabel>
+                  <BaseButton
+                    size="small"
+                    variant="green"
+                    onClick={() => {
+                      setStateButtons('success')
+                    }}
+                  >
+                    성공
+                  </BaseButton>
+                </ButtonDemo>
+                <ButtonDemo>
+                  <DemoLabel>Error</DemoLabel>
+                  <BaseButton
+                    size="small"
+                    variant="red"
+                    onClick={() => {
+                      setStateButtons('error')
+                    }}
+                  >
+                    에러
+                  </BaseButton>
+                </ButtonDemo>
+              </Grid>
+              <ButtonDemo style={{ marginTop: '50px' }}>
+                <BaseInput state={stateButtons} />
+              </ButtonDemo>
+            </Section>
+            <Section>
               <SectionTitle>상태 변형</SectionTitle>
               <Grid $columns={3}>
                 <ButtonDemo>
@@ -416,6 +474,9 @@ const ExamplePage = () => {
                   <strong>inputSize</strong> :'small' | 'medium' | 'large'
                 </li>
                 <li>
+                  <strong>fullWidth</strong> : boolean
+                </li>
+                <li>
                   <strong>disabled</strong> : boolean
                 </li>
                 <li>
@@ -438,6 +499,9 @@ const ExamplePage = () => {
                 </li>
                 <li>
                   <div>{`<BaseInput inputSize="small"/>`}</div>
+                </li>
+                <li>
+                  <div>{`<BaseInput fullWidth/>`}</div>
                 </li>
                 <li>
                   <div>{`<BaseInput icon={<Search/>}/>`}</div>

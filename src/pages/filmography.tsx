@@ -501,6 +501,16 @@ const Filmography: React.FC = () => {
   const handleActorImageError = () => {
     setActorImageLoading(false);
   };
+  useEffect(() => {
+    if (actorData?.filmographies) {
+      const initialLoadingStates = actorData.filmographies.reduce((acc, film) => {
+        acc[film.tmdbId] = true;
+        return acc;
+      }, {} as { [key: number]: boolean });
+      
+      setImageLoadingStates(initialLoadingStates);
+    }
+  }, [actorData?.filmographies]);
 
   // 배우 정보 및 필모그래피 로드
   useEffect(() => {
@@ -521,7 +531,6 @@ const Filmography: React.FC = () => {
 
         if (response.success) {
           setActorData(response.data);
-          
           // 배우 이미지가 없으면 즉시 로딩 상태 false
           if (!response.data.profileImage) {
             setActorImageLoading(false);
@@ -537,6 +546,7 @@ const Filmography: React.FC = () => {
             
             setImageLoadingStates(initialLoadingStates);
           }
+          setActorImageLoading(true); // 새 배우 데이터 로드 시 이미지 로딩 상태 초기화
         } else {
           setError(response.message || '배우 정보를 불러올 수 없습니다.');
         }
@@ -678,8 +688,8 @@ const Filmography: React.FC = () => {
 
             {actorData.filmographies.map((film, index) => {
               const isOdd = (index + 1) % 2 === 1;
+
               const isImageLoading = imageLoadingStates[film.tmdbId] ?? false; // 기본값 false
-              
               return (
                 <TimelineItem key={film.tmdbId} $isOdd={isOdd} $needsScroll={needsScroll} $index={index}>
                   <TimelinePoint />

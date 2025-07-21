@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import backgroundImage from '@/assets/common/background.png'
+import backgroundImage from '@/assets/common/background.webp'
 import BaseInput from '@/components/common/BaseInput'
 import BaseButton from '@/components/common/BaseButton'
 import { login } from '@/services/member'
+import { useNavigate } from 'react-router-dom'
 
 const Wrapper = styled.div`
   width: 100vw;
@@ -65,6 +66,7 @@ const LoginButton = styled(BaseButton)`
 const EmailLogin: React.FC = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const navigate = useNavigate()
 
   const handleLogin = async () => {
     try {
@@ -73,8 +75,15 @@ const EmailLogin: React.FC = () => {
       // ✅ accessToken 저장
       localStorage.setItem('accessToken', res.data.accessToken)
 
+      // 커스텀 이벤트 발생 (useTokenObserver가 이걸 감지함)
+      window.dispatchEvent(
+        new CustomEvent('tokenStorage', {
+          detail: { newToken: res.data.accessToken },
+        }),
+      )
+
       // ✅ 로그인 성공 처리
-      alert('로그인 성공!')
+      navigate('/')
       // TODO: 메인 페이지나 홈으로 이동
       // navigate('/home') <-- react-router 사용 시
     } catch (err) {

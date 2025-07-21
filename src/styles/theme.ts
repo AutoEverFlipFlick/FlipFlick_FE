@@ -1,4 +1,4 @@
-// styles/theme.ts
+// src/styles/theme.ts
 export const theme = {
   fontFamily: 'var(--font-base)',
   fontWeight: 400,
@@ -7,4 +7,5 @@ export const theme = {
     background: 'var(--color-background)',
   },
   backgroundImage: 'var(--background-pattern)',
+  logoImage: 'var(--logo-image)',
 } as const

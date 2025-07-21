@@ -43,7 +43,7 @@
 
 // export default AppRoutes
 
-import { Route, Routes,Navigate } from 'react-router-dom'
+import { Route, Routes, Navigate } from 'react-router-dom'
 import ExamplePage from '@/pages/example/ExamplePage'
 import PlaylistPage from '@/pages/playlist/playlist'
 import CreatePlaylist from '@/pages/playlist/CreatePlaylist'
@@ -58,46 +58,159 @@ import TotalSearch from '@/pages/TotalSearch'
 import Login from '@/pages/member/Login'
 import SignUp from '@/pages/member/SignUp'
 import EmailLogin from '@/pages/member/EmailLogin'
+import Filmography from '@/pages/filmography'
+import KakaoRedirectHandler from '@/pages/member/KakaoRedirectHandler'
+import Layout from '@/components/common/layout/BasePageLayout' // 공통 레이아웃 컴포넌트가 필요함
+import NaverRedirectHandler from '@/pages/member/NaverRedirectHandler'
+import Bolkinator from '@/pages/Bolkinator'
+import SocialSignUp from '@/pages/member/SocialSignUp'
+import Dashboard from '@/pages/admin/Dashboard'
+import UserManagement from '@/pages/admin/UserManagement'
+import ReportManagement from '@/pages/admin/ReportManagement'
+import AdminRoute from '@/components/common/AdminRoute'
+import Home from '@/pages/Home'
+import MyPageMain from '@/pages/myPage/MyPageMain'
+import MyPageEdit from '@/pages/myPage/MyPageEdit'
+import MyPagePreference from '@/pages/myPage/MyPagePreference'
+import MyPageReview from '@/pages/myPage/MyPageReview'
+import MyPageDebate from '@/pages/myPage/MyPageDebate'
+import MyPageFollowList from '@/pages/myPage/MyPageFollowList'
+import AlarmListener from '@/components/common/AlarmListener'
 
 const AppRoutes = () => {
   return (
     <AuthProvider>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<ExamplePage />} />
-        <Route path="/playlist" element={<PlaylistPage />} />
-        <Route
-          path="/playlist/:id"
-          element={
-            <BookmarkProvider>
-              <PlaylistDetail />
-            </BookmarkProvider>
-          }
-        />
-        <Route path="/movie/detail" element={<MovieDetailPage />} />
-        <Route path="/totalsearch" element={<TotalSearch />} />
+      <Layout>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Home />} />
+          <Route path="/playlist" element={<PlaylistPage />} />
+          <Route
+            path="/playlist/:id"
+            element={
+              <BookmarkProvider>
+                <PlaylistDetail />
+              </BookmarkProvider>
+            }
+          />
+          <Route path="/movie/detail" element={<MovieDetailPage />} />
+          <Route path="/totalsearch" element={<TotalSearch />} />
+          <Route path="/bolkinator" element={<Bolkinator />} />
 
-        {/* Public Routes (로그인된 사용자는 접근 불가) */}
-        <Route path="/login" element={
-          <PublicRoute><Login /></PublicRoute>
-          
-        } />
-        <Route path="/signup" element={
-          <PublicRoute><SignUp /></PublicRoute>
-        } />
-        <Route path="/emaillogin" element={
-          <PublicRoute><EmailLogin /></PublicRoute>
-        } />
+          {/* AdminRoute (관리자만 접근) */}
+          <Route
+            path="/admin/dashboard"
+            element={
+              <AdminRoute>
+                <Dashboard />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/user"
+            element={
+              <AdminRoute>
+                <UserManagement />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/report"
+            element={
+              <AdminRoute>
+                <ReportManagement />
+              </AdminRoute>
+            }
+          />
 
-        {/* Protected Routes (로그인 필요) */}
-        <Route path="/createplaylist" element={
-          <ProtectedRoute><CreatePlaylist /></ProtectedRoute>
-        } />
-        <Route path="/playlist/:id/edit" element={
-          <ProtectedRoute><EditPlaylist /></ProtectedRoute>
-        } />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          {/* Public Routes (로그인된 사용자는 접근 불가) */}
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              <PublicRoute>
+                <SignUp />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/emaillogin"
+            element={
+              <PublicRoute>
+                <EmailLogin />
+              </PublicRoute>
+            }
+          />
+
+          <Route
+            path="/signup/social"
+            element={
+              <PublicRoute>
+                <SocialSignUp />
+              </PublicRoute>
+            }
+          />
+
+          {/* Protected Routes (로그인 필요) */}
+          <Route
+            path="/createplaylist"
+            element={
+              <ProtectedRoute>
+                <CreatePlaylist />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/playlist/:id/edit"
+            element={
+              <ProtectedRoute>
+                <EditPlaylist />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/createplaylist"
+            element={
+              <ProtectedRoute>
+                <CreatePlaylist />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/playlist/:id/edit"
+            element={
+              <ProtectedRoute>
+                <EditPlaylist />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route path="/example" element={<ExamplePage />} />
+
+          <Route path="/filmography/:tmdbId" element={<Filmography />} />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+
+          <Route path="/oauth/kakao/callback" element={<KakaoRedirectHandler />} />
+
+          <Route path="/oauth/naver/callback" element={<NaverRedirectHandler />} />
+
+          <Route path="/my-page" element={<MyPageMain />} />
+          <Route path="/my-page-edit" element={<MyPageEdit />} />
+          <Route path="/my-page-preference" element={<MyPagePreference />} />
+          <Route path="/my-page-review" element={<MyPageReview />} />
+          <Route path="/my-page-debate" element={<MyPageDebate />} />
+          <Route path="/my-page-follow" element={<MyPageFollowList />} />
+        </Routes>
+      </Layout>
     </AuthProvider>
   )
 }
