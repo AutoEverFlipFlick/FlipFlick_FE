@@ -68,6 +68,14 @@ import Dashboard from '@/pages/admin/Dashboard'
 import UserManagement from '@/pages/admin/UserManagement'
 import ReportManagement from '@/pages/admin/ReportManagement'
 import AdminRoute from '@/components/common/AdminRoute'
+import Home from '@/pages/Home'
+import MyPageMain from '@/pages/myPage/MyPageMain'
+import MyPageEdit from '@/pages/myPage/MyPageEdit'
+import MyPagePreference from '@/pages/myPage/MyPagePreference'
+import MyPageReview from '@/pages/myPage/MyPageReview'
+import MyPageDebate from '@/pages/myPage/MyPageDebate'
+import MyPageFollowList from '@/pages/myPage/MyPageFollowList'
+import AlarmListener from '@/components/common/AlarmListener'
 
 const AppRoutes = () => {
   return (
@@ -78,7 +86,7 @@ const AppRoutes = () => {
           path="/"
           element={
             <Layout>
-              <ExamplePage />
+              <Home />
             </Layout>
           }
         />
@@ -191,6 +199,15 @@ const AppRoutes = () => {
           }
         />
 
+        <Route
+          path="/example"
+          element={
+            <Layout>
+              <ExamplePage />
+            </Layout>
+          }
+        />
+
         <Route path="/filmography/:tmdbId" element={<Filmography />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
@@ -198,6 +215,13 @@ const AppRoutes = () => {
         <Route path="/oauth/kakao/callback" element={<KakaoRedirectHandler />} />
 
         <Route path="/oauth/naver/callback" element={<NaverRedirectHandler />} />
+
+        <Route path="/my-page" element={<MyPageMain />} />
+        <Route path="/my-page-edit" element={<MyPageEdit />} />
+        <Route path="/my-page-preference" element={<MyPagePreference />} />
+        <Route path="/my-page-review" element={<MyPageReview />} />
+        <Route path="/my-page-debate" element={<MyPageDebate />} />
+        <Route path="/my-page-follow" element={<MyPageFollowList />} />
       </Routes>
     </AuthProvider>
   )
