@@ -8,7 +8,7 @@ import Record from '@/assets/category/record.png'
 import { Search } from 'lucide-react'
 import AvatarIcon from '@/assets/icons/profile.png'
 import useTokenObserver from '@/utils/auth/tokenObserver'
-import { userInfoGet } from '@/services/memberInfo'
+import { MemberResponseDto, userInfoGet } from '@/services/memberInfo'
 import { Icon } from '@iconify/react'
 import { logout } from '@/services/member'
 import media from '@/utils/breakpoints'
@@ -105,6 +105,8 @@ const LogoContainer = styled.a`
   display: inline-flex;
   z-index: 1;
   position: relative;
+
+  cursor: pointer;
   /* &::before {
     content: '';
     position: absolute;
@@ -372,23 +374,41 @@ const DropdownContainer = styled.div`
   position: absolute;
   top: 80%;
   right: 10;
-  background: #fff;
-  border: 1px solid #ddd;
+  background: #2a2a2a;
+  border: 1px solid #444;
   border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   overflow: hidden;
-  margin-top: 8px;
+  margin-top: 0.25rem;
   z-index: 10;
-  color: black;
+  color: #ccc;
 `
+
 // 드롭다운 아이템
 const DropdownItem = styled.div`
   padding: 8px 12px;
   white-space: nowrap;
   cursor: pointer;
   &:hover {
-    background: #f5f5f5;
+    background: #333;
+    color: white;
   }
+
+  &:first-child {
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+  }
+
+  &:last-child {
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+  }
+`
+
+const DrodownNickName = styled.div`
+  padding: 8px 12px;
+  cursor: none;
+  pointer-events: none;
 `
 
 const TextAvatarContainer = styled.div`
@@ -499,6 +519,9 @@ const BaseHeaderVer2 = () => {
   const alarmRef = useRef<HTMLDivElement>(null)
   const { user, isAuthenticated, logout: authLogout } = useAuth()
 
+  // 계정의 역할 상태 정보
+  const [isAdmin, setIsAdmin] = useState(false)
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 767)
@@ -515,15 +538,25 @@ const BaseHeaderVer2 = () => {
       setProfileSrc(AvatarIcon)
       return
     }
+
+    interface HeaderInfo extends MemberResponseDto {
+      role: string
+    }
+
     const fetchProfileImage = async () => {
       try {
         const response = await userInfoGet()
         console.log(response)
+        const data = response.data.data as HeaderInfo
         setIsLogin(true)
-        setProfileName(response.data.data.nickname)
-        setUserId(response.data.data.id)
-        if (response.data.data.profileImage) {
-          setProfileSrc(response.data.data.profileImage)
+        setProfileName(data.nickname)
+        setUserId(data.id)
+        if (data.role === 'ROLE_ADMIN') {
+          console.log('어드민 계정으로 로그인 하셨습니다')
+        }
+        setIsAdmin(data.role === 'ROLE_ADMIN' ? true : false)
+        if (data.profileImage) {
+          setProfileSrc(data.profileImage)
         }
       } catch (error) {
         console.log(error)
@@ -757,6 +790,19 @@ const BaseHeaderVer2 = () => {
 
                 {isDropdownOpen && (
                   <DropdownContainer ref={dropdownRef}>
+                    {isMobile && (
+                      <DrodownNickName>
+                        <span style={{ fontWeight: 'bold', paddingRight: '3px' }}>
+                          {profileName}
+                        </span>
+                        님
+                      </DrodownNickName>
+                    )}
+                    {isAdmin && (
+                      <DropdownItem onClick={() => navigate('/admin')}>
+                        관리자 대시보드
+                      </DropdownItem>
+                    )}
                     <DropdownItem onClick={() => navigate('/my-page')}>프로필 수정</DropdownItem>
                     <DropdownItem onClick={handleLogout}>로그아웃</DropdownItem>
                   </DropdownContainer>
