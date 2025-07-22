@@ -1,17 +1,16 @@
 import axiosInstance from "@/services/axiosInstance";
-import axios from "axios";
 
-export const bookmarkMovie = async (movieId : number) => {
-  console.log('bookmarkMovie caller with movieId: ',movieId)
+export const bookmarkMovie = async (movieId: number) => {
+  console.log('bookmarkMovie caller with movieId: ', movieId)
   const res = await axiosInstance.post(`/api/v1/movie/bookmark`, {
-    movieId : movieId,
+    movieId: movieId,
   })
   return res.data
 }
 
 export const watchedMovie = async (movieId: number) => {
   const res = await axiosInstance.post(`/api/v1/movie/watched`, {
-   movieId : movieId,
+    movieId: movieId,
   })
   return res.data
 }
