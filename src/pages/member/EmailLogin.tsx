@@ -5,6 +5,7 @@ import BaseInput from '@/components/common/BaseInput'
 import BaseButton from '@/components/common/BaseButton'
 import { login } from '@/services/member'
 import { useNavigate } from 'react-router-dom'
+import Swal from 'sweetalert2'
 
 const Wrapper = styled.div`
   width: 100vw;
@@ -104,7 +105,11 @@ const EmailLogin: React.FC = () => {
       // navigate('/home') <-- react-router 사용 시
     } catch (err) {
       console.error('로그인 실패:', err)
-      alert('이메일 또는 비밀번호가 잘못되었습니다.')
+      Swal.fire({
+        icon: 'error',
+        title: '로그인 실패',
+        text: '이메일 또는 비밀번호가 잘못되었습니다.',
+      })
     }
   }
 

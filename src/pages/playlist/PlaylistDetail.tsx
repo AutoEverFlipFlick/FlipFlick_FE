@@ -59,7 +59,7 @@ const Header = styled.div`
   margin-bottom: 2rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid #333;
-    @media (max-width: 768px) {
+  @media (max-width: 768px) {
     flex-direction: column;
     align-items: stretch;
     gap: 1rem;
@@ -75,7 +75,7 @@ const RightSection = styled.div`
   display: flex;
   gap: 1rem;
 
-  @media(max-width: 768px){
+  @media (max-width: 768px) {
     width: 100%;
     justify-content: flex-end;
     gap: 0.5rem;
@@ -135,10 +135,10 @@ const BookmarkButton = styled.button<{ $isBookmarked: boolean }>`
     color: white;
   }
 
-    @media(max-width: 768px){
-      display: flex;
-      align-items: flex-end;
-      width: 50%;      
+  @media (max-width: 768px) {
+    display: flex;
+    align-items: flex-end;
+    width: 50%;
   }
 `
 
@@ -207,7 +207,7 @@ const MovieTitle = styled.h3`
   margin: 0 0 0.25rem 0;
   font-size: 0.9rem;
   color: #fff;
-`;
+`
 
 const MovieYear = styled.span`
   font-size: 0.8rem;
@@ -408,7 +408,7 @@ const PlaylistDetail: React.FC = () => {
               text: '비공개 플레이리스트는 작성자만 볼 수 있습니다.',
               icon: 'error',
               confirmButtonText: '확인',
-              confirmButtonColor: '#FF7849'
+              confirmButtonColor: '#FF7849',
             })
             navigate('/playlist')
             return
@@ -434,7 +434,7 @@ const PlaylistDetail: React.FC = () => {
           text: '네트워크 오류가 발생했습니다.',
           icon: 'error',
           confirmButtonText: '확인',
-          confirmButtonColor: '#FF7849'
+          confirmButtonColor: '#FF7849',
         })
         navigate('/playlist')
         return
@@ -452,7 +452,7 @@ const PlaylistDetail: React.FC = () => {
   // 북마크 토글
   const handleToggleBookmark = async () => {
     if (!playlist || bookmarking) return
-    
+
     if (!isAuthenticated) {
       const result = await Swal.fire({
         title: '로그인이 필요합니다',
@@ -462,7 +462,7 @@ const PlaylistDetail: React.FC = () => {
         confirmButtonText: '로그인하러 가기',
         cancelButtonText: '취소',
         confirmButtonColor: '#FF7849',
-        cancelButtonColor: '#6c757d'
+        cancelButtonColor: '#6c757d',
       })
 
       if (result.isConfirmed) {
@@ -480,10 +480,10 @@ const PlaylistDetail: React.FC = () => {
         setPlaylist(prev =>
           prev
             ? {
-              ...prev,
-              isBookmarked: !prev.isBookmarked,
-              bookmarkCount: prev.isBookmarked ? prev.bookmarkCount - 1 : prev.bookmarkCount + 1,
-            }
+                ...prev,
+                isBookmarked: !prev.isBookmarked,
+                bookmarkCount: prev.isBookmarked ? prev.bookmarkCount - 1 : prev.bookmarkCount + 1,
+              }
             : null,
         )
       } else {
@@ -492,7 +492,7 @@ const PlaylistDetail: React.FC = () => {
           text: '북마크 처리에 실패했습니다.',
           icon: 'error',
           confirmButtonText: '확인',
-          confirmButtonColor: '#FF7849'
+          confirmButtonColor: '#FF7849',
         })
       }
     } catch (err: any) {
@@ -502,7 +502,7 @@ const PlaylistDetail: React.FC = () => {
         text: '북마크 처리 중 오류가 발생했습니다.',
         icon: 'error',
         confirmButtonText: '확인',
-        confirmButtonColor: '#FF7849'
+        confirmButtonColor: '#FF7849',
       })
     } finally {
       setBookmarking(false)
@@ -522,7 +522,7 @@ const PlaylistDetail: React.FC = () => {
         confirmButtonText: '로그인하러 가기',
         cancelButtonText: '취소',
         confirmButtonColor: '#FF7849',
-        cancelButtonColor: '#6c757d'
+        cancelButtonColor: '#6c757d',
       })
 
       if (result.isConfirmed) {
@@ -538,7 +538,7 @@ const PlaylistDetail: React.FC = () => {
         text: '삭제 권한이 없습니다.',
         icon: 'error',
         confirmButtonText: '확인',
-        confirmButtonColor: '#FF7849'
+        confirmButtonColor: '#FF7849',
       })
       return
     }
@@ -553,7 +553,7 @@ const PlaylistDetail: React.FC = () => {
       cancelButtonText: '취소',
       confirmButtonColor: '#dc3545',
       cancelButtonColor: '#6c757d',
-      reverseButtons: true
+      reverseButtons: true,
     })
 
     if (!result.isConfirmed) return
@@ -569,7 +569,7 @@ const PlaylistDetail: React.FC = () => {
           text: '플레이리스트가 성공적으로 삭제되었습니다.',
           icon: 'success',
           confirmButtonText: '확인',
-          confirmButtonColor: '#FF7849'
+          confirmButtonColor: '#FF7849',
         })
         navigate('/playlist')
       } else {
@@ -578,7 +578,7 @@ const PlaylistDetail: React.FC = () => {
           text: response.message || '플레이리스트 삭제에 실패했습니다.',
           icon: 'error',
           confirmButtonText: '확인',
-          confirmButtonColor: '#FF7849'
+          confirmButtonColor: '#FF7849',
         })
       }
     } catch (err: any) {
@@ -599,7 +599,7 @@ const PlaylistDetail: React.FC = () => {
         text: errorMessage,
         icon: 'error',
         confirmButtonText: '확인',
-        confirmButtonColor: '#FF7849'
+        confirmButtonColor: '#FF7849',
       })
     } finally {
       setDeleting(false)
@@ -614,9 +614,9 @@ const PlaylistDetail: React.FC = () => {
         setPlaylist(prev =>
           prev
             ? {
-              ...prev,
-              isBookmarked: contextBookmarkState,
-            }
+                ...prev,
+                isBookmarked: contextBookmarkState,
+              }
             : null,
         )
       }
@@ -695,8 +695,8 @@ const PlaylistDetail: React.FC = () => {
 
   // 컴포넌트 내부에 추가
   const renderPageNumbers = () => {
-    if (!playlist) return null;
-    const pages = [];
+    if (!playlist) return null
+    const pages = []
     for (let i = 0; i < playlist.movies.totalPages; i++) {
       pages.push(
         <PaginationButton
@@ -706,17 +706,17 @@ const PlaylistDetail: React.FC = () => {
           disabled={loadingPage}
         >
           {i + 1}
-        </PaginationButton>
-      );
+        </PaginationButton>,
+      )
     }
-    return pages;
-  };
+    return pages
+  }
 
   const bookmarkStatus =
     playlist && isAuthenticated ? isBookmarked(playlist.playListId.toString()) : false
 
   const isMobile = window.innerWidth <= 768
-  const isOwner = user && playlist && user.nickname === playlist.nickname;
+  const isOwner = user && playlist && user.nickname === playlist.nickname
 
   return (
     <Container ref={containerRef}>
@@ -844,9 +844,7 @@ const PlaylistDetail: React.FC = () => {
       )}
 
       {/* 모바일에서 추가 로딩 메시지 */}
-      {isMobile && isFetchingMore && (
-        <LoadingMessage>불러오는 중...</LoadingMessage>
-      )}
+      {isMobile && isFetchingMore && <LoadingMessage>불러오는 중...</LoadingMessage>}
     </Container>
   )
 }
