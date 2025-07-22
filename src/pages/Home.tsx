@@ -7,6 +7,7 @@ import media from '@/utils/breakpoints'
 import axios from 'axios'
 
 import Wavve from '@/assets/home/wavve-seeklogo.svg'
+import { Icon } from '@iconify/react'
 
 // Styled Components
 const PageWrapper = styled.div`
@@ -28,6 +29,10 @@ const ButtonWrapper = styled.div`
   height: 100%;
 
   display: flex;
+
+  ${media.tablet`
+    display : none;
+  `}
 `
 
 const ButtonSection = styled.div`
@@ -45,6 +50,10 @@ const ButtonGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   grid-gap: 10px;
+
+  ${media.notebook`
+      grid-template-columns: repeat(1, 1fr);
+    `}
 `
 
 const ImageSection = styled.div<{ $imgWidth?: number }>`
@@ -83,7 +92,30 @@ const JukeboxBackground = styled.img`
 
 const JukeboxAbsoluteCotainer = styled.div`
   position: absolute;
-  width: 80%;
+  width: 100%;
+  height: 13%;
+
+  bottom: 10%;
+  left: 0;
+
+  justify-content: center;
+  align-items: center;
+
+  display: none;
+
+  ${media.tablet`
+    display: flex;
+  `}
+
+  z-index: 3;
+`
+
+const JukeAbsGrid = styled.div`
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: max-content;
+  grid-gap: 1rem;
+  margin-top: 5%;
 `
 
 const CarouselContainer = styled.div`
@@ -173,6 +205,10 @@ const LoadingCotnainer = styled.div`
 
   display: flex;
   justify-content: center;
+  align-items: center;
+  position: absolute;
+
+  color: var(--color-accent);
 `
 
 interface ButtonState {
@@ -504,10 +540,26 @@ export default function Component() {
             width={943}
             height={1005}
           />
+
+          <JukeboxAbsoluteCotainer>
+            <JukeAbsGrid>
+              {OttStates.map(({ name, providerId, logoSrc }) => (
+                <ButtonContainer key={providerId}>
+                  {/* 클릭 시 provider 상태를 변경하도록 onClick 설정 */}
+                  <RetroButton iconSize="2rem" onClick={() => setProvider(providerId)}>
+                    <img src={logoSrc} alt={name} />
+                  </RetroButton>
+                  <div>{name}</div>
+                </ButtonContainer>
+              ))}
+            </JukeAbsGrid>
+          </JukeboxAbsoluteCotainer>
         </JukeboxWrapper>
         {/* 여기서 loading을 확인할 필요가 있음 */}
         {isLoading ? (
-          <div>로딩중 </div>
+          <LoadingCotnainer>
+            <Icon icon="line-md:loading-twotone-loop" fontSize={100} />
+          </LoadingCotnainer>
         ) : (
           <CarouselContainer ref={carouselRef} style={carouselStyle}>
             {!checkMobile && (
