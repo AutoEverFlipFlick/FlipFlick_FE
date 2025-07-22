@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import styled from 'styled-components'
+import styled, { keyframes } from 'styled-components'
 import { useMediaQuery } from 'react-responsive'
 import BaseInput from '@/components/common/BaseInput'
 import BaseButton from '@/components/common/BaseButton'
@@ -12,6 +12,11 @@ import { useNavigate } from 'react-router-dom'
 interface IsMobile {
   $ismobile: boolean
 }
+
+const fadeInUp = keyframes`
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+`
 
 const Container = styled.div`
   min-height: 100vh;
@@ -30,6 +35,8 @@ const ContentWrapper = styled.div`
   flex-direction: column;
   gap: 1.5rem;
   margin: 0 auto;
+
+  animation: ${fadeInUp} 0.3s ease both;
 `
 
 const BackButton = styled.button<IsMobile>`

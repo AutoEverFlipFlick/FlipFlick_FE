@@ -24,6 +24,19 @@ export interface Debate {
   movieTitle: string
   hateCnt: number
   commentCount: number
+  tmdbId: number
+}
+
+export interface reviewArray {
+  id: number
+  movieTitle: string
+  posterImg: string
+  content: string
+  star: number
+  createdAt: string
+  likeCnt: number
+  hateCnt: number
+  tmdbId: number
 }
 
 interface PageResponse<T> {
@@ -51,4 +64,13 @@ export const getUserDebatesBySort = async (
 // 특정 토론의 댓글 개수 조회
 export const getDebateCommentCount = async (debateId: number) => {
   return await axios.get<ApiResponse<number>>(`/api/v1/debate/comments/${debateId}/count`)
+}
+
+import { Review } from '@/pages/movie/reviewData'
+
+export interface Debate extends Review {
+  // comments?: Comment[]; // 댓글 목록은 선택적
+  commentCount: number // 댓글 개수
+  debateTitle: string // 토론 제목
+  imageUrls: string[] // 이미지 URL 목록, 선택적
 }

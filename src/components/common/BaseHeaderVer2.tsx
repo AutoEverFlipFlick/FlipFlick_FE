@@ -407,7 +407,8 @@ const TextAvatarContainer = styled.div`
 const AlarmDropdown = styled(BaseContainer)`
   position: absolute;
   top: 120%;
-  right: -170px;
+  right: 0;
+  left: auto;
   background: #2a2a2a;
   border: 1px solid #444;
   border-radius: 6px;
