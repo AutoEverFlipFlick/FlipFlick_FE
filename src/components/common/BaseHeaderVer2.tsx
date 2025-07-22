@@ -12,6 +12,8 @@ import { userInfoGet } from '@/services/memberInfo'
 import { Icon } from '@iconify/react'
 import { logout } from '@/services/member'
 import media from '@/utils/breakpoints'
+import { getAlarms, markAlarmAsRead, subscribeToAlarmStream } from '@/services/alarm'
+import BaseContainer from './BaseContainer'
 
 const DESIGN_WIDTH = 1536
 const DESIGN_HEIGHT = 1024
@@ -350,9 +352,8 @@ const LoginButton = styled.button`
   color: var(--text-white);
   box-shadow: none;
   appearance: none;
-  /* OS/브라우저 기본 버튼 스타일 제거 */
-  -webkit-appearance: none; /* 사파리·크롬용 */
-  -moz-appearance: none; /* 파이어폭스용 */
+  -webkit-appearance: none;
+  -moz-appearance: none;
   border: none;
   cursor: pointer;
 `
@@ -402,6 +403,77 @@ const TextAvatarContainer = styled.div`
   font-size: 1rem;
 `
 
+const AlarmDropdown = styled(BaseContainer)`
+  position: absolute;
+  top: 120%;
+  right: -170px;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  min-width: 240px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 0.25rem 0;
+
+  width: 240px;
+  max-width: calc(100vw - 20px); /* 화면 줄어들면 자동으로 안으로 밀림 */
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 0.25rem 0;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`
+
+const AlarmItem = styled.div`
+  padding: 0.75rem 1rem;
+  color: #ccc;
+  font-size: 0.8rem;
+  white-space: normal;
+  word-break: break-word;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #333;
+    color: white;
+  }
+
+  &:active {
+    color: #ff7849;
+  }
+
+  &:not(:last-child) {
+    border-bottom: 1px solid #3a3a3a;
+  }
+`
+
+const AlarmBadge = styled.div`
+  position: absolute;
+  top: -4px;
+  right: 8px;
+  background-color: red;
+  color: white;
+  font-size: 10px;
+  padding: 2px 5px;
+  border-radius: 50%;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`
+
+const EmptyAlarmMessage = styled.div`
+  padding: 0.75rem 1rem;
+  font-size: 0.8rem;
+  color: #999;
+  text-align: center;
+`
+
 const BaseHeaderVer2 = () => {
   const navigate = useNavigate()
   const [searchContext, setSearchContext] = useState('')
@@ -418,6 +490,12 @@ const BaseHeaderVer2 = () => {
   // 모바일 대응
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 767)
   const [scale, setScale] = useState(1)
+  // 알람 열림
+  const [userId, setUserId] = useState<number | null>(null)
+  const [isAlarmOpen, setIsAlarmOpen] = useState(false)
+  const [alarms, setAlarms] = useState<any[]>([])
+  const alarmRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 767)
@@ -440,6 +518,7 @@ const BaseHeaderVer2 = () => {
         console.log(response)
         setIsLogin(true)
         setProfileName(response.data.data.nickname)
+        setUserId(response.data.data.id)
         if (response.data.data.profileImage) {
           setProfileSrc(response.data.data.profileImage)
         }
@@ -495,12 +574,48 @@ const BaseHeaderVer2 = () => {
       ) {
         setIsDropdownOpen(false)
       }
+      if (isAlarmOpen && alarmRef.current && !alarmRef.current.contains(event.target as Node)) {
+        setIsAlarmOpen(false)
+      }
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [isDropdownOpen])
+  }, [isDropdownOpen, isAlarmOpen])
+
+  const fetchAlarms = async () => {
+    if (!userId) return
+    try {
+      const res = await getAlarms(userId)
+      setAlarms(res)
+    } catch (error) {
+      console.error('알림 불러오기 실패:', error)
+      setAlarms([])
+    }
+  }
+
+  const handleRead = async (alarmId: number) => {
+    await markAlarmAsRead(alarmId)
+    setAlarms(prev => prev.filter(a => a.id !== alarmId))
+  }
+
+  useEffect(() => {
+    if (userId) {
+      fetchAlarms()
+    }
+  }, [userId])
+
+  useEffect(() => {
+    if (!userId) return
+
+    const es = subscribeToAlarmStream(userId, newAlarm => {
+      setAlarms(prev => (prev.some(a => a.id === newAlarm.id) ? prev : [newAlarm, ...prev]))
+    })
+
+    return () => es.close()
+  }, [userId])
+
   return (
     <HeaderWrapper>
       <Wrapper>
@@ -598,11 +713,36 @@ const BaseHeaderVer2 = () => {
           )}
           {isLogin ? (
             <>
-              <Icon
-                icon="mdi:notifications"
-                fontSize={isMobile ? '25px' : '30px'}
-                style={isMobile ? { marginRight: '10px' } : { marginRight: '15px' }}
-              />
+              <div style={{ position: 'relative' }}>
+                <Icon
+                  icon="mdi:notifications"
+                  fontSize={isMobile ? '25px' : '30px'}
+                  style={{
+                    marginRight: isMobile ? '10px' : '15px',
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => {
+                    setIsAlarmOpen(prev => !prev)
+                    fetchAlarms()
+                  }}
+                />
+                {alarms.length > 0 && (
+                  <AlarmBadge>{alarms.length > 99 ? '99+' : alarms.length}</AlarmBadge>
+                )}
+                {isAlarmOpen && (
+                  <AlarmDropdown ref={alarmRef as React.RefObject<HTMLDivElement>} as="div">
+                    {alarms.length === 0 ? (
+                      <EmptyAlarmMessage>알림이 없습니다</EmptyAlarmMessage>
+                    ) : (
+                      alarms.map(alarm => (
+                        <AlarmItem key={alarm.id} onClick={() => handleRead(alarm.id)}>
+                          {alarm.content}
+                        </AlarmItem>
+                      ))
+                    )}
+                  </AlarmDropdown>
+                )}
+              </div>
               <ProfileInnerBox ref={profileRef} onClick={() => setIsDropdownOpen(prev => !prev)}>
                 {profileSrc === AvatarIcon ? (
                   <TextAvatarContainer>{profileName?.charAt(0) || '유'}</TextAvatarContainer>
@@ -613,7 +753,7 @@ const BaseHeaderVer2 = () => {
 
                 {isDropdownOpen && (
                   <DropdownContainer ref={dropdownRef}>
-                    <DropdownItem>프로필 수정</DropdownItem>
+                    <DropdownItem onClick={() => navigate('/my-page')}>프로필 수정</DropdownItem>
                     <DropdownItem onClick={handleLogout}>로그아웃</DropdownItem>
                   </DropdownContainer>
                 )}

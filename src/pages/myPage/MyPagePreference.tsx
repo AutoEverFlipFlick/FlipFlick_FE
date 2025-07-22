@@ -11,6 +11,7 @@ import {
   MovieListResponseDTO,
   MovieListItem,
 } from '@/services/moviePreference'
+import { ArrowLeft } from 'lucide-react'
 
 interface IsMobile {
   $ismobile: boolean
@@ -35,6 +36,16 @@ const ContentContainer = styled.div`
   display: flex;
   flex-direction: column;
 `
+const Spacer = styled.div`
+  width: 24px; // BackButton과 동일한 너비
+`
+
+const HeaderRow = styled.div<IsMobile>`
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  margin-bottom: 1rem;
+`
 
 const Title = styled.h2<IsMobile>`
   font-size: ${props => (props.$ismobile ? '1.2rem' : '1.5rem')};
@@ -43,11 +54,30 @@ const Title = styled.h2<IsMobile>`
   text-align: center;
 `
 
+const BackButton = styled.button<IsMobile>`
+  background: none;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: left;
+  justify-content: left;
+  padding: 0;
+
+  &:hover {
+    color: #ff7849;
+  }
+`
+
 const TabNav = styled.div<IsMobile>`
   display: flex;
-  gap: 1rem;
+  width: 90%;
   margin-bottom: 1rem;
-  justify-content: ${props => (props.$ismobile ? 'space-around' : 'left')};
+  align-self: ${props => (props.$ismobile ? 'center' : 'left')};
+  justify-content: ${props => (props.$ismobile ? 'space-between' : 'flex-start')};
+  gap: ${props => (props.$ismobile ? '0' : '1rem')};
 `
 
 const TabItem = styled.span<{ $active: boolean } & IsMobile>`
@@ -140,6 +170,14 @@ const ErrorMessage = styled.div`
   font-size: 1.1rem;
   margin: 2rem 0;
 `
+
+const EmptyMessage = styled.div`
+  text-align: center;
+  color: #ccc;
+  font-size: 1rem;
+  margin: 2rem 0;
+`
+
 const PaginationWrapper = styled.div`
   display: flex;
   justify-content: center;
@@ -250,15 +288,15 @@ const MyPagePreference: React.FC = () => {
   const isMobile = useMediaQuery({ query: '(max-width: 767px)' })
   const navigate = useNavigate()
   const location = useLocation()
-  const state = location.state as LocationState | undefined
+  const state = location.state as LocationState
 
   // 페칭 상태
   const [loading, setLoading] = useState(false)
   const [hasLoaded, setHasLoaded] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // 탭·페이징·데이터
   const initialTab = state?.tab ?? '찜했어요'
-  const profileOwnerId = state?.ownerId
   const [activeTab, setActiveTab] = useState<TabType>(initialTab)
 
   const pageSize = 20
@@ -267,6 +305,7 @@ const MyPagePreference: React.FC = () => {
   const [items, setItems] = useState<MovieListItem[]>([])
   const [total, setTotal] = useState(0)
 
+  const profileOwnerId = state?.ownerId
   const observer = useRef<IntersectionObserver | null>(null)
 
   // 데이터 페칭 함수
@@ -291,17 +330,12 @@ const MyPagePreference: React.FC = () => {
       const dto = res.data.data as MovieListResponseDTO
 
       // 페이지 초기(=0)일 때 교체, 이후엔 추가
-      setItems(prev => {
-        if (isMobile) {
-          return page === 0 ? dto.content : [...prev, ...dto.content]
-        } else {
-          return dto.content // 💡 데스크탑은 항상 교체
-        }
-      })
+      setItems(prev =>
+        isMobile ? (page === 0 ? dto.content : [...prev, ...dto.content]) : dto.content,
+      )
       setTotal(dto.totalElements)
-      setIsLastPage(dto.content.length < pageSize)
+      setIsLastPage(dto.content.length < 20)
     } catch (err: any) {
-      console.error(err)
       setError('데이터를 불러오는 중 오류가 발생했습니다.')
     } finally {
       setLoading(false)
@@ -318,8 +352,12 @@ const MyPagePreference: React.FC = () => {
   // 모바일 무한스크롤
   const lastItemRef = useCallback(
     (node: HTMLDivElement | null) => {
-      if (!isMobile || loading || isLastPage) return
-      if (observer.current) observer.current.disconnect()
+      if (!isMobile) return
+      // 항상 기존 옵저버 해제
+      if (observer.current) {
+        observer.current.disconnect()
+      }
+      if (loading || isLastPage) return
       observer.current = new IntersectionObserver(entries => {
         if (entries[0].isIntersecting) {
           setPage(prev => prev + 1)
@@ -332,7 +370,13 @@ const MyPagePreference: React.FC = () => {
 
   return (
     <ContentContainer>
-      <Title $ismobile={isMobile}>{activeTab}</Title>
+      <HeaderRow $ismobile={isMobile}>
+        <BackButton $ismobile={isMobile} onClick={() => navigate(-1)}>
+          <ArrowLeft size={24} />
+        </BackButton>
+        <Title $ismobile={isMobile}>{activeTab}</Title>
+        <Spacer />
+      </HeaderRow>
       <TabNav $ismobile={isMobile}>
         {(['찜했어요', '좋아요', '봤어요'] as const).map(tab => (
           <TabItem
@@ -348,15 +392,16 @@ const MyPagePreference: React.FC = () => {
           </TabItem>
         ))}
       </TabNav>
-
-      {loading && !hasLoaded && <LoadingMessage>로딩 중...</LoadingMessage>}
-      {error && <ErrorMessage>{error}</ErrorMessage>}
-
-      {!loading && !error && hasLoaded && (
+      <FlexRow>
+        <TotalCount>총 {total}개</TotalCount>
+      </FlexRow>
+      {page === 0 && loading && <LoadingMessage>영화를 불러오는 중입니다...</LoadingMessage>}
+      {error && <ErrorMessage>영화를 불러오는 중 오류가 발생했습니다.</ErrorMessage>}
+      {page === 0 && !loading && !error && items.length === 0 && (
+        <EmptyMessage>표시할 영화가 없습니다.</EmptyMessage>
+      )}
+      {!error && items.length > 0 && (
         <>
-          <FlexRow>
-            <TotalCount>총 {total}개</TotalCount>
-          </FlexRow>
           <ContentGrid $ismobile={isMobile}>
             {items.map((item, idx) => (
               <div
@@ -421,7 +466,9 @@ const MyPagePreference: React.FC = () => {
             </PaginationWrapper>
           )}
           {/* 모바일 로딩 */}
-          {isMobile && loading && <MobileLoading>내용 불러오는 중...</MobileLoading>}
+          {isMobile && loading && page > 0 && !isLastPage && (
+            <MobileLoading>내용 불러오는 중...</MobileLoading>
+          )}
         </>
       )}
     </ContentContainer>

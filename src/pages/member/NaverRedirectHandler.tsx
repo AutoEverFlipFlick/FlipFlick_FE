@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import styled, { keyframes } from 'styled-components'
 import { naverLogin } from '@/services/member'
+import Swal from 'sweetalert2'
 const spin = keyframes`
   to {
     transform: rotate(360deg);
@@ -46,10 +47,15 @@ const NaverRedirectHandler: React.FC = () => {
           } else {
             navigate('/') // 메인 페이지
           }
-        } catch (error) {
-          console.error('네이버 로그인 실패:', error)
-          alert('네이버 로그인 실패')
-          navigate('/login')
+        } catch (error: any) {
+          if (error.response?.status !== 403) {
+            Swal.fire({
+              icon: 'error',
+              title: '로그인 실패',
+              text: '네이버 로그인 실패',
+            })
+            navigate('/login')
+          }
         }
       }
 
