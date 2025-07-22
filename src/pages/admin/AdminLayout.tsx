@@ -127,7 +127,7 @@ interface AdminLayoutProps {
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const location = useLocation()
   const [dropdownVisible, setDropdownVisible] = useState(false)
-  const { user } = useAuth()
+  const { user, logout: authLogout } = useAuth() // AuthContext의 logout 함수 추가
   const navigate = useNavigate()
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -148,15 +148,34 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     setDropdownVisible(prev => !prev)
   }
 
+  // 로그아웃 함수 수정
   const handleLogout = async () => {
     try {
+      console.log('🔧 관리자 페이지에서 로그아웃 시도')
+
+      // 백엔드 로그아웃 API 호출
       await logout()
-      localStorage.removeItem('accessToken')
+
+      // AuthContext의 logout 함수 호출 (localStorage 정리 + user 상태 초기화)
+      authLogout()
+
+      // 드롭다운 닫기
+      setDropdownVisible(false)
+
+      // 메인 페이지로 이동
       navigate('/')
+
+      console.log('✅ 관리자 로그아웃 완료')
     } catch (err) {
-      console.error('로그아웃 실패:', err)
+      console.error('❌ 관리자 로그아웃 실패:', err)
+
+      // 백엔드 로그아웃이 실패해도 프론트엔드 상태는 초기화
+      authLogout()
+      setDropdownVisible(false)
+      navigate('/')
     }
   }
+
   return (
     <LayoutWrapper>
       <Sidebar>
@@ -182,7 +201,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             <TextAvatar>{user?.nickname?.charAt(0) || '유'}</TextAvatar>
           )}
 
-          {/* ⬇️ 드롭다운 메뉴 조건부 렌더링 추가 */}
           {dropdownVisible && (
             <DropdownMenu>
               <DropdownItem onClick={() => navigate('/')}>홈으로 이동</DropdownItem>
