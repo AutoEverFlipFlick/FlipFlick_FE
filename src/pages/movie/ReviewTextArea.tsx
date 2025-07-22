@@ -12,7 +12,7 @@ const ReviewInputContainer = styled.div`
     display: flex;
     flex-direction: column;
     width: 100%;
-    padding: 20px;
+    padding: 15px 25px;
 `
 
 const ReviewInputForm = styled.div`
@@ -24,7 +24,6 @@ const ReviewInputTitle = styled.div`
     margin: 0 5px 5px 10px;
 `
 const CharCount = styled.div`
-    margin-top: 8px;
     font-size: 12px;
     color: #888;
 `;
@@ -34,6 +33,7 @@ const FormFooter = styled.div`
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    align-content: center;
 `
 
 const ButtonWrapper = styled.div`
@@ -45,8 +45,8 @@ const ButtonWrapper = styled.div`
 `
 
 const TextareaButton = styled(BaseButton)`
-    height: 30px;
-    width: 60px;
+    height: 25px;
+    width: 50px;
     padding: 0;
 `
 
@@ -219,6 +219,7 @@ export const ReviewTextArea = ({tmdbId, onSuccess, rating, isAuthenticated, myRe
             : myReview?.content?.length ?? 0} / 500자</CharCount>
           <ButtonWrapper>
             <FormControlLabel
+              labelPlacement='start'
               control={
                 <Switch
                   checked={isEditMode ? isSpoiler : myReview?.isSpoiler ?? false}
@@ -234,7 +235,7 @@ export const ReviewTextArea = ({tmdbId, onSuccess, rating, isAuthenticated, myRe
               }}>스포 방지</span>}
             />
             {myReview && (
-              <TextareaButton size='small' color='error' onClick={handleDelete}>삭제</TextareaButton>
+              <TextareaButton size='small' onClick={handleDelete}>삭제</TextareaButton>
             )}
             {isEditMode ? (
               <TextareaButton size='small' disabled={isSubmitting} onClick={handleSubmit}>저장</TextareaButton>
