@@ -3,9 +3,9 @@ import styled from 'styled-components'
 import backgroundImage from '@/assets/common/background2.webp'
 import BaseInput from '@/components/common/BaseInput'
 import BaseButton from '@/components/common/BaseButton'
-import { login } from '@/services/member'
 import { useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2'
+import { useAuth } from '@/context/AuthContext'
 
 const Wrapper = styled.div`
   width: 100vw;
@@ -84,36 +84,37 @@ const EmailLogin: React.FC = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const navigate = useNavigate()
+  const { login } = useAuth()
 
   const handleLogin = async () => {
     try {
-      const res = await login({ email, password })
-
       // ✅ accessToken 저장
-      localStorage.setItem('accessToken', res.data.accessToken)
+      const success = await login(email, password)
 
-      // 커스텀 이벤트 발생 (useTokenObserver가 이걸 감지함)
-      window.dispatchEvent(
-        new CustomEvent('tokenStorage', {
-          detail: { newToken: res.data.accessToken },
-        }),
-      )
+      if (success) {
+        console.log('✅ EmailLogin: 로그인 성공')
 
-      // ✅ 로그인 성공 처리
-      navigate('/')
-      // TODO: 메인 페이지나 홈으로 이동
-      // navigate('/home') <-- react-router 사용 시
-    } catch (err) {
-      const error = err as any
-      if (error.response?.status !== 403) {
-        // 403이 아닌 경우에만 로그인 실패 메시지 출력
-        console.error('로그인 실패:', err)
+        // 모달창 없이 바로 페이지 이동
+        navigate('/', { replace: true })
+      } else {
+        console.log('❌ EmailLogin: 로그인 실패')
         Swal.fire({
           icon: 'error',
           title: '로그인 실패',
-          text: '이메일 또는 비밀번호가 잘못되었습니다.',
+          text: '이메일 또는 비밀번호가 올바르지 않습니다.',
+          background: '#1e1e2f',
+          color: '#fff',
         })
       }
+    } catch (error) {
+      console.error('❌ EmailLogin: 로그인 에러:', error)
+      Swal.fire({
+        icon: 'error',
+        title: '오류',
+        text: '로그인 중 오류가 발생했습니다.',
+        background: '#1e1e2f',
+        color: '#fff',
+      })
     }
   }
 
