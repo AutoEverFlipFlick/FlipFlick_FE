@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import styled, { keyframes } from 'styled-components'
+import Swal from 'sweetalert2'
 import {
   ArrowLeft,
   Bookmark,
@@ -12,7 +13,7 @@ import {
 import BaseButton from '../../components/common/BaseButton'
 import {
   getPlaylistDetail,
-  deletePlaylist, // 추가
+  deletePlaylist,
   PlaylistDetail as PlaylistDetailType,
 } from '../../services/playlist'
 import { useBookmark } from '../../context/BookmarkContext'
@@ -43,6 +44,12 @@ const Container = styled.div`
   max-width: 1200px;
   margin: 0 auto;
   box-sizing: border-box;
+  overflow-y: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `
 
 const Header = styled.div`
@@ -52,12 +59,27 @@ const Header = styled.div`
   margin-bottom: 2rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid #333;
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
 `
 
 const LeftSection = styled.div`
   display: flex;
   align-items: flex-start;
   gap: 1rem;
+`
+const RightSection = styled.div`
+  display: flex;
+  gap: 1rem;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
 `
 
 const BackButton = styled.button`
@@ -111,6 +133,12 @@ const BookmarkButton = styled.button<{ $isBookmarked: boolean }>`
     background: ${props => (props.$isBookmarked ? '#e66a42' : '#ff7849')};
     border-color: ${props => (props.$isBookmarked ? '#e66a42' : '#ff7849')};
     color: white;
+  }
+
+  @media (max-width: 768px) {
+    display: flex;
+    align-items: flex-end;
+    width: 50%;
   }
 `
 
@@ -179,10 +207,7 @@ const MovieTitle = styled.h3`
   margin: 0 0 0.25rem 0;
   font-size: 0.9rem;
   color: #fff;
-  /* overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap; */
-`;
+`
 
 const MovieYear = styled.span`
   font-size: 0.8rem;
@@ -255,6 +280,38 @@ const LoadingOverlay = styled.div`
   z-index: 10;
 `
 
+const BreadcrumbNav = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: #aaa;
+`
+
+const BreadcrumbItem = styled.button`
+  background: none;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+
+  &:hover {
+    color: #ff7849;
+  }
+`
+
+const BreadcrumbSeparator = styled.span`
+  margin: 0 0.5rem;
+  color: #666;
+`
+
+const CurrentPage = styled.span`
+  color: #fff;
+  font-weight: 500;
+`
+
 // 이미지 로더 컴포넌트
 const ImageLoader: React.FC<{
   src: string
@@ -317,16 +374,20 @@ const PlaylistDetail: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [bookmarking, setBookmarking] = useState(false)
-  const [deleting, setDeleting] = useState(false) // 삭제 상태 추가
+  const [deleting, setDeleting] = useState(false)
   const [currentPage, setCurrentPage] = useState(0)
   const [loadingPage, setLoadingPage] = useState(false)
+  const [isFetchingMore, setIsFetchingMore] = useState(false)
+  const [allMovies, setAllMovies] = useState<any[]>([])
   const moviesPerPage = 18
 
+  const containerRef = useRef<HTMLDivElement>(null)
+
   // 플레이리스트 상세 정보 가져오기
-  const fetchPlaylistDetail = async (page: number = 0) => {
+  const fetchPlaylistDetail = async (page: number = 0, append = false) => {
     if (!id) return
 
-    if (page === 0) {
+    if (page === 0 && !append) {
       setLoading(true)
     } else {
       setLoadingPage(true)
@@ -342,7 +403,13 @@ const PlaylistDetail: React.FC = () => {
         // 권한 검사: hidden이 true인 경우 작성자만 접근 가능
         if (playlistData.hidden) {
           if (!user || user.nickname !== playlistData.nickname) {
-            alert('권한이 없습니다. 비공개 플레이리스트는 작성자만 볼 수 있습니다.')
+            await Swal.fire({
+              title: '접근 권한 없음',
+              text: '비공개 플레이리스트는 작성자만 볼 수 있습니다.',
+              icon: 'error',
+              confirmButtonText: '확인',
+              confirmButtonColor: '#FF7849',
+            })
             navigate('/playlist')
             return
           }
@@ -350,13 +417,25 @@ const PlaylistDetail: React.FC = () => {
 
         setPlaylist(playlistData)
         setCurrentPage(page)
+
+        // 무한스크롤: 영화 누적
+        if (append) {
+          setAllMovies(prev => [...prev, ...(playlistData.movies.content || [])])
+        } else {
+          setAllMovies(playlistData.movies.content || [])
+        }
       } else {
         setError(response.message || '플레이리스트를 불러올 수 없습니다.')
       }
     } catch (err: any) {
-      // 403 에러 처리
       if (err.response?.status === 403) {
-        alert('네트워크에러 발생')
+        await Swal.fire({
+          title: '네트워크 오류',
+          text: '네트워크 오류가 발생했습니다.',
+          icon: 'error',
+          confirmButtonText: '확인',
+          confirmButtonColor: '#FF7849',
+        })
         navigate('/playlist')
         return
       }
@@ -366,6 +445,7 @@ const PlaylistDetail: React.FC = () => {
     } finally {
       setLoading(false)
       setLoadingPage(false)
+      setIsFetchingMore(false)
     }
   }
 
@@ -374,8 +454,20 @@ const PlaylistDetail: React.FC = () => {
     if (!playlist || bookmarking) return
 
     if (!isAuthenticated) {
-      alert('로그인이 필요합니다.')
-      navigate('/login')
+      const result = await Swal.fire({
+        title: '로그인이 필요합니다',
+        text: '북마크 기능을 이용하려면 로그인이 필요합니다.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '로그인하러 가기',
+        cancelButtonText: '취소',
+        confirmButtonColor: '#FF7849',
+        cancelButtonColor: '#6c757d',
+      })
+
+      if (result.isConfirmed) {
+        navigate('/login')
+      }
       return
     }
 
@@ -395,11 +487,23 @@ const PlaylistDetail: React.FC = () => {
             : null,
         )
       } else {
-        alert('북마크 처리에 실패했습니다.')
+        await Swal.fire({
+          title: '북마크 실패',
+          text: '북마크 처리에 실패했습니다.',
+          icon: 'error',
+          confirmButtonText: '확인',
+          confirmButtonColor: '#FF7849',
+        })
       }
     } catch (err: any) {
       console.error('Error toggling bookmark:', err)
-      alert('북마크 처리 중 오류가 발생했습니다.')
+      await Swal.fire({
+        title: '오류 발생',
+        text: '북마크 처리 중 오류가 발생했습니다.',
+        icon: 'error',
+        confirmButtonText: '확인',
+        confirmButtonColor: '#FF7849',
+      })
     } finally {
       setBookmarking(false)
     }
@@ -410,23 +514,49 @@ const PlaylistDetail: React.FC = () => {
     if (!playlist || deleting) return
 
     if (!isAuthenticated || !user) {
-      alert('로그인이 필요합니다.')
-      navigate('/login')
+      const result = await Swal.fire({
+        title: '로그인이 필요합니다',
+        text: '플레이리스트를 삭제하려면 로그인이 필요합니다.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '로그인하러 가기',
+        cancelButtonText: '취소',
+        confirmButtonColor: '#FF7849',
+        cancelButtonColor: '#6c757d',
+      })
+
+      if (result.isConfirmed) {
+        navigate('/login')
+      }
       return
     }
 
     // 작성자 확인
     if (user.nickname !== playlist.nickname) {
-      alert('삭제 권한이 없습니다.')
+      await Swal.fire({
+        title: '권한 없음',
+        text: '삭제 권한이 없습니다.',
+        icon: 'error',
+        confirmButtonText: '확인',
+        confirmButtonColor: '#FF7849',
+      })
       return
     }
 
     // 삭제 확인
-    const isConfirmed = window.confirm(
-      `"${playlist.title}" 플레이리스트를 정말 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`,
-    )
+    const result = await Swal.fire({
+      title: '플레이리스트 삭제',
+      text: `"${playlist.title}" 플레이리스트를 정말 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: '삭제',
+      cancelButtonText: '취소',
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d',
+      reverseButtons: true,
+    })
 
-    if (!isConfirmed) return
+    if (!result.isConfirmed) return
 
     setDeleting(true)
 
@@ -434,22 +564,43 @@ const PlaylistDetail: React.FC = () => {
       const response = await deletePlaylist(id!)
 
       if (response.success) {
-        alert('플레이리스트가 성공적으로 삭제되었습니다.')
+        await Swal.fire({
+          title: '삭제 완료',
+          text: '플레이리스트가 성공적으로 삭제되었습니다.',
+          icon: 'success',
+          confirmButtonText: '확인',
+          confirmButtonColor: '#FF7849',
+        })
         navigate('/playlist')
       } else {
-        alert(response.message || '플레이리스트 삭제에 실패했습니다.')
+        await Swal.fire({
+          title: '삭제 실패',
+          text: response.message || '플레이리스트 삭제에 실패했습니다.',
+          icon: 'error',
+          confirmButtonText: '확인',
+          confirmButtonColor: '#FF7849',
+        })
       }
     } catch (err: any) {
       console.error('Delete playlist error:', err)
 
-      // 에러 상태별 처리
+      let errorMessage = '플레이리스트 삭제 중 오류가 발생했습니다.'
+
       if (err.response?.status === 403) {
-        alert('삭제 권한이 없습니다.')
+        errorMessage = '삭제 권한이 없습니다.'
       } else if (err.response?.status === 404) {
-        alert('플레이리스트를 찾을 수 없습니다.')
-      } else {
-        alert(err.response?.data?.message || '플레이리스트 삭제 중 오류가 발생했습니다.')
+        errorMessage = '플레이리스트를 찾을 수 없습니다.'
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message
       }
+
+      await Swal.fire({
+        title: '오류 발생',
+        text: errorMessage,
+        icon: 'error',
+        confirmButtonText: '확인',
+        confirmButtonColor: '#FF7849',
+      })
     } finally {
       setDeleting(false)
     }
@@ -472,54 +623,58 @@ const PlaylistDetail: React.FC = () => {
     }
   }, [playlist?.playListId, isBookmarked, isAuthenticated])
 
-  // 페이지 변경 핸들러
+  // 페이지 변경 핸들러 (PC)
   const handlePageChange = (page: number) => {
     if (page !== currentPage && !loadingPage) {
       fetchPlaylistDetail(page)
     }
   }
 
-  // 페이지 번호 렌더링 함수
-  const renderPageNumbers = () => {
-    if (!playlist || !playlist.movies) return null
-
-    const pages = []
-    const totalPages = playlist.movies.totalPages
-    const maxVisiblePages = 5
-    const startPage = Math.max(0, currentPage - Math.floor(maxVisiblePages / 2))
-    const endPage = Math.min(totalPages - 1, startPage + maxVisiblePages - 1)
-
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(
-        <PaginationButton
-          key={i}
-          $active={currentPage === i}
-          onClick={() => handlePageChange(i)}
-          disabled={loadingPage}
-        >
-          {i + 1}
-        </PaginationButton>,
-      )
+  // 무한스크롤 감지 핸들러 (모바일)
+  const handleScroll = useCallback(() => {
+    if (
+      loadingPage ||
+      isFetchingMore ||
+      !playlist ||
+      currentPage >= playlist.movies.totalPages - 1 ||
+      error
+    )
+      return
+    const container = containerRef.current
+    if (!container) return
+    if (container.scrollHeight - container.scrollTop - container.clientHeight < 200) {
+      setIsFetchingMore(true)
+      fetchPlaylistDetail(currentPage + 1, true)
+      setCurrentPage(prev => prev + 1)
     }
+  }, [loadingPage, isFetchingMore, playlist, currentPage, error])
 
-    return pages
-  }
-
-  // 작성자 확인 (수정/삭제 권한)
-  const isOwner = user && playlist && user.nickname === playlist.nickname
-
-  // 초기 로드 - 인증 상태 확인 후 실행
+  // 모바일에서만 무한스크롤 적용
   useEffect(() => {
-    // 인증 상태가 로딩 중이 아닐 때만 실행
+    const container = containerRef.current
+    if (window.innerWidth > 768 || !container) return
+    container.addEventListener('scroll', handleScroll)
+    return () => {
+      container.removeEventListener('scroll', handleScroll)
+    }
+  }, [handleScroll])
+
+  // 탭/정렬 변경 시 스크롤 맨 위로
+  useEffect(() => {
+    const container = containerRef.current
+    if (container) container.scrollTop = 0
+  }, [id])
+
+  // 초기 로드
+  useEffect(() => {
     if (user !== undefined) {
-      // user가 null이거나 객체일 때 (undefined가 아닐 때)
       fetchPlaylistDetail()
     }
   }, [id, user])
 
   if (loading) {
     return (
-      <Container>
+      <Container ref={containerRef}>
         <LoadingMessage>로딩 중...</LoadingMessage>
       </Container>
     )
@@ -527,7 +682,7 @@ const PlaylistDetail: React.FC = () => {
 
   if (error || !playlist) {
     return (
-      <Container>
+      <Container ref={containerRef}>
         <ErrorMessage>{error || '플레이리스트를 찾을 수 없습니다.'}</ErrorMessage>
         <div style={{ textAlign: 'center', marginTop: '2rem' }}>
           <BaseButton variant="orange" onClick={() => navigate(-1)}>
@@ -538,11 +693,33 @@ const PlaylistDetail: React.FC = () => {
     )
   }
 
+  // 컴포넌트 내부에 추가
+  const renderPageNumbers = () => {
+    if (!playlist) return null
+    const pages = []
+    for (let i = 0; i < playlist.movies.totalPages; i++) {
+      pages.push(
+        <PaginationButton
+          key={i}
+          $active={i === currentPage}
+          onClick={() => handlePageChange(i)}
+          disabled={loadingPage}
+        >
+          {i + 1}
+        </PaginationButton>,
+      )
+    }
+    return pages
+  }
+
   const bookmarkStatus =
     playlist && isAuthenticated ? isBookmarked(playlist.playListId.toString()) : false
 
+  const isMobile = window.innerWidth <= 768
+  const isOwner = user && playlist && user.nickname === playlist.nickname
+
   return (
-    <Container>
+    <Container ref={containerRef}>
       <BreadcrumbNav>
         <BreadcrumbItem onClick={() => navigate('/playlist')}>플레이리스트</BreadcrumbItem>
         <BreadcrumbSeparator>/</BreadcrumbSeparator>
@@ -578,8 +755,7 @@ const PlaylistDetail: React.FC = () => {
           </TitleSection>
         </LeftSection>
 
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          {/* 로그인된 사용자만 북마크 버튼 표시 (본인 플레이리스트가 아닌 경우) */}
+        <RightSection>
           {!isOwner && isAuthenticated && (
             <BookmarkButton
               $isBookmarked={bookmarkStatus}
@@ -591,7 +767,6 @@ const PlaylistDetail: React.FC = () => {
             </BookmarkButton>
           )}
 
-          {/* 작성자만 수정/삭제 버튼 표시 */}
           {isOwner && (
             <>
               <BaseButton
@@ -606,13 +781,12 @@ const PlaylistDetail: React.FC = () => {
               </BaseButton>
             </>
           )}
-        </div>
+        </RightSection>
       </Header>
 
-      {/* 페이지 로딩 중일 때 오버레이 */}
       <div style={{ position: 'relative' }}>
         <MovieGrid style={{ opacity: loadingPage ? 0.5 : 1 }}>
-          {playlist.movies.content.map(movie => (
+          {(isMobile ? allMovies : playlist.movies.content).map(movie => (
             <MovieCard key={movie.movieId}>
               <ImageLoader
                 src={movie.posterUrl}
@@ -634,7 +808,8 @@ const PlaylistDetail: React.FC = () => {
         )}
       </div>
 
-      {playlist.movies.totalPages > 1 && (
+      {/* PC에서만 페이지네이션 */}
+      {!isMobile && playlist.movies.totalPages > 1 && (
         <Pagination>
           <PaginationButton
             disabled={currentPage === 0 || loadingPage}
@@ -667,41 +842,11 @@ const PlaylistDetail: React.FC = () => {
           </PaginationButton>
         </Pagination>
       )}
+
+      {/* 모바일에서 추가 로딩 메시지 */}
+      {isMobile && isFetchingMore && <LoadingMessage>불러오는 중...</LoadingMessage>}
     </Container>
   )
 }
 
 export default PlaylistDetail
-
-// 스타일 컴포넌트 추가
-const BreadcrumbNav = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  font-size: 0.9rem;
-  color: #aaa;
-`
-
-const BreadcrumbItem = styled.button`
-  background: none;
-  border: none;
-  color: #aaa;
-  cursor: pointer;
-  padding: 0;
-  font-size: 0.9rem;
-  transition: color 0.2s;
-
-  &:hover {
-    color: #ff7849;
-  }
-`
-
-const BreadcrumbSeparator = styled.span`
-  margin: 0 0.5rem;
-  color: #666;
-`
-
-const CurrentPage = styled.span`
-  color: #fff;
-  font-weight: 500;
-`

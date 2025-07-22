@@ -90,6 +90,11 @@ const ModalHeader = styled.div`
   align-items: center;
   border-bottom: 1px solid #333;
   z-index: 10;
+      @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
 `;
 
 const ModalTitleContainer = styled.div`
@@ -130,6 +135,11 @@ const RefreshButton = styled.button`
 const HeaderButtonContainer = styled.div`
   display: flex;
   gap: 1rem;
+    @media(max-width: 768px){
+    width: 100%;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
 `;
 
 const ModalBody = styled.div`
