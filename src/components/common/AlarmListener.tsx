@@ -13,7 +13,7 @@ const AlarmListener: React.FC = () => {
     if (!userId) return
 
     // 1) 스트림 구독
-    const es = new EventSource(`http://localhost:8080/api/v1/alarms/stream?userId=${userId}`)
+    const es = new EventSource(`https://api.flipflick.life/api/v1/alarms/stream?userId=${userId}`)
 
     // 2) 서버에서 name="alarm" 으로 보낸 데이터 수신
     es.addEventListener('alarm', (e: MessageEvent) => {
