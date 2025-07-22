@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import styled, { keyframes } from 'styled-components'
 import { useMediaQuery } from 'react-responsive'
 import BaseContainer from '@/components/common/BaseContainer'
 import { getUserReviewsLatest } from '@/services/memberPost'
 import { timeForToday } from '@/utils/timeForToday'
 import FlipflickTransparency from '@/assets/common/flipflick_transparency.png'
-import { ThumbsUp, ThumbsDown, Star } from 'lucide-react'
+import { ThumbsUp, ThumbsDown, Star, ArrowLeft } from 'lucide-react'
 interface IsMobile {
   $ismobile: boolean
 }
@@ -32,8 +32,37 @@ const ContentWrapper = styled.div`
   overflow-x: hidden;
 `
 
-const Title = styled.h2`
-  font-size: 1.5rem;
+const Spacer = styled.div`
+  width: 24px; // BackButton과 동일한 너비
+`
+
+const HeaderRow = styled.div<IsMobile>`
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  margin-bottom: 1rem;
+`
+
+const BackButton = styled.button<IsMobile>`
+  background: none;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: left;
+  justify-content: left;
+  margin-left: ${props => (props.$ismobile ? '3%' : '6%')};
+  padding: 0;
+
+  &:hover {
+    color: #ff7849;
+  }
+`
+
+const Title = styled.h2<IsMobile>`
+  font-size: ${props => (props.$ismobile ? '1.2rem' : '1.5rem')};
   color: #fff;
   text-align: center;
   margin-bottom: 1rem;
@@ -302,6 +331,7 @@ const MyPageReview: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const [loaded, setLoaded] = useState(false)
   const [error, setError] = useState(false)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -353,113 +383,113 @@ const MyPageReview: React.FC = () => {
   return (
     <Container>
       <ContentWrapper>
-        <Title>작성한 리뷰</Title>
+        <HeaderRow $ismobile={isMobile}>
+          <BackButton $ismobile={isMobile} onClick={() => navigate(-1)}>
+            <ArrowLeft size={24} />
+          </BackButton>
+          <Title $ismobile={isMobile}>작성한 리뷰</Title>
+          <Spacer /> {/* 오른쪽 빈 칸 */}
+        </HeaderRow>
 
         {/* 로딩 중 */}
         {loading && !loaded && <LoadingMessage>리뷰를 불러오는 중입니다...</LoadingMessage>}
 
         {/* 에러 발생 시 */}
         {error && <ErrorMessage>리뷰를 불러오는 중 오류가 발생했습니다.</ErrorMessage>}
+
         {/* 정상 로딩 완료 시 */}
-        {!loading && !error && loaded && (
+
+        <FlexRow>
+          <TotalCount>총 {total}개</TotalCount>
+        </FlexRow>
+
+        {reviews.length === 0 ? (
+          <EmptyMessage>작성한 리뷰가 없습니다.</EmptyMessage>
+        ) : (
           <>
-            <FlexRow>
-              <TotalCount>총 {total}개</TotalCount>
-            </FlexRow>
+            <ContentGrid $ismobile={isMobile}>
+              {reviews.map((review, idx, arr) => {
+                const isLast = isMobile && idx === arr.length - 1
+                const key = review.id || `${review.movieTitle}-${idx}`
 
-            {/* ✅ 리뷰가 없을 때 */}
-            {reviews.length === 0 ? (
-              <EmptyMessage>작성한 리뷰가 없습니다.</EmptyMessage>
-            ) : (
-              <>
-                <ContentGrid $ismobile={isMobile}>
-                  {reviews.map((review, idx, arr) => {
-                    const isLast = isMobile && idx === arr.length - 1
-                    const key = review.id || `${review.movieTitle}-${idx}`
+                return (
+                  <div key={key} ref={isLast ? lastItemRef : undefined}>
+                    <ReviewCard $ismobile={isMobile}>
+                      <ImageLoader
+                        src={`https://image.tmdb.org/t/p/w500${review.posterImg}`}
+                        alt={review.movieTitle}
+                        width={'auto'}
+                        height={'auto'}
+                      ></ImageLoader>
+                      <InfoWrap>
+                        <ReviewRating>
+                          <Star fill="yellow" stroke="#yellow" size={18} />
+                          <span>{review.star}</span>
+                        </ReviewRating>
+                        <ReviewTitle $ismobile={isMobile}>{review.movieTitle}</ReviewTitle>
+                        <ReviewText>{review.content}</ReviewText>
 
-                    return (
-                      <div key={key} ref={isLast ? lastItemRef : undefined}>
-                        <ReviewCard $ismobile={isMobile}>
-                          <ImageLoader
-                            src={`https://image.tmdb.org/t/p/w500${review.posterImg}`}
-                            alt={review.movieTitle}
-                            width={'auto'}
-                            height={'auto'}
-                          ></ImageLoader>
-                          <InfoWrap>
-                            <ReviewRating>
-                              <Star fill="yellow" stroke="#yellow" size={18} />
-                              <span>{review.star}</span>
-                            </ReviewRating>
-                            <ReviewTitle $ismobile={isMobile}>{review.movieTitle}</ReviewTitle>
-                            <ReviewText>{review.content}</ReviewText>
+                        <ReviewBottomRow>
+                          <ReviewActions>
+                            <div>
+                              <ThumbsUp />
+                              <span>{formatCount(review.likeCnt)}</span>
+                            </div>
+                            <div>
+                              <ThumbsDown />
+                              <span>{formatCount(review.hateCnt)}</span>
+                            </div>
+                          </ReviewActions>
+                          <ReviewTime>{timeForToday(review.createdAt)}</ReviewTime>
+                        </ReviewBottomRow>
+                      </InfoWrap>
+                    </ReviewCard>
+                  </div>
+                )
+              })}
+            </ContentGrid>
+            {/* 데스크탑 페이징 */}
+            {!isMobile && total > pageSize && (
+              <PaginationWrapper>
+                <PaginationButton disabled={page === 0} onClick={() => setPage(0)}>
+                  &lt;&lt;
+                </PaginationButton>
+                <PaginationButton disabled={page === 0} onClick={() => setPage(prev => prev - 1)}>
+                  &lt;
+                </PaginationButton>
 
-                            <ReviewBottomRow>
-                              <ReviewActions>
-                                <div>
-                                  <ThumbsUp />
-                                  <span>{formatCount(review.likeCnt)}</span>
-                                </div>
-                                <div>
-                                  <ThumbsDown />
-                                  <span>{formatCount(review.hateCnt)}</span>
-                                </div>
-                              </ReviewActions>
-                              <ReviewTime>{timeForToday(review.createdAt)}</ReviewTime>
-                            </ReviewBottomRow>
-                          </InfoWrap>
-                        </ReviewCard>
-                      </div>
-                    )
-                  })}
-                </ContentGrid>
-                {/* 데스크탑 페이징 */}
-                {!isMobile && total > pageSize && (
-                  <PaginationWrapper>
-                    <PaginationButton disabled={page === 0} onClick={() => setPage(0)}>
-                      &lt;&lt;
-                    </PaginationButton>
+                {/* 페이지 번호 렌더링 */}
+                {Array.from({ length: Math.min(5, Math.ceil(total / pageSize)) }, (_, i) => {
+                  const start = Math.max(0, page - 2)
+                  const pageNum = start + i
+                  if (pageNum >= Math.ceil(total / pageSize)) return null
+                  return (
                     <PaginationButton
-                      disabled={page === 0}
-                      onClick={() => setPage(prev => prev - 1)}
+                      key={pageNum}
+                      $active={page === pageNum}
+                      onClick={() => setPage(pageNum)}
                     >
-                      &lt;
+                      {pageNum + 1}
                     </PaginationButton>
+                  )
+                })}
 
-                    {/* 페이지 번호 렌더링 */}
-                    {Array.from({ length: Math.min(5, Math.ceil(total / pageSize)) }, (_, i) => {
-                      const start = Math.max(0, page - 2)
-                      const pageNum = start + i
-                      if (pageNum >= Math.ceil(total / pageSize)) return null
-                      return (
-                        <PaginationButton
-                          key={pageNum}
-                          $active={page === pageNum}
-                          onClick={() => setPage(pageNum)}
-                        >
-                          {pageNum + 1}
-                        </PaginationButton>
-                      )
-                    })}
-
-                    <PaginationButton
-                      disabled={page >= Math.ceil(total / pageSize) - 1}
-                      onClick={() => setPage(prev => prev + 1)}
-                    >
-                      &gt;
-                    </PaginationButton>
-                    <PaginationButton
-                      disabled={page >= Math.ceil(total / pageSize) - 1}
-                      onClick={() => setPage(Math.ceil(total / pageSize) - 1)}
-                    >
-                      &gt;&gt;
-                    </PaginationButton>
-                  </PaginationWrapper>
-                )}
-                {/* 모바일 로딩 */}
-                {isMobile && loading && <MobileLoading>내용 불러오는 중...</MobileLoading>}
-              </>
+                <PaginationButton
+                  disabled={page >= Math.ceil(total / pageSize) - 1}
+                  onClick={() => setPage(prev => prev + 1)}
+                >
+                  &gt;
+                </PaginationButton>
+                <PaginationButton
+                  disabled={page >= Math.ceil(total / pageSize) - 1}
+                  onClick={() => setPage(Math.ceil(total / pageSize) - 1)}
+                >
+                  &gt;&gt;
+                </PaginationButton>
+              </PaginationWrapper>
             )}
+            {/* 모바일 로딩 */}
+            {isMobile && loading && <MobileLoading>내용 불러오는 중...</MobileLoading>}
           </>
         )}
       </ContentWrapper>

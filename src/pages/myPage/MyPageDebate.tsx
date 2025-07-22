@@ -5,7 +5,15 @@ import { useMediaQuery } from 'react-responsive'
 import zzanggu from './zzanggu.jpg'
 import BaseContainer from '@/components/common/BaseContainer'
 import { getUserDebatesBySort, Debate, SortBy } from '@/services/memberPost'
-import { ChevronDown, MessageSquare, Pencil, Trash2, ThumbsUp, ThumbsDown } from 'lucide-react'
+import {
+  ChevronDown,
+  MessageSquare,
+  Pencil,
+  Trash2,
+  ThumbsUp,
+  ThumbsDown,
+  ArrowLeft,
+} from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { timeForToday } from '@/utils/timeForToday'
 import { useNavigate } from 'react-router-dom'
@@ -36,7 +44,35 @@ const ContentWrapper = styled.div`
   width: 100%;
 `
 
-// 페이지 이름
+const BackButton = styled.button<IsMobile>`
+  background: none;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: left;
+  justify-content: left;
+  margin-left: ${props => (props.$ismobile ? '3%' : '6%')};
+  padding: 0;
+
+  &:hover {
+    color: #ff7849;
+  }
+`
+
+const Spacer = styled.div`
+  width: 24px; // BackButton과 동일한 너비
+`
+
+const HeaderRow = styled.div<IsMobile>`
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  margin-bottom: 1rem;
+`
+
 const Title = styled.h2<IsMobile>`
   font-size: ${p => (p.$ismobile ? '1.2rem' : '1.5rem')};
   margin-bottom: 1rem;
@@ -395,7 +431,6 @@ export default function MyPageDebate() {
   const [sortBy, setSortBy] = useState<SortBy>('latest')
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
-  const [currentPage, setCurrentPage] = useState(0)
   const [hasLoaded, setHasLoaded] = useState(false)
   const [hasError, setHasError] = useState(false)
   const { user } = useAuth()
@@ -423,7 +458,6 @@ export default function MyPageDebate() {
 
   const handleSortChange = (newSortBy: SortBy) => {
     setSortBy(newSortBy)
-    setCurrentPage(0)
     setIsDropdownOpen(false)
     setHasLoaded(false) // 추가: 정렬 변경 시 로딩 상태 초기화
   }
@@ -473,15 +507,9 @@ export default function MyPageDebate() {
 
   useEffect(() => {
     if (nickname) {
-      fetchDebates(0)
+      fetchDebates(page)
     }
-  }, [nickname, sortBy])
-
-  useEffect(() => {
-    if (!isMobile && nickname) {
-      fetchDebates(page) // 페이지 변경 시 데이터 불러오기
-    }
-  }, [page, isMobile, nickname])
+  }, [page, nickname, sortBy])
 
   const formatCount = (count: number): string => {
     return count > 99 ? '99+' : count.toString()
@@ -490,7 +518,13 @@ export default function MyPageDebate() {
   return (
     <Container>
       <ContentWrapper>
-        <Title $ismobile={isMobile}>토론장 활동 내역</Title>
+        <HeaderRow $ismobile={isMobile}>
+          <BackButton $ismobile={isMobile} onClick={() => navigate(-1)}>
+            <ArrowLeft size={24} />
+          </BackButton>
+          <Title $ismobile={isMobile}>토론장 활동 내역</Title>
+          <Spacer />
+        </HeaderRow>
         {/* <TabNav $ismobile={isMobile}>
           {(['내가 쓴 글', '내가 쓴 댓글'] as const).map(tab => (
             <TabItem
@@ -524,101 +558,103 @@ export default function MyPageDebate() {
         </FlexRow>
         {isLoading && !hasLoaded && <LoadingMessage>토론 글을 불러오는 중입니다...</LoadingMessage>}
         {hasError && <ErrorMessage>토론 글을 불러오는 중 오류가 발생했습니다.</ErrorMessage>}
-        {!isLoading && !hasError && hasLoaded && debates.length === 0 && (
-          <EmptyMessage>작성한 토론 글이 없습니다.</EmptyMessage>
-        )}
-        {!isLoading && !hasError && hasLoaded && debates.length > 0 && (
-          <ContentGrid $ismobile={isMobile}>
-            {debates.map((d, idx) => {
-              const isLast = isMobile && idx === debates.length - 1
-              const isOwner = user?.nickname === nickname
-              return (
-                <div key={d.debateId} ref={isLast ? lastItemRef : undefined}>
-                  {isMobile ? (
-                    <>
-                      <DebateCard $$ismobile={isMobile}>
-                        {isOwner && (
-                          <TopIcons $ismobile={isMobile}>
-                            <span>
-                              <Pencil size={20} onClick={() => navigate('/')} />
-                            </span>
-                            <span>
-                              <Trash2 size={20} onClick={() => navigate('/')} />
-                            </span>
-                          </TopIcons>
-                        )}
-                        <ImageWrapper $ismobile={isMobile}>
-                          <MovieTitle $ismobile={isMobile}>{d.movieTitle}</MovieTitle>
-                          <Header $ismobile={isMobile}>
-                            <DebateTitle $ismobile={isMobile}>{d.debateTitle}</DebateTitle>
-                            <TimeStamp>{timeForToday(d.createdAt)}</TimeStamp>
-                          </Header>
-                          <ImageLoader src={zzanggu} alt="프로필" />
+        {debates.length === 0 ? (
+          <EmptyMessage>작성한 리뷰가 없습니다.</EmptyMessage>
+        ) : (
+          <>
+            <ContentGrid $ismobile={isMobile}>
+              {debates.map((d, idx) => {
+                const isLast = isMobile && idx === debates.length - 1
+                const isOwner = user?.nickname === nickname
+                return (
+                  <div key={d.debateId} ref={isLast ? lastItemRef : undefined}>
+                    {isMobile ? (
+                      <>
+                        <DebateCard $$ismobile={isMobile}>
+                          {isOwner && (
+                            <TopIcons $ismobile={isMobile}>
+                              <span>
+                                <Pencil size={20} onClick={() => navigate('/')} />
+                              </span>
+                              <span>
+                                <Trash2 size={20} onClick={() => navigate('/')} />
+                              </span>
+                            </TopIcons>
+                          )}
+                          <ImageWrapper $ismobile={isMobile}>
+                            <MovieTitle $ismobile={isMobile}>{d.movieTitle}</MovieTitle>
+                            <Header $ismobile={isMobile}>
+                              <DebateTitle $ismobile={isMobile}>{d.debateTitle}</DebateTitle>
+                              <TimeStamp>{timeForToday(d.createdAt)}</TimeStamp>
+                            </Header>
+                            <ImageLoader src={zzanggu} alt="프로필" />
 
-                          <DebateText $ismobile={isMobile}>{d.content}</DebateText>
-                          <ImageActions $ismobile={isMobile}>
-                            <GroupWrapper>
-                              <ThumbsUp stroke="#fff" size={20} />
-                              <span>{formatCount(d.likeCnt)}</span>
-                            </GroupWrapper>
-                            <GroupWrapper>
-                              <ThumbsDown stroke="#fff" size={20} />
-                              <span>{formatCount(d.hateCnt)}</span>
-                            </GroupWrapper>
-                            <GroupWrapper>
-                              <MessageSquare stroke="#fff" size={20} />
-                              <span>{formatCount(d.commentCount)}</span>
-                            </GroupWrapper>
-                          </ImageActions>
-                        </ImageWrapper>
-                      </DebateCard>
-                    </>
-                  ) : (
-                    <>
-                      <DebateCard $$ismobile={isMobile}>
-                        {isOwner && (
-                          <TopIcons $ismobile={isMobile}>
-                            <span>
-                              <Pencil size={20} />
-                            </span>
-                            <span>
-                              <Trash2 size={20} />
-                            </span>
-                          </TopIcons>
-                        )}
-                        <ImageWrapper $ismobile={isMobile}>
-                          <MovieTitle $ismobile={isMobile}>{d.movieTitle}</MovieTitle>
-                          <ImageLoader src={zzanggu} alt="프로필" />
-                          <ImageActions $ismobile={isMobile}>
-                            <GroupWrapper>
-                              <ThumbsUp stroke="#fff" size={20} />
-                              <span>{formatCount(d.likeCnt)}</span>
-                            </GroupWrapper>
-                            <GroupWrapper>
-                              <ThumbsDown stroke="#fff" size={20} />
-                              <span>{formatCount(d.hateCnt)}</span>
-                            </GroupWrapper>
-                            <GroupWrapper>
-                              <MessageSquare stroke="#fff" size={20} />
-                              <span>{formatCount(d.commentCount)}</span>
-                            </GroupWrapper>
-                          </ImageActions>
-                        </ImageWrapper>
-                        <DebateContent $ismobile={isMobile}>
-                          <Header $ismobile={isMobile}>
-                            <DebateTitle $ismobile={isMobile}>{d.debateTitle}</DebateTitle>
-                            <TimeStamp>{timeForToday(d.createdAt)}</TimeStamp>
-                          </Header>
-                          <DebateText $ismobile={isMobile}>{d.content}</DebateText>
-                        </DebateContent>
-                      </DebateCard>
-                    </>
-                  )}
-                </div>
-              )
-            })}
-          </ContentGrid>
+                            <DebateText $ismobile={isMobile}>{d.content}</DebateText>
+                            <ImageActions $ismobile={isMobile}>
+                              <GroupWrapper>
+                                <ThumbsUp stroke="#fff" size={20} />
+                                <span>{formatCount(d.likeCnt)}</span>
+                              </GroupWrapper>
+                              <GroupWrapper>
+                                <ThumbsDown stroke="#fff" size={20} />
+                                <span>{formatCount(d.hateCnt)}</span>
+                              </GroupWrapper>
+                              <GroupWrapper>
+                                <MessageSquare stroke="#fff" size={20} />
+                                <span>{formatCount(d.commentCount)}</span>
+                              </GroupWrapper>
+                            </ImageActions>
+                          </ImageWrapper>
+                        </DebateCard>
+                      </>
+                    ) : (
+                      <>
+                        <DebateCard $$ismobile={isMobile}>
+                          {isOwner && (
+                            <TopIcons $ismobile={isMobile}>
+                              <span>
+                                <Pencil size={20} />
+                              </span>
+                              <span>
+                                <Trash2 size={20} />
+                              </span>
+                            </TopIcons>
+                          )}
+                          <ImageWrapper $ismobile={isMobile}>
+                            <MovieTitle $ismobile={isMobile}>{d.movieTitle}</MovieTitle>
+                            <ImageLoader src={zzanggu} alt="프로필" />
+                            <ImageActions $ismobile={isMobile}>
+                              <GroupWrapper>
+                                <ThumbsUp stroke="#fff" size={20} />
+                                <span>{formatCount(d.likeCnt)}</span>
+                              </GroupWrapper>
+                              <GroupWrapper>
+                                <ThumbsDown stroke="#fff" size={20} />
+                                <span>{formatCount(d.hateCnt)}</span>
+                              </GroupWrapper>
+                              <GroupWrapper>
+                                <MessageSquare stroke="#fff" size={20} />
+                                <span>{formatCount(d.commentCount)}</span>
+                              </GroupWrapper>
+                            </ImageActions>
+                          </ImageWrapper>
+                          <DebateContent $ismobile={isMobile}>
+                            <Header $ismobile={isMobile}>
+                              <DebateTitle $ismobile={isMobile}>{d.debateTitle}</DebateTitle>
+                              <TimeStamp>{timeForToday(d.createdAt)}</TimeStamp>
+                            </Header>
+                            <DebateText $ismobile={isMobile}>{d.content}</DebateText>
+                          </DebateContent>
+                        </DebateCard>
+                      </>
+                    )}
+                  </div>
+                )
+              })}
+            </ContentGrid>
+          </>
         )}
+
         {!isMobile && totalPages > 1 && (
           <PaginationWrapper>
             <PaginationButton disabled={page === 0} onClick={() => setPage(0)}>
