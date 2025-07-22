@@ -80,6 +80,5 @@ export const getMyMovieReview = async (tmdbId: string | undefined) => {
   if (!tmdbId) console.error('getMyMovieReview called with undefined tmdbId');
   console.log('getMyMovieReview called with tmdbId');
   const res = await axiosInstance.get(`/api/v1/review/movie/${tmdbId}/my/status`)
-  // const res = await axios.get(`/api/v1/review/${tmdbId}`, )
   return res.data
 }

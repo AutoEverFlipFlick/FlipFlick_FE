@@ -24,22 +24,25 @@ export interface ReviewData {
 
 
 
-export function mapToMyReviewData(data: any): Review {
+export function mapToMyReviewData(data: any): Review | null {
+  if (!data.review) return null;
+  const review = data.review ?? {};
+  console.log("[mapToMyReviewData] data:", data);
   return {
     member: {
-      nickname: data.nickname,
-      profileImage: data.profileImage,
-      popcornScore: data.popcornScore,
+      nickname: review.nickname,
+      profileImage: review.profileImage,
+      popcornScore: review.popcornScore,
     },
-    reviewId: data.reviewId,
-    createdAt: data.createdAt,
-    updatedAt: data.updatedAt,
-    content: data.content,
-    rating: data.star,
-    likes: data.likeCnt,
-    hates: data.hateCnt,
-    isMyPost: true, // 현재 사용자의 리뷰이므로 항상 true
-    isSpoiler: data.spoiler || false, // 스포일러 여부
+    reviewId: review.reviewId,
+    createdAt: review.createdAt,
+    updatedAt: review.updatedAt,
+    content: review.content,
+    rating: review.star,
+    likes: review.likeCnt,
+    hates: review.hateCnt,
+    isMyPost: true,
+    isSpoiler: review.spoiler || false,
   };
 }
 

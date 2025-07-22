@@ -402,7 +402,7 @@ export default function MovieDetailPage() {
           const response = await getMyMovieReview(tmdbId)
           const data = response.data
           console.log("내 리뷰 조회됨 : ", data)
-          const mappedData: Review = mapToMyReviewData(data)
+          const mappedData: Review | null = mapToMyReviewData(data)
           console.log("내 리뷰 매핑됨 : ", mappedData)
           setMyReview(mappedData)
         } catch (error) {
@@ -544,39 +544,22 @@ export default function MovieDetailPage() {
               </RatingWrapper>
               <DetailMyReviewWrapper>
                 <DetailMyReviewCard>
-                  {/*<ReviewCard*/}
-                  {/*  content={movieData.}*/}
-                  {/*  createdAt={'2023-10-01'}*/}
-                  {/*  username={'사용자'}*/}
-                  {/*  type={'review'}*/}
-                  {/*  isMyPost={true}*/}
-                  {/*  />*/}
-                  {myReview ? (
-                    <>
-                    {/* TODO : ReviewTextArea 에 내 리뷰 수정 로직 추가 필요 */}
-                    <p>내가 작성한 리뷰 있음</p>
-                    </>
-                  ) : (
-                    <ReviewTextArea
-                      tmdbId={tmdbId!}
-                      // rating={movieData.myRating}
-                      // TODO : 별점 선택 로직 추가하기
-                      rating={3.0}
-                      isAuthenticated={isAuthenticated}
-                      onSuccess={async () => {
-                        try {
-                          console.log("리뷰 작성 후 새로고침")
-                          const response = await getMyMovieReview(tmdbId!)
-                          const data = response.data
-                          const mappedData: Review = mapToMyReviewData(data)
-                          setMyReview(mappedData)
-                          console.log("리뷰 작성 후 새로고침 완료")
-                        } catch (error) {
-                          console.error('내 리뷰 불러오기 실패:', error)
-                        }
-                      }}
-                    />
-                  )}
+                  <ReviewTextArea
+                    tmdbId={tmdbId!}
+                    myReview={myReview}
+                    rating={myReview?.rating || 1}
+                    isAuthenticated={isAuthenticated}
+                    onSuccess={async () => {
+                      try {
+                        const response = await getMyMovieReview(tmdbId!)
+                        const data = response.data
+                        const mappedData: Review | null = mapToMyReviewData(data)
+                        setMyReview(mappedData)
+                      } catch (error) {
+                        console.error('내 리뷰 불러오기 실패:', error)
+                      }
+                    }}
+                  />
                 </DetailMyReviewCard>
               </DetailMyReviewWrapper>
               <ContentsListWrapper>
@@ -587,7 +570,6 @@ export default function MovieDetailPage() {
                 </ContentsListTitleTab>
                 <ReviewDebateList>
                   <DetailReviewCardWrapper>
-                    {/* TODO : ReviewTextArea에 수정 로직이 추가되면 자기 리뷰는 래퍼에 안뜨게 해야함*/}
                     {reviewData?.reviews.map(review =>
                       <ReviewDebateCard
                         key={review.reviewId}
