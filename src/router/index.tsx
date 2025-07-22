@@ -184,7 +184,6 @@ const AppRoutes = () => {
           <Route path="/example" element={<ExamplePage />} />
           <Route path="/filmography/:tmdbId" element={<Filmography />} />
 
-          {/* Protected Routes */}
           <Route
             path="/createplaylist"
             element={
@@ -201,16 +200,6 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
-
-          <Route path="/example" element={<ExamplePage />} />
-
-          <Route path="/filmography/:tmdbId" element={<div style={{overflowY : 'hidden'}}><Filmography /></div>} />
-
-          <Route path="*" element={<Navigate to="/" replace />} />
-
-          <Route path="/oauth/kakao/callback" element={<KakaoRedirectHandler />} />
-
-          <Route path="/oauth/naver/callback" element={<NaverRedirectHandler />} />
 
           <Route path="/my-page" element={<MyPageMain />} />
           <Route path="/my-page-edit" element={<MyPageEdit />} />
