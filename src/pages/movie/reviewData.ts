@@ -6,7 +6,7 @@ export interface MemberProfile {
 
 export interface Review {
   member :  MemberProfile;
-  reviewId: number;
+  contentId: number;
   createdAt: string;
   updatedAt?: string; // 업데이트 날짜는 선택적
   content: string;
@@ -23,6 +23,28 @@ export interface ReviewData {
 }
 
 
+
+export function mapToMyReviewData(data: any): Review | null {
+  if (!data.review) return null;
+  const review = data.review ?? {};
+  console.log("[mapToMyReviewData] data:", data);
+  return {
+    member: {
+      nickname: review.nickname,
+      profileImage: review.profileImage,
+      popcornScore: review.popcornScore,
+    },
+    contentId: review.reviewId,
+    createdAt: review.createdAt,
+    updatedAt: review.updatedAt,
+    content: review.content,
+    rating: review.star,
+    likes: review.likeCnt,
+    hates: review.hateCnt,
+    isMyPost: true,
+    isSpoiler: review.spoiler || false,
+  };
+}
 
 export function mapToReviewData(data: any, currentUserId?: number, currentUserNickName?: string): ReviewData {
   console.log(currentUserId, currentUserNickName);
