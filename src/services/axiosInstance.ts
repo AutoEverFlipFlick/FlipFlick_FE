@@ -32,6 +32,7 @@
 // export default axiosInstance
 
 import axios from 'axios'
+import Swal from 'sweetalert2'
 
 // access token을 로컬 스토리지에서 가져오도록 설정
 const getAccessToken = () => localStorage.getItem('accessToken')
@@ -92,6 +93,32 @@ axiosInstance.interceptors.response.use(
         console.error('토큰 재발급 실패:', reissueError)
         localStorage.removeItem('accessToken')
         window.location.href = '/login'
+      }
+    }
+
+    // ✅ 차단/정지 처리 (403)
+    if (error.response?.status === 403) {
+      const message = error.response.data.message as string
+      console.log('차단/정지 처리:', message)
+
+      if (message.startsWith('정지된 회원입니다.')) {
+        // 메시지에서 날짜 추출
+        const match = message.match(/해제일: (.+)/)
+        const unblockDate = match ? match[1] : '알 수 없음'
+
+        Swal.fire({
+          icon: 'warning',
+          title: '계정 정지',
+          html: `해당 계정은 정지 상태입니다.<br/>해제 예정일: <strong>${unblockDate}</strong>`,
+          confirmButtonText: '확인',
+        })
+      } else if (message === '차단된 회원입니다.') {
+        Swal.fire({
+          icon: 'error',
+          title: '계정 차단',
+          text: '해당 계정은 영구 차단되었습니다.',
+          confirmButtonText: '확인',
+        })
       }
     }
 

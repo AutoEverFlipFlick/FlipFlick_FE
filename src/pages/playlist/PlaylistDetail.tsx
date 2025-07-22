@@ -182,7 +182,7 @@ const MovieTitle = styled.h3`
   /* overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap; */
-`;
+`
 
 const MovieYear = styled.span`
   font-size: 0.8rem;
@@ -520,7 +520,7 @@ const PlaylistDetail: React.FC = () => {
   if (loading) {
     return (
       <Container>
-        <LoadingMessage>로딩 중...</LoadingMessage>
+        <LoadingMessage>로딩 중</LoadingMessage>
       </Container>
     )
   }

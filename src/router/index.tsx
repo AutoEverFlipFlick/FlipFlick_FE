@@ -78,6 +78,7 @@ import MyPagePreference from '@/pages/myPage/MyPagePreference'
 import MyPageReview from '@/pages/myPage/MyPageReview'
 import MyPageDebate from '@/pages/myPage/MyPageDebate'
 import MyPageFollowList from '@/pages/myPage/MyPageFollowList'
+import DebateWritePage from '@/pages/debate/DebateWritePage'
 
 const AppRoutes = () => {
   return (
@@ -183,6 +184,7 @@ const AppRoutes = () => {
           <Route path="/bolkinator" element={<Bolkinator />} />
           <Route path="/example" element={<ExamplePage />} />
           <Route path="/filmography/:tmdbId" element={<Filmography />} />
+          <Route path="/debate/write" element={<DebateWritePage />} />
 
           {/* Protected Routes */}
           <Route
