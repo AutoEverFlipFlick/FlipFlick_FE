@@ -341,6 +341,7 @@ interface DebateData {
   movie: {
     tmdbId: number
     title: string
+    overview: string // 추가
     posterImg: string
     releaseDate: string
     rating: number
