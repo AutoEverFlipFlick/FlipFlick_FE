@@ -550,7 +550,7 @@ const DebateDetailPage: React.FC<DebateDetailPageProps> = () => {
               background: '#1e1e2f',
               color: '#fff',
             }).then(() => {
-              navigate('/') // 메인 페이지로 이동
+              navigate(`/movie/detail/${debate.tmdbId}`)
             })
           }
         } catch (error) {
@@ -1068,10 +1068,7 @@ const DebateDetailPage: React.FC<DebateDetailPageProps> = () => {
               </MetaItem>
             </MovieMeta>
             <MovieDescription>
-              이 영화에 대한 다양한 의견을 나누어보세요. 스포일러가 포함된 토론이니 아직 영화를 보지
-              않으셨다면 주의해주세요!
-              {/* 여기도 팝콘 아이콘으로 변경할 수 있습니다 */}
-              <PopcornIcon score={75} size={16} />
+              {debate.movie.overview || '영화 개요 정보가 없습니다.'}
             </MovieDescription>
           </MovieDetails>
         </MovieContent>
