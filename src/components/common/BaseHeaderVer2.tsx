@@ -14,6 +14,7 @@ import { logout } from '@/services/member'
 import media from '@/utils/breakpoints'
 import { getAlarms, markAlarmAsRead, subscribeToAlarmStream } from '@/services/alarm'
 import BaseContainer from './BaseContainer'
+import { useAuth } from '@/context/AuthContext'
 
 const DESIGN_WIDTH = 1536
 const DESIGN_HEIGHT = 1024
@@ -495,6 +496,7 @@ const BaseHeaderVer2 = () => {
   const [isAlarmOpen, setIsAlarmOpen] = useState(false)
   const [alarms, setAlarms] = useState<any[]>([])
   const alarmRef = useRef<HTMLDivElement>(null)
+  const { user, isAuthenticated, logout: authLogout } = useAuth()
 
   useEffect(() => {
     const handleResize = () => {
@@ -553,6 +555,7 @@ const BaseHeaderVer2 = () => {
       await logout()
       localStorage.removeItem('accessToken')
       setIsLogin(false)
+      authLogout()
       setProfileName('')
       setProfileSrc(AvatarIcon)
       setIsDropdownOpen(false)
