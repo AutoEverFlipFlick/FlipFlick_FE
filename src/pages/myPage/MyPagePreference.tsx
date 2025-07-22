@@ -130,6 +130,7 @@ const Card = styled(BaseContainer)<IsMobile>`
   flex-direction: ${({ $ismobile }) => ($ismobile ? 'row' : 'column')};
   align-items: flex-start;
   margin-bottom: ${({ $ismobile }) => ($ismobile ? '5px' : '0')};
+  cursor: pointer;
   animation: ${fadeInUp} 0.3s ease both;
 `
 
@@ -158,12 +159,6 @@ const Skeleton = styled.div`
 `
 
 // 누락된 상태 컴포넌트
-const LoadingMessage = styled.div`
-  text-align: center;
-  color: #ccc;
-  font-size: 1.1rem;
-  margin: 2rem 0;
-`
 const ErrorMessage = styled.div`
   text-align: center;
   color: #ff4444;
@@ -395,7 +390,6 @@ const MyPagePreference: React.FC = () => {
       <FlexRow>
         <TotalCount>총 {total}개</TotalCount>
       </FlexRow>
-      {page === 0 && loading && <LoadingMessage>영화를 불러오는 중입니다...</LoadingMessage>}
       {error && <ErrorMessage>영화를 불러오는 중 오류가 발생했습니다.</ErrorMessage>}
       {page === 0 && !loading && !error && items.length === 0 && (
         <EmptyMessage>표시할 영화가 없습니다.</EmptyMessage>
@@ -408,7 +402,7 @@ const MyPagePreference: React.FC = () => {
                 key={item.tmdbId}
                 ref={isMobile && idx === items.length - 1 ? lastItemRef : undefined}
               >
-                <Card $ismobile={isMobile}>
+                <Card $ismobile={isMobile} onClick={() => navigate(`/movie/detail/${item.tmdbId}`)}>
                   {/* 스켈레톤 적용된 이미지로 바꿈 */}
                   <ImageLoader
                     src={item.posterImage}
@@ -464,10 +458,6 @@ const MyPagePreference: React.FC = () => {
                 &gt;&gt;
               </PaginationButton>
             </PaginationWrapper>
-          )}
-          {/* 모바일 로딩 */}
-          {isMobile && loading && page > 0 && !isLastPage && (
-            <MobileLoading>내용 불러오는 중...</MobileLoading>
           )}
         </>
       )}
