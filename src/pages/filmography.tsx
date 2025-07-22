@@ -688,8 +688,8 @@ const FilmDetails = styled.div`
     overflow: hidden;
     text-overflow: ellipsis;
     word-break: break-word;
-    max-height: 1.8em; /* 2.4em에서 축소 */
-    min-height: 1.0em; /* 1.2em에서 축소 */
+    max-height: 2.4em; /* 2.4em에서 축소 */
+    min-height: 1.2em; /* 1.2em에서 축소 */
 
     @media (max-width: 768px) {
       font-size: 0.6rem;
