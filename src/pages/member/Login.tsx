@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import backgroundImage from '@/assets/common/background.webp'
+import backgroundImage from '@/assets/common/background2.webp'
 import kakaoIcon from '@/assets/icons/kakao.png'
 import naverIcon from '@/assets/icons/naver.png'
 import { getKaKaoLoginLink, getNaverLoginLink } from '@/utils/auth/authLogin'
@@ -12,11 +12,22 @@ const Wrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+
   @media (max-width: 768px) {
-    background-size: cover;
+    background: none; // 모바일에서 배경 제거
   }
 `
 
+const MobileLogo = styled.img`
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+    width: 180px;
+    height: auto;
+    margin-bottom: 32px;
+  }
+`
 const Box = styled.div`
   display: flex;
   flex-direction: column;
@@ -88,6 +99,7 @@ const Login: React.FC = () => {
   return (
     <Wrapper>
       <Box>
+        <MobileLogo src="/logo_full.webp" alt="로고" />
         <SocialButton bgColor="#FEE500" onClick={handleKakaoLogin}>
           <Icon src={kakaoIcon} alt="카카오" />
           카카오로 시작하기
