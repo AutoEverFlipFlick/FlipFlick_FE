@@ -1,11 +1,13 @@
+// pages/debate/DebateEditPage.tsx
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { CKEditor } from '@ckeditor/ckeditor5-react'
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic'
 import '@ckeditor/ckeditor5-build-classic/build/translations/ko'
 import styled, { createGlobalStyle } from 'styled-components'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { createDebate } from '@/services/debate'
+import { useNavigate, useParams } from 'react-router-dom'
+import { getDebateDetail, updateDebate } from '@/services/debate'
 import { uploadImage } from '@/services/s3'
+import { useAuth } from '@/context/AuthContext'
 import BaseButton from '@/components/common/BaseButton'
 import Swal from 'sweetalert2'
 
@@ -20,6 +22,7 @@ const PageWrap = styled.div`
   margin: 0 auto;
   padding: 10px 16px 40px;
 `
+
 const PageTitle = styled.h1`
   text-align: center;
   font-size: 32px;
@@ -34,10 +37,9 @@ const TitleInput = styled.input`
   font-size: 20px;
   font-weight: 700;
   border: none;
-
-  padding: 12px 0 12px 8px; // ← 좌측 패딩 추가
+  padding: 12px 0 12px 8px;
   margin-bottom: 20px;
-  background-color: rgba(28, 28, 43, 0.6); // 배경 어둡게
+  background-color: rgba(28, 28, 43, 0.6);
   color: #fff;
   &::placeholder {
     color: #aaa;
@@ -47,6 +49,7 @@ const TitleInput = styled.input`
 const HeaderActions = styled.div`
   display: flex;
   justify-content: flex-end;
+  gap: 8px; /* 버튼 사이 간격 추가 */
   margin-bottom: 16px;
 `
 
@@ -113,65 +116,67 @@ const Checkbox = styled.input`
 
 const SpoilerLabel = styled.span`
   font-size: 14px;
+  color: #fff;
 `
-const DebateWritePage: React.FC = () => {
+
+const DebateEditPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const editorRef = useRef(null)
-  const [searchParams] = useSearchParams()
+  const { user, isAuthenticated } = useAuth()
+
+  const [debate, setDebate] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
 
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [ready, setReady] = useState(false)
   const [spoiler, setSpoiler] = useState(false)
-  const [tmdbId, setTmdbId] = useState<number>(550)
 
+  // 스타일 설정
   useEffect(() => {
     const style = document.createElement('style')
     style.textContent = `
-    .ck-content {
-      font-family: 'Lato', sans-serif;
-      line-height: 1.6;
-      color: #fff;
-      background-color: rgba(28, 28, 43, 0.6) !important;
-      
-    }
+      .ck-content {
+        font-family: 'Lato', sans-serif;
+        line-height: 1.6;
+        color: #fff;
+        background-color: rgba(28, 28, 43, 0.6) !important;
+      }
 
-    .ck-content figure.image {
-      display: flex;
-      width: 50%;
-      justify-content: center;
-    }
+      .ck-content figure.image {
+        display: flex;
+        width: 50%;
+        justify-content: center;
+      }
 
-    /* 🔽 CKEditor 툴바 배경 및 버튼 스타일 */
-    .ck-toolbar {
-      background-color: #1c1c2b !important;
-      border: 1px solid #444 !important;
-    }
+      .ck-toolbar {
+        background-color: #1c1c2b !important;
+        border: 1px solid #444 !important;
+      }
 
-    .ck-toolbar .ck-button {
-      color: #eee !important;
-    }
+      .ck-toolbar .ck-button {
+        color: #eee !important;
+      }
 
-    .ck-toolbar .ck-button:hover {
-      background-color: #333 !important;
-    }
+      .ck-toolbar .ck-button:hover {
+        background-color: #333 !important;
+      }
 
-    .ck-toolbar .ck-button.ck-on {
-      background-color: #5025d1 !important;
-      color: #fff !important;
-    }
+      .ck-toolbar .ck-button.ck-on {
+        background-color: #5025d1 !important;
+        color: #fff !important;
+      }
 
-    .ck.ck-reset_all, .ck.ck-reset_all * {
-      box-sizing: border-box;
-    }
+      .ck.ck-reset_all, .ck.ck-reset_all * {
+        box-sizing: border-box;
+      }
+
       .ck.ck-dropdown .ck-dropdown__panel .ck-list__item .ck-button__label {
-  color: #000 !important; /* 또는 원하는 밝은 배경이면 #fff */
-}
-
-    
-
-  
-  `
+        color: #000 !important;
+      }
+    `
     document.head.appendChild(style)
     setReady(true)
     return () => {
@@ -179,14 +184,69 @@ const DebateWritePage: React.FC = () => {
     }
   }, [])
 
+  // 토론 데이터 가져오기
   useEffect(() => {
-    const tmdbId = searchParams.get('tmdbId')
-    setTmdbId(Number(tmdbId))
-    if (tmdbId) {
-      console.log('선택된 영화 ID:', tmdbId)
-    }
-  }, [searchParams])
+    const fetchDebate = async () => {
+      if (!id) return
 
+      try {
+        setLoading(true)
+        const response = await getDebateDetail(parseInt(id))
+
+        if (response.success) {
+          const debateData = response.data
+
+          // 권한 확인
+          if (!user || debateData.memberId !== user.id) {
+            Swal.fire({
+              title: '접근 권한 없음',
+              text: '본인의 토론만 수정할 수 있습니다.',
+              icon: 'error',
+              background: '#1e1e2f',
+              color: '#fff',
+            }).then(() => {
+              navigate(`/debate/${id}`)
+            })
+            return
+          }
+
+          setDebate(debateData)
+          setTitle(debateData.debateTitle)
+          setContent(debateData.content)
+          setSpoiler(debateData.spoiler)
+        }
+      } catch (error) {
+        console.error('토론 조회 실패:', error)
+        Swal.fire({
+          title: '오류',
+          text: '토론을 불러오는데 실패했습니다.',
+          icon: 'error',
+          background: '#1e1e2f',
+          color: '#fff',
+        }).then(() => {
+          navigate('/')
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (isAuthenticated && user) {
+      fetchDebate()
+    } else if (isAuthenticated === false) {
+      Swal.fire({
+        title: '로그인 필요',
+        text: '토론을 수정하려면 로그인이 필요합니다.',
+        icon: 'warning',
+        background: '#1e1e2f',
+        color: '#fff',
+      }).then(() => {
+        navigate('/login')
+      })
+    }
+  }, [id, user, isAuthenticated, navigate])
+
+  // CKEditor 설정
   function CustomUploadAdapterPlugin(editor: any) {
     editor.plugins.get('FileRepository').createUploadAdapter = (loader: any) => {
       return new CustomUploadAdapter(loader)
@@ -236,50 +296,101 @@ const DebateWritePage: React.FC = () => {
     }
   }, [ready])
 
-  const handleSubmit = () => {
+  // 수정 완료
+  const handleSubmit = async () => {
     if (!title.trim()) {
       Swal.fire({
         icon: 'warning',
         title: '제목을 입력하세요.',
-      })
-      return
-    }
-    if (!content.trim() || content === '<p><br></p>') {
-      Swal.fire({
-        icon: 'warning',
-        title: '내용을 입력하세요.',
+        background: '#1e1e2f',
+        color: '#fff',
       })
       return
     }
 
-    createDebate({
-      tmdbId,
-      debateTitle: title,
-      content,
-      spoiler,
-    })
-      .then(res => {
-        navigate(`/debate/${res.data.debateId}`)
+    if (!content.trim() || content === '<p><br></p>') {
+      Swal.fire({
+        icon: 'warning',
+        title: '내용을 입력하세요.',
+        background: '#1e1e2f',
+        color: '#fff',
       })
-      .catch(() => {
+      return
+    }
+
+    if (!debate) return
+
+    try {
+      setSubmitting(true)
+
+      const response = await updateDebate(debate.debateId, {
+        debateTitle: title.trim(),
+        content: content.trim(),
+        spoiler,
+      })
+
+      if (response.success) {
         Swal.fire({
-          icon: 'error',
-          title: '등록 실패',
-          text: '잠시 후 다시 시도해 주세요.',
+          title: '수정 완료',
+          text: '토론이 성공적으로 수정되었습니다.',
+          icon: 'success',
+          background: '#1e1e2f',
+          color: '#fff',
+        }).then(() => {
+          navigate(`/debate/${debate.debateId}`)
         })
+      }
+    } catch (error) {
+      console.error('토론 수정 실패:', error)
+      Swal.fire({
+        icon: 'error',
+        title: '수정 실패',
+        text: '잠시 후 다시 시도해 주세요.',
+        background: '#1e1e2f',
+        color: '#fff',
       })
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <PageWrap>
+        <div style={{ textAlign: 'center', padding: '4rem', color: '#fff' }}>로딩 중...</div>
+      </PageWrap>
+    )
+  }
+
+  if (!debate) {
+    return (
+      <PageWrap>
+        <div style={{ textAlign: 'center', padding: '4rem', color: '#fff' }}>
+          토론을 찾을 수 없습니다.
+        </div>
+      </PageWrap>
+    )
   }
 
   return (
     <>
       <GlobalStyle />
       <PageWrap>
-        <PageTitle>토론장</PageTitle>
+        <PageTitle>토론 수정</PageTitle>
         <HeaderActions>
-          <BaseButton variant="purple" size="small" onClick={handleSubmit}>
-            토론 작성
+          <BaseButton
+            variant="dark"
+            size="small"
+            onClick={() => navigate(`/debate/${id}`)}
+            disabled={submitting}
+          >
+            취소
+          </BaseButton>
+          <BaseButton variant="purple" size="small" onClick={handleSubmit} disabled={submitting}>
+            {submitting ? '수정 중...' : '수정 완료'}
           </BaseButton>
         </HeaderActions>
+
         <SpoilerToggleWrapper>
           <SpoilerLabel>스포일러 {spoiler ? '포함됨' : '미포함'}</SpoilerLabel>
           <Switch>
@@ -287,18 +398,21 @@ const DebateWritePage: React.FC = () => {
               type="checkbox"
               checked={spoiler}
               onChange={() => setSpoiler(prev => !prev)}
+              disabled={submitting}
             />
             <Slider />
           </Switch>
         </SpoilerToggleWrapper>
+
         <TitleInput
           placeholder="토론 제목을 입력하세요."
           value={title}
           onChange={e => setTitle(e.target.value)}
+          disabled={submitting}
         />
 
         <EditorWrapper ref={editorRef}>
-          {editorConfig && (
+          {editorConfig && content !== null && (
             <CKEditor
               editor={ClassicEditor as any}
               config={editorConfig}
@@ -312,4 +426,4 @@ const DebateWritePage: React.FC = () => {
   )
 }
 
-export default DebateWritePage
+export default DebateEditPage
