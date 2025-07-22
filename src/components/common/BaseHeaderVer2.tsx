@@ -352,9 +352,8 @@ const LoginButton = styled.button`
   color: var(--text-white);
   box-shadow: none;
   appearance: none;
-  /* OS/브라우저 기본 버튼 스타일 제거 */
-  -webkit-appearance: none; /* 사파리·크롬용 */
-  -moz-appearance: none; /* 파이어폭스용 */
+  -webkit-appearance: none;
+  -moz-appearance: none;
   border: none;
   cursor: pointer;
 `
