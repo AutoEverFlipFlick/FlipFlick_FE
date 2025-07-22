@@ -12,8 +12,8 @@ import {useParams} from "react-router-dom";
 import {useOnClickAuth} from "@/hooks/useOnClickAuth";
 import BaseButton from "@/components/common/BaseButton";
 import {Eye, EyeOff, Flag, ListPlus, Star, StarOff} from "lucide-react";
-import {bookmarkMovie, getMovieDetail, getMovieReview, watchedMovie} from "@/services/movieDetail";
-import {mapToReviewData, ReviewData} from "@/pages/movie/reviewData";
+import {bookmarkMovie, getMovieDetail, getMovieReview, getMyMovieReview, watchedMovie} from "@/services/movieDetail";
+import {mapToMyReviewData, mapToReviewData, Review, ReviewData} from "@/pages/movie/reviewData";
 import {MovieData} from "@/pages/movie/movieData";
 import ReviewTextArea from "@/pages/movie/ReviewTextArea";
 import Swal from 'sweetalert2'
@@ -204,8 +204,7 @@ const DetailMyReviewCard = styled(BaseContainer)`
     align-items: center;
 `
 
-const ReviewCard = styled(ReviewDebateCard)`
-`
+
 
 const DetailMyReviewWrapper = styled.div`
     width: 100%;
@@ -287,7 +286,6 @@ const ActionButton = styled(BaseButton).attrs({
 `
 
 
-
 export default function MovieDetailPage() {
   const [movieData, setMovieData] = useState<MovieData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -301,7 +299,7 @@ export default function MovieDetailPage() {
 
   const onClickAuth = useOnClickAuth()
   const [reviewData, setReviewData] = useState<ReviewData | null>(null)
-  const [myReview, setMyReview] = useState<ReviewData | null>(null)
+  const [myReview, setMyReview] = useState<Review | null>(null)
 
   const handleBookmark = useCallback(
     () =>
@@ -317,7 +315,7 @@ export default function MovieDetailPage() {
             text: !isBookmarked ? '찜 목록에 추가되었습니다.' : '찜 목록에서 제거되었습니다.',
             icon: 'success',
             confirmButtonText: '확인',
-        })
+          })
         } catch {
           await Swal.fire({
             title: '찜 처리 실패',
@@ -396,20 +394,39 @@ export default function MovieDetailPage() {
           console.log("영화 리뷰 불러오기 및 매핑 완료")
         }
       }
-      // const fetchMyReview = async () => {
-      //   if (user) {
-      //     try {
-      //       console.log("내 리뷰 불러오기 시작", "영화 ID : ", tmdbId, "유저 정보 : ", user, isAuthenticated)
-      //       const response = await getUserMovieReview(tmdbId, user)
-      //     }
-      //   } return;
-      // }
+
+      const fetchMyReview = async () => {
+        try {
+          console.log("내 리뷰 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
+          const response = await getMyMovieReview(tmdbId)
+          const data = response.data
+          console.log("내 리뷰 조회됨 : ", data)
+          const mappedData: Review | null = mapToMyReviewData(data)
+          console.log("내 리뷰 매핑됨 : ", mappedData)
+          setMyReview(mappedData)
+        } catch (error) {
+          console.error('내 리뷰 불러오기 실패:', error)
+        } finally {
+          console.log("내 리뷰 불러오기 및 매핑 완료")
+        }
+      }
 
       try {
-        if (!loading && user) {
+        if (loading) return; // 로딩 중이면 아무것도 하지 않음
+
+        if (isAuthenticated && user) {
+          // 인증된 경우에만 내 리뷰 호출
+          console.log("유저 정보 로딩 완료, 영화 상세 정보 및 리뷰 불러오기 시작")
+          fetchMovieDetail()
+          fetchMovieReview()
+          fetchMyReview()
+        } else {
+          // 비로그인 상태
+          console.log("유저 정보 미인증 상태, 영화 상세 정보 및 리뷰 불러오기 시작")
           fetchMovieDetail()
           fetchMovieReview()
         }
+
       } catch (error) {
         console.error('영화 상세 페이지 정보 불러오기 중 오류 발생:', error)
         setIsLoading(false)
@@ -419,11 +436,12 @@ export default function MovieDetailPage() {
 
     }
     ,
-    [tmdbId, user, loading]
+    [tmdbId, user, loading, isAuthenticated]
   )
 
 
   if (isLoading || !movieData) {
+    console.debug(isLoading)
     return (
       <MovieDetailLayout>
         <p style={{color: 'white'}}>로딩 중입니다...</p>
@@ -442,7 +460,9 @@ export default function MovieDetailPage() {
                       onClick={handleBookmark}>{isBookmarked ? '찜 취소' : '찜하기'}</ActionButton>
         <ActionButton size='small' icon={isWatched ? <EyeOff/> : <Eye/>}
                       onClick={handleView}>{isWatched ? '봤어요 취소' : '봤어요'}</ActionButton>
+        {/* TODO : 플레이리스트 모달 호출 구현하기 */}
         <ActionButton size='small' icon={<ListPlus/>}>플레이리스트 추가</ActionButton>
+        {/* TODO : 수정/신고 모달 호출 구현하기 */}
         <ActionButton size='small' icon={<Flag/>}>수정 요청</ActionButton>
       </MovieDetailMainAction>
       <MovieDetailMain>
@@ -470,7 +490,6 @@ export default function MovieDetailPage() {
                 <OverViewContainer>
                   <p>장르: {movieData.genres.map(genre => genre.genreName).join(', ')}</p>
                   <p>러닝타임: {movieData.runtime ?? '정보 없음'}분</p>
-                  {/*<p>러닝타임: {movieData.overviewData.runtime}분</p>*/}
                 </OverViewContainer>
                 <OverViewContainer>
                   <p>개봉일: {movieData.productionYear ?? '미정'}</p>
@@ -524,56 +543,46 @@ export default function MovieDetailPage() {
               </RatingWrapper>
               <DetailMyReviewWrapper>
                 <DetailMyReviewCard>
-                  {/*<ReviewCard*/}
-                  {/*  content={movieData.}*/}
-                  {/*  createdAt={'2023-10-01'}*/}
-                  {/*  username={'사용자'}*/}
-                  {/*  type={'review'}*/}
-                  {/*  isMyPost={true}*/}
-                  {/*  />*/}
-                  {myReview ? (
-                    <p>내가 작성한 리뷰 있음</p>
-
-                  ) : (
-                    <ReviewTextArea
-                      tmdbId={tmdbId!}
-                      // rating={movieData.myRating}
-                      rating={3.0}
-                      isAuthenticated={isAuthenticated}
-                      onSuccess={async () => {
-                        try {
-                          console.log("내 리뷰 불러오기 시작")
-                          const response = await getMovieReview(tmdbId!, 0)
-                          const data = response.data
-                          console.log("내 리뷰 조회됨 : ", data)
-                          const mappedData: ReviewData = mapToReviewData(data, user?.id, user?.nickname)
-                          console.log("내 리뷰 매핑됨 : ", mappedData)
-                          setMyReview(mappedData)
-                        } catch (error) {
-                          console.error('내 리뷰 불러오기 실패:', error)
-                        }
-                      }}
-                    />
-                  )}
+                  <ReviewTextArea
+                    tmdbId={tmdbId!}
+                    myReview={myReview}
+                    rating={myReview?.rating || 1}
+                    isAuthenticated={isAuthenticated}
+                    onSuccess={async () => {
+                      try {
+                        const myReviewResponse = await getMyMovieReview(tmdbId!)
+                        const data = myReviewResponse.data
+                        const mappedData: Review | null = mapToMyReviewData(data)
+                        setMyReview(mappedData)
+                        const reviewResponse = await getMovieReview(tmdbId!, 0)
+                        const reviewData = reviewResponse.data
+                        const mappedReviewData: ReviewData = mapToReviewData(reviewData, user?.id, user?.nickname)
+                        setReviewData(mappedReviewData)
+                      } catch (error) {
+                        console.error('내 리뷰 불러오기 실패:', error)
+                      }
+                    }}
+                  />
                 </DetailMyReviewCard>
               </DetailMyReviewWrapper>
               <ContentsListWrapper>
                 <ContentsListTitleTab>
                   <ContentsTitle>리뷰</ContentsTitle>
+                  {/* TODO : 정렬 버튼 및 랜더링 구현하기*/}
                   <ContentsListOrderDropdown>정렬 순서</ContentsListOrderDropdown>
                 </ContentsListTitleTab>
                 <ReviewDebateList>
                   <DetailReviewCardWrapper>
-                    {/*자기 리뷰는 래퍼에 안뜨게 해야함*/}
                     {reviewData?.reviews.map(review =>
                       <ReviewDebateCard
-                        key={review.reviewId}
+                        key={review.contentId}
                         content={review.content}
                         createdAt={review.createdAt}
                         username={review.member.nickname}
                         type={'review'}
                         isMyPost={review.isMyPost}
                         likes={review.likes}
+                        hates={review.hates}
                         // hates={review.hates}
                         rating={review.rating}
                       />
@@ -592,10 +601,12 @@ export default function MovieDetailPage() {
               </ContentsHeader>
               <ReviewDebateList>
                 <DetailReviewCardWrapper>
+                  {/* TODO : 토론 정보 불러오고 랜더링 */}
                   <ReviewDebateCard
                     content={'토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용'}
                     createdAt={'1 시간 전'}
                     likes={100}
+                    hates={10}
                     username={'사용자'}
                     comments={10}
                     images={['https://placehold.co/600x600', 'https://placehold.co/600x600', 'https://placehold.co/600x600', 'https://placehold.co/600x600', 'https://placehold.co/600x600']}
@@ -608,6 +619,7 @@ export default function MovieDetailPage() {
           )}
           {activeTab === 'media' && (
             <DetailImageContents>
+              {/* TODO : 영화 이미지와 유튜브 랜더링*/}
               <DetailImage>영화 이미지 Grid</DetailImage>
             </DetailImageContents>
           )}

@@ -2,8 +2,9 @@
 import React, {useState} from 'react'
 import styled, {css} from 'styled-components'
 import BaseContainer from '@/components/common/BaseContainer'
-import {Heart, MessageSquareText} from 'lucide-react'
+import {MessageSquareText, ThumbsDown, ThumbsUp} from 'lucide-react'
 import StarRating from '@/components/starRating/StarRating'
+import BaseButton from "@/components/common/BaseButton";
 
 
 const PLACEHOLDER = 'https://placehold.co/600x600'
@@ -64,23 +65,17 @@ const SpoilerWarning = styled.div`
 
 const Footer = styled.div`
     display: flex;
+    align-items: center;
     justify-content: space-between;
     padding: 5px 10px;
 `
 
-const LikeCommentWrapper = styled.div`
+const LikeHateCommentWrapper = styled.div`
     display: flex;
     gap: 10px;
     align-items: center;
     font-size: 12px;
     color: white;
-`
-
-const LikeWrapper = styled.div`
-    display: flex;
-    gap: 5px;
-    align-items: center;
-    font-size: 12px;
 `
 
 const CommentsWrapper = styled.div`
@@ -148,6 +143,28 @@ const MainImage = styled.img`
     object-fit: cover;
 `
 
+const LikeButton = styled(BaseButton)`
+    max-height: 30px;
+    width: 90px;
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+`
+const HateButton = styled(BaseButton)`
+    max-height: 30px;
+    width: 90px;
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+`
+const LikeHate = styled.div`
+    height: 40px;
+    justify-content: start;
+    align-items: center;
+    display: flex;
+    gap: 10px;
+`
+
 
 interface ReviewDebateCardProps {
   type: 'review' | 'debate'
@@ -156,6 +173,7 @@ interface ReviewDebateCardProps {
   content: string
   rating?: number
   likes: number
+  hates: number
   comments?: number
   isMyPost?: boolean
   images?: string[] // 이미지 url 배열
@@ -174,12 +192,12 @@ const ReviewDebateCard: React.FC<ReviewDebateCardProps> =
      content,
      rating,
      likes,
+     hates,
      comments,
      isMyPost,
      images,
      type,
      isSpoiler,
-     onClick,
      maxLength = type === 'review' ? 500 : 5000,
      previewLength = 200,
    }) => {
@@ -187,6 +205,37 @@ const ReviewDebateCard: React.FC<ReviewDebateCardProps> =
     const [expanded, setExpanded] = useState(false)
     const [spoilerRevealed, setSpoilerRevealed] = useState(false)
 
+    const [isLiked, setIsLiked] = useState(false)
+    const [isHated, setIsHated] = useState(false)
+    const [likeCnt, setLikeCnt] = useState(likes)
+    const [hateCnt, setHateCnt] = useState(hates)
+
+    const handleLikeClick = () => {
+      setIsLiked(!isLiked)
+      setLikeCnt(prev => !isLiked ? prev + 1 : prev - 1)
+      if (isHated) {
+        setIsHated(false)
+        setHateCnt(prev => prev - 1)
+      }
+    }
+    const handleHateClick = () => {
+      setIsHated(!isHated)
+      setHateCnt(prev => !isHated ? prev + 1 : prev - 1)
+      if (isLiked) {
+        setIsLiked(false)
+        setLikeCnt(prev => prev - 1)
+      }
+    }
+
+
+    // 콘텐츠 처리
+    const snippet = content.slice(0, maxLength)
+    const isOverflow = snippet.length > previewLength
+    const displayText = expanded ? snippet : snippet.slice(0, previewLength)
+    const blur = type === 'review' && isSpoiler && !spoilerRevealed
+
+    // const commentCount = comments?.length ?? 0
+    // const imageList = props.images ?? []
 
     // 본문 길이 제한
     const limitedContent = content.slice(0, maxLength)
@@ -196,15 +245,13 @@ const ReviewDebateCard: React.FC<ReviewDebateCardProps> =
     // 스포일러 처리
     const isBlur = isSpoiler && !spoilerRevealed
 
-    // 카드 클릭 핸들러 (토론장 이동)
-    const handleCardClick = () => {
-      if (type === 'debate' && onClick) onClick()
-    }
+    // TODO : 카드 클릭 핸들러 (토론장 이동)
+
 
     const imageList = images && images.length > 0 ? images : []
 
     return (
-      <Wrapper $type={type} onClick={handleCardClick}>
+      <Wrapper $type={type}>
         <Header>
           <UserCard>
             <div style={{width: 30, height: 30, borderRadius: '50%', backgroundColor: '#f0f0f0'}}/>
@@ -280,18 +327,20 @@ const ReviewDebateCard: React.FC<ReviewDebateCardProps> =
           </ImageWrapper>
         )}
         <Footer>
-          <LikeCommentWrapper>
-            <LikeWrapper>
-              <Heart size={15} color="red" fill="red"/>
-              <span>{likes}</span>
-            </LikeWrapper>
+          <LikeHateCommentWrapper>
+            <LikeHate>
+              <LikeButton icon={<ThumbsUp size={20}/>} size='small' variant={isLiked ? 'pink' : 'dark'}
+                          onClick={handleLikeClick}>{likeCnt}</LikeButton>
+              <HateButton icon={<ThumbsDown size={20}/>} size='small' variant={isHated ? 'blue' : 'dark'}
+                          onClick={handleHateClick}>{hateCnt}</HateButton>
+            </LikeHate>
             {comments !== undefined && (
               <CommentsWrapper>
                 <MessageSquareText size={15} color="white"/>
                 <span>{comments}</span>
               </CommentsWrapper>
             )}
-          </LikeCommentWrapper>
+          </LikeHateCommentWrapper>
           <ReportDeleteButton
             // onClick={isMyPost ? onDelete : onReport}
           >
