@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import styled, { keyframes } from 'styled-components'
 import { Plus, Lock, LockOpen, X, ImageIcon } from 'lucide-react'
+import Swal from 'sweetalert2'
 import BaseButton from '../../components/common/BaseButton'
 import BaseInput from '@/components/common/BaseInput'
 import MovieSearchModal from '../../components/feature/MovieSearchModal'
@@ -296,7 +297,7 @@ const ImageLoader: React.FC<{
         </NoImagePlaceholder>
       ) : (
         <>
-          {!loaded && !error && <ImageSkeleton>이미지 로딩 중</ImageSkeleton>}
+          {!loaded && !error && <ImageSkeleton>이미지 로딩 중...</ImageSkeleton>}
 
           {!error && (
             <MovieImage
@@ -347,8 +348,14 @@ const EditPlaylist: React.FC = () => {
 
           // 권한 체크
           if (!user || playlist.nickname !== user.nickname) {
-            alert('수정 권한이 없습니다.')
-            navigate(`/playlist/${id}`, { replace: true }) // replace 추가
+            await Swal.fire({
+              title: '권한 없음',
+              text: '수정 권한이 없습니다.',
+              icon: 'error',
+              confirmButtonText: '확인',
+              confirmButtonColor: '#FF7849',
+            })
+            navigate(`/playlist/${id}`, { replace: true })
             return
           }
 
@@ -380,7 +387,7 @@ const EditPlaylist: React.FC = () => {
     if (isAuthenticated) {
       fetchPlaylistData()
     } else {
-      navigate('/login', { replace: true }) // replace 추가
+      navigate('/login', { replace: true })
     }
   }, [id, user, isAuthenticated, navigate])
 
@@ -401,27 +408,79 @@ const EditPlaylist: React.FC = () => {
   }
 
   // 취소 버튼 클릭
-  const handleCancel = () => {
-    navigate(`/playlist/${id}`, { replace: true }) // replace 추가
+  const handleCancel = async () => {
+    const result = await Swal.fire({
+      title: '수정 취소',
+      text: '변경 사항이 저장되지 않습니다. 정말 취소하시겠습니까?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: '네, 취소합니다',
+      cancelButtonText: '계속 수정',
+      confirmButtonColor: '#6c757d',
+      cancelButtonColor: '#FF7849',
+      reverseButtons: true,
+    })
+
+    if (result.isConfirmed) {
+      navigate(`/playlist/${id}`, { replace: true })
+    }
   }
 
   // 플레이리스트 수정
   const handleUpdatePlaylist = async () => {
     if (!isAuthenticated || !user) {
-      alert('로그인이 필요합니다.')
-      navigate('/login', { replace: true }) // replace 추가
+      const result = await Swal.fire({
+        title: '로그인이 필요합니다',
+        text: '플레이리스트를 수정하려면 로그인이 필요합니다.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '로그인하러 가기',
+        cancelButtonText: '취소',
+        confirmButtonColor: '#FF7849',
+        cancelButtonColor: '#6c757d',
+      })
+
+      if (result.isConfirmed) {
+        navigate('/login', { replace: true })
+      }
       return
     }
 
     if (!title.trim()) {
-      alert('플레이리스트 제목을 입력해주세요.')
+      await Swal.fire({
+        title: '제목 입력 필요',
+        text: '플레이리스트 제목을 입력해주세요.',
+        icon: 'warning',
+        confirmButtonText: '확인',
+        confirmButtonColor: '#FF7849',
+      })
       return
     }
 
     if (selectedMovies.length === 0) {
-      alert('영화를 최소 1개 이상 선택해주세요.')
+      await Swal.fire({
+        title: '영화 선택 필요',
+        text: '영화를 최소 1개 이상 선택해주세요.',
+        icon: 'warning',
+        confirmButtonText: '확인',
+        confirmButtonColor: '#FF7849',
+      })
       return
     }
+
+    // 수정 확인
+    const result = await Swal.fire({
+      title: '플레이리스트 수정',
+      text: '플레이리스트를 수정하시겠습니까?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: '수정하기',
+      cancelButtonText: '취소',
+      confirmButtonColor: '#FF7849',
+      cancelButtonColor: '#6c757d',
+    })
+
+    if (!result.isConfirmed) return
 
     setUpdating(true)
 
@@ -440,14 +499,44 @@ const EditPlaylist: React.FC = () => {
       const response = await updatePlaylist(id!, playlistData)
 
       if (response.success) {
-        alert('플레이리스트가 성공적으로 수정되었습니다!')
-        navigate(`/playlist/${id}`, { replace: true }) // replace 추가
+        await Swal.fire({
+          title: '수정 완료',
+          text: '플레이리스트가 성공적으로 수정되었습니다!',
+          icon: 'success',
+          confirmButtonText: '확인',
+          confirmButtonColor: '#FF7849',
+        })
+        navigate(`/playlist/${id}`, { replace: true })
       } else {
-        alert(response.message || '플레이리스트 수정에 실패했습니다.')
+        await Swal.fire({
+          title: '수정 실패',
+          text: response.message || '플레이리스트 수정에 실패했습니다.',
+          icon: 'error',
+          confirmButtonText: '확인',
+          confirmButtonColor: '#FF7849',
+        })
       }
     } catch (err: any) {
       console.error('Update playlist error:', err)
-      alert(err.response?.data?.message || '플레이리스트 수정 중 오류가 발생했습니다.')
+
+      let errorMessage = '플레이리스트 수정 중 오류가 발생했습니다.'
+
+      // 에러 상태별 처리
+      if (err.response?.status === 403) {
+        errorMessage = '수정 권한이 없습니다.'
+      } else if (err.response?.status === 404) {
+        errorMessage = '플레이리스트를 찾을 수 없습니다.'
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message
+      }
+
+      await Swal.fire({
+        title: '오류 발생',
+        text: errorMessage,
+        icon: 'error',
+        confirmButtonText: '확인',
+        confirmButtonColor: '#FF7849',
+      })
     } finally {
       setUpdating(false)
     }

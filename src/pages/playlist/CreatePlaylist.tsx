@@ -7,6 +7,7 @@ import BaseInput from '@/components/common/BaseInput'
 import MovieSearchModal from '../../components/feature/MovieSearchModal'
 import { createPlaylist } from '../../services/playlist'
 import { useAuth } from '../../context/AuthContext'
+import Swal from 'sweetalert2'
 
 interface Movie {
   tmdbId: number
@@ -332,27 +333,84 @@ const CreatePlaylist: React.FC = () => {
   }
 
   // 취소 버튼 클릭
-  const handleCancel = () => {
-    navigate('/playlist', { replace: true })
+  const handleCancel = async () => {
+    // 내용이 있을 때만 확인 다이얼로그 표시
+    if (title.trim() || selectedMovies.length > 0) {
+      const result = await Swal.fire({
+        title: '작성 취소',
+        text: '작성 중인 내용이 저장되지 않습니다. 정말 취소하시겠습니까?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: '네, 취소합니다',
+        cancelButtonText: '계속 작성',
+        confirmButtonColor: '#6c757d',
+        cancelButtonColor: '#FF7849',
+        reverseButtons: true,
+      })
+
+      if (result.isConfirmed) {
+        navigate('/playlist', { replace: true })
+      }
+    } else {
+      navigate('/playlist', { replace: true })
+    }
   }
 
   // 플레이리스트 생성 - 서비스 함수 사용
   const handleCreatePlaylist = async () => {
     if (!isAuthenticated || !user) {
-      alert('로그인이 필요합니다.')
-      navigate('/login', { replace: true })
+      const result = await Swal.fire({
+        title: '로그인이 필요합니다',
+        text: '플레이리스트를 생성하려면 로그인이 필요합니다.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '로그인하러 가기',
+        cancelButtonText: '취소',
+        confirmButtonColor: '#FF7849',
+        cancelButtonColor: '#6c757d',
+      })
+
+      if (result.isConfirmed) {
+        navigate('/login', { replace: true })
+      }
       return
     }
 
     if (!title.trim()) {
-      alert('플레이리스트 제목을 입력해주세요.')
+      await Swal.fire({
+        title: '제목 입력 필요',
+        text: '플레이리스트 제목을 입력해주세요.',
+        icon: 'warning',
+        confirmButtonText: '확인',
+        confirmButtonColor: '#FF7849',
+      })
       return
     }
 
     if (selectedMovies.length === 0) {
-      alert('영화를 최소 1개 이상 선택해주세요.')
+      await Swal.fire({
+        title: '영화 선택 필요',
+        text: '영화를 최소 1개 이상 선택해주세요.',
+        icon: 'warning',
+        confirmButtonText: '확인',
+        confirmButtonColor: '#FF7849',
+      })
       return
     }
+
+    // 생성 확인
+    const result = await Swal.fire({
+      title: '플레이리스트 생성',
+      text: `"${title.trim()}" 플레이리스트를 생성하시겠습니까?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: '생성하기',
+      cancelButtonText: '취소',
+      confirmButtonColor: '#FF7849',
+      cancelButtonColor: '#6c757d',
+    })
+
+    if (!result.isConfirmed) return
 
     setCreating(true)
 
@@ -371,14 +429,43 @@ const CreatePlaylist: React.FC = () => {
       const response = await createPlaylist(playlistData)
 
       if (response.success) {
-        alert('플레이리스트가 성공적으로 생성되었습니다!')
+        await Swal.fire({
+          title: '생성 완료',
+          text: '플레이리스트가 성공적으로 생성되었습니다!',
+          icon: 'success',
+          confirmButtonText: '확인',
+          confirmButtonColor: '#FF7849',
+        })
         navigate('/playlist', { replace: true })
       } else {
-        alert(response.message || '플레이리스트 생성에 실패했습니다.')
+        await Swal.fire({
+          title: '생성 실패',
+          text: response.message || '플레이리스트 생성에 실패했습니다.',
+          icon: 'error',
+          confirmButtonText: '확인',
+          confirmButtonColor: '#FF7849',
+        })
       }
     } catch (err: any) {
       console.error('Create playlist error:', err)
-      alert(err.response?.data?.message || '플레이리스트 생성 중 오류가 발생했습니다.')
+      let errorMessage = '플레이리스트 생성 중 오류가 발생했습니다.'
+
+      // 에러 상태별 처리
+      if (err.response?.status === 401) {
+        errorMessage = '로그인이 필요합니다.'
+      } else if (err.response?.status === 403) {
+        errorMessage = '권한이 없습니다.'
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message
+      }
+
+      await Swal.fire({
+        title: '오류 발생',
+        text: errorMessage,
+        icon: 'error',
+        confirmButtonText: '확인',
+        confirmButtonColor: '#FF7849',
+      })
     } finally {
       setCreating(false)
     }

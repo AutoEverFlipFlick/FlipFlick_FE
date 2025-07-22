@@ -3,12 +3,20 @@ import styled from 'styled-components'
 import BaseContainer from '@/components/common/BaseContainer'
 import ReviewDebateCard from '@/components/feature/movieDetail/ReviewDebateCard'
 
-import {useEffect, useState} from 'react'
-import {MovieData} from './movieData'
+import React, {useCallback, useEffect, useState} from 'react'
 import RatingCard from '@/components/starRating/RatingCard'
-import axios from "axios";
 import {mapToMovieData} from "@/pages/movie/movieDataMapper";
 import MovieDetailHeader from "@/pages/movie/MovieDetailHeader";
+import {useAuth} from "@/context/AuthContext";
+import {useParams} from "react-router-dom";
+import {useOnClickAuth} from "@/hooks/useOnClickAuth";
+import BaseButton from "@/components/common/BaseButton";
+import {Eye, EyeOff, Flag, ListPlus, Star, StarOff} from "lucide-react";
+import {bookmarkMovie, getMovieDetail, getMovieReview, watchedMovie} from "@/services/movieDetail";
+import {mapToReviewData, ReviewData} from "@/pages/movie/reviewData";
+import {MovieData} from "@/pages/movie/movieData";
+import ReviewTextArea from "@/pages/movie/ReviewTextArea";
+import Swal from 'sweetalert2'
 
 const MovieDetailLayout = styled.div`
     display: flex;
@@ -17,15 +25,6 @@ const MovieDetailLayout = styled.div`
     padding: 20px;
 `
 
-// const MovieDetailHeader = styled.div`
-//     max-width: 1000px;
-//     margin: 0 auto;
-//     min-height: 400px;
-//     padding: 20px 15px 5px 15px;
-//     display: flex;
-//     align-items: center;
-//     gap: 10px;
-// `
 const MovieDetailMain = styled.div`
     max-width: 900px;
     display: flex;
@@ -54,9 +53,11 @@ const DetailImage = styled.div`
 
 
 const MovieDetailMainAction = styled.div`
-    max-width: 600px;
+    display: flex;
+    max-width: 700px;
     margin: 20px auto;
     height: 100%;
+    gap: 10px;
 `
 
 const MovieDetailMainContent = styled.div`
@@ -203,6 +204,9 @@ const DetailMyReviewCard = styled(BaseContainer)`
     align-items: center;
 `
 
+const ReviewCard = styled(ReviewDebateCard)`
+`
+
 const DetailMyReviewWrapper = styled.div`
     width: 100%;
     min-height: 100px;
@@ -276,55 +280,147 @@ const PlatformTabButton = styled.button<{ $active?: boolean }>`
     border-bottom: ${({$active}) => ($active ? '1px solid #FE6A3C' : 'none')};
 `
 
-const ActionButton = styled.button`
-    all: unset;
-    cursor: pointer;
-    background-color: #fe6a3c;
-    color: white;
-    padding: 5px 10px;
-    margin-right: 10px;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 600;
-    text-align: center;
-    transition: background-color 0.2s ease;
-
-    &:hover {
-        background-color: #ff854e;
-    }
+const ActionButton = styled(BaseButton).attrs({
+  size: 'small',
+})`
+    align-items: center;
 `
+
+
 
 export default function MovieDetailPage() {
   const [movieData, setMovieData] = useState<MovieData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'overview' | 'review' | 'debate' | 'media'>('overview')
+  const [activePlatformTab, setActivePlatformTab] = useState<'구매' | '정액제' | '대여'>('구매')
+  const [isLiked, setIsLiked] = useState(false)
+  const [isWatched, setIsWatched] = useState(false)
+  const [isBookmarked, setIsBookmarked] = useState(false)
+  const {tmdbId} = useParams<{ tmdbId: string }>()
+  const {user, isAuthenticated, loading} = useAuth()
+
+  const onClickAuth = useOnClickAuth()
+  const [reviewData, setReviewData] = useState<ReviewData | null>(null)
+  const [myReview, setMyReview] = useState<ReviewData | null>(null)
+
+  const handleBookmark = useCallback(
+    () =>
+      onClickAuth(async () => {
+        const movieId = movieData?.movieId
+        if (!movieId) return
+        console.log('Bookmark 눌림', isBookmarked)
+        setIsBookmarked(prev => !prev)
+        try {
+          await bookmarkMovie(movieId)
+          await Swal.fire({
+            title: !isBookmarked ? '찜 완료' : '찜 취소',
+            text: !isBookmarked ? '찜 목록에 추가되었습니다.' : '찜 목록에서 제거되었습니다.',
+            icon: 'success',
+            confirmButtonText: '확인',
+        })
+        } catch {
+          await Swal.fire({
+            title: '찜 처리 실패',
+            text: '찜 목록에 추가하는 데 실패했습니다. 다시 시도해주세요.',
+            icon: 'error',
+            confirmButtonText: '확인',
+          })
+          console.error('찜 처리 실패')
+
+          setIsBookmarked(prev => !prev)
+        }
+      })(),
+    [onClickAuth, movieData?.movieId, isBookmarked],
+  )
+
+  const handleView = useCallback(
+    () =>
+      onClickAuth(async () => {
+        const movieId = movieData?.movieId
+        if (!movieId) return
+        setIsWatched(prev => !prev)
+        try {
+          await watchedMovie(movieId)
+          await Swal.fire({
+            title: !isWatched ? '봤어요' : '봤어요 취소',
+            text: !isWatched ? '봤어요 목록에 추가되었습니다.' : '봤어요 목록에서 제거되었습니다.',
+            icon: 'success',
+            confirmButtonText: '확인',
+          })
+        } catch {
+          await Swal.fire({
+            title: '봤어요 처리 실패',
+            text: '봤어요 목록에 추가하는 데 실패했습니다. 다시 시도해주세요.',
+            icon: 'error',
+            confirmButtonText: '확인',
+          })
+          setIsWatched(prev => !prev)
+        }
+      })(),
+    [onClickAuth, movieData?.movieId, isWatched],
+  )
 
   useEffect(() => {
-    const fetchMovieDetail = async () => {
+      const fetchMovieDetail = async () => {
+        try {
+          console.log("영화 상세 정보 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
+          const response = await getMovieDetail(tmdbId)
+          const data = response.data
+          console.log("영화 정보 조회됨 : ", data)
+          const mappedData: MovieData = mapToMovieData(data)
+          console.log("영화 정보 매핑됨 : ", mappedData)
+          setMovieData(mappedData)
+          setIsLiked(mappedData.myLike)
+          setIsWatched(mappedData.myWatched)
+          setIsBookmarked(mappedData.myBookmark)
+        } catch (error) {
+          console.error('영화 상세 정보 불러오기 실패:', error)
+        } finally {
+          console.log("영화 상세 정보 불러오기 및 매핑 완료")
+        }
+      }
+      const fetchMovieReview = async () => {
+        try {
+          console.log("영화 리뷰 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
+          const response = await getMovieReview(tmdbId, 0)
+          const data = response.data
+          console.log("영화 리뷰 조회됨 : ", data)
+          console.log("영화 리뷰 매핑시 사용된 유저 정보 : ", user, isAuthenticated, user?.id)
+          const mappedData: ReviewData = mapToReviewData(data, user?.id, user?.nickname)
+          console.log("영화 리뷰 매핑됨 : ", mappedData)
+          // setMyReview(mappedData)
+          setReviewData(mappedData)
+        } catch (error) {
+          console.error('영화 리뷰 불러오기 실패:', error)
+        } finally {
+          console.log("영화 리뷰 불러오기 및 매핑 완료")
+        }
+      }
+      // const fetchMyReview = async () => {
+      //   if (user) {
+      //     try {
+      //       console.log("내 리뷰 불러오기 시작", "영화 ID : ", tmdbId, "유저 정보 : ", user, isAuthenticated)
+      //       const response = await getUserMovieReview(tmdbId, user)
+      //     }
+      //   } return;
+      // }
+
       try {
-        //
-        // 여기에 실제 API 호출 코드 작성
-        //const { movieId } = useParams<{ movieId: string }>()
-        // const respons = await fetch(`https://api.flipflick.life//api/v1/movie/view/${movieId}`)
-        // 예시로 fetch를 사용하여 JSON 파일을 불러오는 코드
-        const response = await axios.post('http://localhost:8080/api/v1/movie/view', {
-          tmdbId: 552524,
-        })
-
-        const data = response.data.data
-
-        const mappedData: MovieData = mapToMovieData(data)
-
-        setMovieData(mappedData)
+        if (!loading && user) {
+          fetchMovieDetail()
+          fetchMovieReview()
+        }
       } catch (error) {
-        console.error('영화 상세 정보 불러오기 실패:', error)
+        console.error('영화 상세 페이지 정보 불러오기 중 오류 발생:', error)
+        setIsLoading(false)
       } finally {
         setIsLoading(false)
       }
-    }
 
-    fetchMovieDetail()
-  }, [])
+    }
+    ,
+    [tmdbId, user, loading]
+  )
 
 
   if (isLoading || !movieData) {
@@ -342,10 +438,12 @@ export default function MovieDetailPage() {
     <MovieDetailLayout>
       <MovieDetailHeader movieData={movieData}/>
       <MovieDetailMainAction>
-        <ActionButton>찜하기</ActionButton>
-        <ActionButton>봤어요</ActionButton>
-        <ActionButton>플레이리스트 추가</ActionButton>
-        <ActionButton>수정 요청</ActionButton>
+        <ActionButton size='small' icon={isBookmarked ? <StarOff/> : <Star/>}
+                      onClick={handleBookmark}>{isBookmarked ? '찜 취소' : '찜하기'}</ActionButton>
+        <ActionButton size='small' icon={isWatched ? <EyeOff/> : <Eye/>}
+                      onClick={handleView}>{isWatched ? '봤어요 취소' : '봤어요'}</ActionButton>
+        <ActionButton size='small' icon={<ListPlus/>}>플레이리스트 추가</ActionButton>
+        <ActionButton size='small' icon={<Flag/>}>수정 요청</ActionButton>
       </MovieDetailMainAction>
       <MovieDetailMain>
         <MovieDetailMainContentTab>
@@ -393,12 +491,27 @@ export default function MovieDetailPage() {
               </ContentsListTitleTab>
               <OverViewPlatformWrapper>
                 <OverViewPlatformTab>
-                  <PlatformTabButton $active>구매</PlatformTabButton>
-                  <PlatformTabButton>정액제</PlatformTabButton>
-                  <PlatformTabButton>대여</PlatformTabButton>
+                  <PlatformTabButton
+                    $active={activePlatformTab === '구매'}
+                    onClick={() => setActivePlatformTab('구매')}>
+                    구매</PlatformTabButton>
+                  <PlatformTabButton
+                    $active={activePlatformTab === '정액제'}
+                    onClick={() => setActivePlatformTab('정액제')}>
+                    구독</PlatformTabButton>
+                  <PlatformTabButton
+                    $active={activePlatformTab === '대여'}
+                    onClick={() => setActivePlatformTab('대여')}>
+                    대여</PlatformTabButton>
                 </OverViewPlatformTab>
                 <OverViewPlatformImageWrapper>
-                  <PlatFormImage/>
+                  {movieData.providers
+                    .filter(provider => provider.type === activePlatformTab)
+                    .map(provider => (
+                      <PlatFormImage key={provider.name}>
+                        <img src={provider.logoUrl} alt={provider.name} style={{width: '100px', height: '100px'}}/>
+                      </PlatFormImage>
+                    ))}
                 </OverViewPlatformImageWrapper>
               </OverViewPlatformWrapper>
             </OverViewContents>
@@ -407,10 +520,42 @@ export default function MovieDetailPage() {
             <ReviewDebateContents>
               <RatingWrapper>
                 <RatingCard title="전체 평점" rating={movieData.voteAverage} size={40}/>
-                <RatingCard title="평가하기" rating={0} size={40}/>
+                <RatingCard title="평가하기" rating={movieData.myRating} size={40}/>
               </RatingWrapper>
               <DetailMyReviewWrapper>
-                <DetailMyReviewCard>내 리뷰</DetailMyReviewCard>
+                <DetailMyReviewCard>
+                  {/*<ReviewCard*/}
+                  {/*  content={movieData.}*/}
+                  {/*  createdAt={'2023-10-01'}*/}
+                  {/*  username={'사용자'}*/}
+                  {/*  type={'review'}*/}
+                  {/*  isMyPost={true}*/}
+                  {/*  />*/}
+                  {myReview ? (
+                    <p>내가 작성한 리뷰 있음</p>
+
+                  ) : (
+                    <ReviewTextArea
+                      tmdbId={tmdbId!}
+                      // rating={movieData.myRating}
+                      rating={3.0}
+                      isAuthenticated={isAuthenticated}
+                      onSuccess={async () => {
+                        try {
+                          console.log("내 리뷰 불러오기 시작")
+                          const response = await getMovieReview(tmdbId!, 0)
+                          const data = response.data
+                          console.log("내 리뷰 조회됨 : ", data)
+                          const mappedData: ReviewData = mapToReviewData(data, user?.id, user?.nickname)
+                          console.log("내 리뷰 매핑됨 : ", mappedData)
+                          setMyReview(mappedData)
+                        } catch (error) {
+                          console.error('내 리뷰 불러오기 실패:', error)
+                        }
+                      }}
+                    />
+                  )}
+                </DetailMyReviewCard>
               </DetailMyReviewWrapper>
               <ContentsListWrapper>
                 <ContentsListTitleTab>
@@ -419,14 +564,22 @@ export default function MovieDetailPage() {
                 </ContentsListTitleTab>
                 <ReviewDebateList>
                   <DetailReviewCardWrapper>
-                    <ReviewDebateCard
-                      rating={4.0}
-                      content={'리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용리뷰 내용'}
-                      createdAt={'1 시간 전'}
-                      likes={100}
-                      username={'사용자'}
-                      type={'review'}
-                    />
+                    {/*자기 리뷰는 래퍼에 안뜨게 해야함*/}
+                    {reviewData?.reviews.map(review =>
+                      <ReviewDebateCard
+                        key={review.reviewId}
+                        content={review.content}
+                        createdAt={review.createdAt}
+                        username={review.member.nickname}
+                        type={'review'}
+                        isMyPost={review.isMyPost}
+                        likes={review.likes}
+                        // hates={review.hates}
+                        rating={review.rating}
+                      />
+                    )
+                    }
+                    {/*<ReviewDebateCard />*/}
                   </DetailReviewCardWrapper>
                 </ReviewDebateList>
               </ContentsListWrapper>

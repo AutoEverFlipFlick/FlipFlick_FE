@@ -25,9 +25,8 @@ import {
 import { getBookmarkCount, getWatchedCount, getLikeCount } from '@/services/moviePreference'
 import { getMyPlaylists, getPlaylistsByNickname } from '@/services/playlist'
 import { getUserReviewsLatest, getUserDebatesBySort } from '@/services/memberPost'
-import AlarmComponent from '@/components/common/AlarmComponent'
-import AlarmListener from '@/components/common/AlarmListener'
 import { useAuth } from '@/context/AuthContext'
+import { Star } from 'lucide-react'
 
 interface IsMobile {
   $ismobile: boolean
@@ -38,7 +37,7 @@ const Container = styled.div<IsMobile>`
 `
 
 const ContentWrapper = styled.div<IsMobile>`
-  max-width: ${props => (props.$ismobile ? '100%' : '800px')};
+  max-width: 800px;
   margin: 0 auto;
   overflow-x: hidden;
 `
@@ -73,6 +72,24 @@ const UserImage = styled.img<IsMobile>`
   border-radius: 50%;
   object-fit: cover;
   border: 5px solid transparent;
+`
+const Avatar = styled.div<{ size: number }>`
+  width: ${({ size }) => size}px;
+  height: ${({ size }) => size}px;
+  border-radius: 50%;
+  background: #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: ${({ size }) => size / 2.5}px;
+  color: #fff;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 `
 
 const UserInfo = styled.div`
@@ -283,9 +300,15 @@ const CardInfo = styled.div`
 `
 
 const Rating = styled.div`
+  display: flex;
+  align-items: center;
   color: #fff;
   margin-bottom: 4px;
   font-size: 0.8rem;
+
+  svg {
+    margin-right: 4px;
+  }
 `
 
 const ReviewContent = styled.div`
@@ -304,6 +327,12 @@ const ReviewContent = styled.div`
 const Title = styled.span`
   color: #fff;
   margin-bottom: 2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
 `
 
 const Subtitle = styled.span`
@@ -356,7 +385,6 @@ const MyPageMain: React.FC = () => {
   const [profileImageUrl, setProfileImageUrl] = useState('')
   const navigate = useNavigate()
   const [isFollowing, setIsFollowing] = useState(false)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isOwnProfile, setIsOwnProfile] = useState(true)
   const [profileOwnerId, setProfileOwnerId] = useState<number | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(true)
@@ -486,7 +514,7 @@ const MyPageMain: React.FC = () => {
       if (!nickname) return
       try {
         const res = await getUserReviewsLatest(nickname)
-        const content = res.data.data.content
+        const content = res.data.data.reviews
         setUserReviews(content)
         setReviewTotalCount(res.data.data.totalElements)
       } catch (err) {
@@ -563,20 +591,17 @@ const MyPageMain: React.FC = () => {
     <Container $ismobile={isMobile}>
       {isLoading ? null : (
         <>
-          <div>
-            <AlarmComponent />
-            <AlarmListener />
-          </div>
+          <div></div>
           <ContentWrapper $ismobile={isMobile}>
             <Profile $ismobile={isMobile}>
               <LeftGroup>
                 <ImageUploadWrapper $ismobile={isMobile}>
-                  {profileImageUrl && (
-                    <UserImage
-                      $ismobile={isMobile}
-                      src={selectedFile ? URL.createObjectURL(selectedFile) : profileImageUrl}
-                      alt="프로필 이미지"
-                    />
+                  {profileImageUrl && profileImageUrl !== 'null' && profileImageUrl !== 'string' ? (
+                    <UserImage $ismobile={isMobile} src={profileImageUrl} alt="프로필 이미지" />
+                  ) : (
+                    <Avatar size={isMobile ? 70 : 100}>
+                      {nickname ? nickname.charAt(0) : '?'}
+                    </Avatar>
                   )}
                 </ImageUploadWrapper>
                 <UserInfo>
@@ -667,7 +692,10 @@ const MyPageMain: React.FC = () => {
                       />
                       <CardInfo>
                         <Title>{review.movieTitle}</Title>
-                        <Rating>★ {review.star}</Rating>
+                        <Rating>
+                          <Star fill="yellow" stroke="#yellow" size={18} />
+                          <span>{review.star}</span>
+                        </Rating>
                         <ReviewContent>{review.content}</ReviewContent>
                       </CardInfo>
                     </Card>
