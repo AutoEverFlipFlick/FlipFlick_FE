@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { kakaoLogin } from '@/services/member'
 import styled, { keyframes } from 'styled-components'
+import Swal from 'sweetalert2'
 const spin = keyframes`
   to {
     transform: rotate(360deg);
@@ -46,10 +47,17 @@ const KakaoRedirectHandler: React.FC = () => {
           } else {
             navigate('/') // 메인 페이지
           }
-        } catch (error) {
-          console.error('카카오 로그인 실패:', error)
-          alert('카카오 로그인 실패')
-          navigate('/login')
+        } catch (error: any) {
+          if (error.response?.status !== 403) {
+            // 403이 아닌 경우에만 로그인 실패 메시지 출력
+
+            Swal.fire({
+              icon: 'error',
+              title: '로그인 실패',
+              text: '카카오 로그인 실패',
+            })
+            navigate('/login')
+          }
         }
       }
 

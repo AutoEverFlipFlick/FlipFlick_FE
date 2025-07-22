@@ -78,6 +78,7 @@ import MyPagePreference from '@/pages/myPage/MyPagePreference'
 import MyPageReview from '@/pages/myPage/MyPageReview'
 import MyPageDebate from '@/pages/myPage/MyPageDebate'
 import MyPageFollowList from '@/pages/myPage/MyPageFollowList'
+import DebateWritePage from '@/pages/debate/DebateWritePage'
 
 const AppRoutes = () => {
   return (
@@ -183,8 +184,8 @@ const AppRoutes = () => {
           <Route path="/bolkinator" element={<Bolkinator />} />
           <Route path="/example" element={<ExamplePage />} />
           <Route path="/filmography/:tmdbId" element={<Filmography />} />
+          <Route path="/debate/write" element={<DebateWritePage />} />
 
-          {/* Protected Routes */}
           <Route
             path="/createplaylist"
             element={
@@ -201,16 +202,6 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
-
-          <Route path="/example" element={<ExamplePage />} />
-
-          <Route path="/filmography/:tmdbId" element={<div style={{overflowY : 'hidden'}}><Filmography /></div>} />
-
-          <Route path="*" element={<Navigate to="/" replace />} />
-
-          <Route path="/oauth/kakao/callback" element={<KakaoRedirectHandler />} />
-
-          <Route path="/oauth/naver/callback" element={<NaverRedirectHandler />} />
 
           <Route path="/my-page" element={<MyPageMain />} />
           <Route path="/my-page-edit" element={<MyPageEdit />} />

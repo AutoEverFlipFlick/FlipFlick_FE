@@ -385,7 +385,6 @@ const MyPageMain: React.FC = () => {
   const [profileImageUrl, setProfileImageUrl] = useState('')
   const navigate = useNavigate()
   const [isFollowing, setIsFollowing] = useState(false)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isOwnProfile, setIsOwnProfile] = useState(true)
   const [profileOwnerId, setProfileOwnerId] = useState<number | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(true)
