@@ -98,26 +98,26 @@ axiosInstance.interceptors.response.use(
 
     // ✅ 차단/정지 처리 (403)
     if (error.response?.status === 403) {
-      const message = error.response.data.message as string
+      const message = error.response?.data?.message
       console.log('차단/정지 처리:', message)
 
-      if (message.startsWith('정지된 회원입니다.')) {
-        // 메시지에서 날짜 추출
-        const match = message.match(/해제일: (.+)/)
-        const unblockDate = match ? match[1] : '알 수 없음'
-
-        Swal.fire({
+      if (message?.startsWith('정지된')) {
+        await Swal.fire({
           icon: 'warning',
-          title: '계정 정지',
-          html: `해당 계정은 정지 상태입니다.<br/>해제 예정일: <strong>${unblockDate}</strong>`,
-          confirmButtonText: '확인',
+          title: '정지된 계정입니다',
+          text: message,
+        }).then(() => {
+          localStorage.removeItem('accessToken')
+          window.location.replace('/login') // ← ✅ history 기록 남기지 않고 이동
         })
-      } else if (message === '차단된 회원입니다.') {
-        Swal.fire({
+      } else if (message?.includes('차단')) {
+        await Swal.fire({
           icon: 'error',
-          title: '계정 차단',
-          text: '해당 계정은 영구 차단되었습니다.',
-          confirmButtonText: '확인',
+          title: '차단된 계정입니다',
+          text: message,
+        }).then(() => {
+          localStorage.removeItem('accessToken')
+          window.location.replace('/login') // ← ✅ replace로 처리
         })
       }
     }

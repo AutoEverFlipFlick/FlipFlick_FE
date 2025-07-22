@@ -104,12 +104,16 @@ const EmailLogin: React.FC = () => {
       // TODO: 메인 페이지나 홈으로 이동
       // navigate('/home') <-- react-router 사용 시
     } catch (err) {
-      console.error('로그인 실패:', err)
-      Swal.fire({
-        icon: 'error',
-        title: '로그인 실패',
-        text: '이메일 또는 비밀번호가 잘못되었습니다.',
-      })
+      const error = err as any
+      if (error.response?.status !== 403) {
+        // 403이 아닌 경우에만 로그인 실패 메시지 출력
+        console.error('로그인 실패:', err)
+        Swal.fire({
+          icon: 'error',
+          title: '로그인 실패',
+          text: '이메일 또는 비밀번호가 잘못되었습니다.',
+        })
+      }
     }
   }
 
