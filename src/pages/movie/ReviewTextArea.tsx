@@ -120,13 +120,13 @@ export const ReviewTextArea = ({tmdbId, onSuccess, rating, isAuthenticated, myRe
       if (isEditMode && myReview) {
         // 수정
         console.log("[ReviewTextArea] 리뷰 수정 요청:", {
-          reviewId: myReview.reviewId,
+          reviewId: myReview.contentId,
           content: value,
           spoiler: isSpoiler,
           star: rating
         });
         await updateMovieReview(
-          myReview.reviewId,
+          myReview.contentId,
           {content: value, spoiler: isSpoiler, star: rating,});
         await Swal.fire({
           icon: 'success',
@@ -157,7 +157,7 @@ export const ReviewTextArea = ({tmdbId, onSuccess, rating, isAuthenticated, myRe
   };
 
   const handleDelete = async () => {
-    if (!myReview?.reviewId) return;
+    if (!myReview?.contentId) return;
     const result = await Swal.fire({
       icon: 'warning',
       title: '리뷰를 삭제하시겠습니까?',
@@ -167,7 +167,7 @@ export const ReviewTextArea = ({tmdbId, onSuccess, rating, isAuthenticated, myRe
     });
     if (result.isConfirmed) {
       try {
-        await deleteMovieReview(myReview.reviewId);
+        await deleteMovieReview(myReview.contentId);
         await Swal.fire({
           icon: 'success',
           title: '리뷰가 삭제되었습니다.',
