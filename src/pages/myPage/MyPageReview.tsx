@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import styled, { keyframes } from 'styled-components'
 import { useMediaQuery } from 'react-responsive'
 import BaseContainer from '@/components/common/BaseContainer'
-import { getUserReviewsLatest } from '@/services/memberPost'
+import { getUserReviewsLatest, reviewArray } from '@/services/memberPost'
 import { timeForToday } from '@/utils/timeForToday'
 import FlipflickTransparency from '@/assets/common/flipflick_transparency.png'
 import { ThumbsUp, ThumbsDown, Star, ArrowLeft } from 'lucide-react'
@@ -94,6 +94,7 @@ const ReviewCard = styled(BaseContainer)<IsMobile>`
   overflow: hidden;
   padding: 0;
   animation: ${fadeInUp} 0.3s ease both;
+  cursor: pointer;
 `
 
 interface ImageWrapperProps {
@@ -124,12 +125,6 @@ const Skeleton = styled.div`
 `
 
 // 누락된 상태 컴포넌트
-const LoadingMessage = styled.div`
-  text-align: center;
-  color: #ccc;
-  font-size: 1rem;
-  margin: 2rem 0;
-`
 const ErrorMessage = styled.div`
   text-align: center;
   color: #ff4444;
@@ -307,17 +302,6 @@ const ImageLoader: React.FC<{
   )
 }
 
-interface reviewArray {
-  id: number
-  movieTitle: string
-  posterImg: string
-  content: string
-  star: number
-  createdAt: string
-  likeCnt: number
-  hateCnt: number
-}
-
 const MyPageReview: React.FC = () => {
   const location = useLocation()
   const isMobile = useMediaQuery({ query: '(max-width: 767px)' })
@@ -340,7 +324,7 @@ const MyPageReview: React.FC = () => {
       try {
         const res = await getUserReviewsLatest(nickname, page, pageSize)
         const newReviews = res.data.data.reviews
-
+        console.log(newReviews)
         if (isMobile) {
           setReviews(prev => (page === 0 ? newReviews : [...prev, ...newReviews]))
         } else {
@@ -388,16 +372,10 @@ const MyPageReview: React.FC = () => {
             <ArrowLeft size={24} />
           </BackButton>
           <Title $ismobile={isMobile}>작성한 리뷰</Title>
-          <Spacer /> {/* 오른쪽 빈 칸 */}
+          <Spacer />
         </HeaderRow>
 
-        {/* 로딩 중 */}
-        {loading && !loaded && <LoadingMessage>리뷰를 불러오는 중입니다...</LoadingMessage>}
-
-        {/* 에러 발생 시 */}
         {error && <ErrorMessage>리뷰를 불러오는 중 오류가 발생했습니다.</ErrorMessage>}
-
-        {/* 정상 로딩 완료 시 */}
 
         <FlexRow>
           <TotalCount>총 {total}개</TotalCount>
@@ -414,7 +392,10 @@ const MyPageReview: React.FC = () => {
 
                 return (
                   <div key={key} ref={isLast ? lastItemRef : undefined}>
-                    <ReviewCard $ismobile={isMobile}>
+                    <ReviewCard
+                      $ismobile={isMobile}
+                      onClick={() => navigate(`/movie/detail/${review.tmdbId}`)}
+                    >
                       <ImageLoader
                         src={`https://image.tmdb.org/t/p/w500${review.posterImg}`}
                         alt={review.movieTitle}
@@ -488,8 +469,6 @@ const MyPageReview: React.FC = () => {
                 </PaginationButton>
               </PaginationWrapper>
             )}
-            {/* 모바일 로딩 */}
-            {isMobile && loading && <MobileLoading>내용 불러오는 중...</MobileLoading>}
           </>
         )}
       </ContentWrapper>

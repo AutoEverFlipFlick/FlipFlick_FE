@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react'
-import styled from 'styled-components'
+import styled, { keyframes } from 'styled-components'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useMediaQuery } from 'react-responsive'
 import {
@@ -17,9 +17,20 @@ interface IsMobile {
   $ismobile: boolean
 }
 
+const fadeInUp = keyframes`
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+`
+const shimmer = keyframes`
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+`
+
 const Container = styled.div`
-  min-height: 100vh;
+  min-height: 100%;
   padding: 2rem;
+  box-sizing: border-box;
+  overflow-x: hidden;
 `
 
 const ContentWrapper = styled.div`
@@ -104,6 +115,7 @@ const UserItem = styled.div`
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
+  animation: ${fadeInUp} 0.3s ease both;
 `
 
 const LeftInfo = styled.div`
@@ -137,6 +149,67 @@ const Avatar = styled.div<{ size: number }>`
     object-fit: cover;
   }
 `
+
+const ImageWrapper = styled.div`
+  position: relative;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+`
+const Skeleton = styled.div`
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.1);
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: ${shimmer} 1.2s infinite;
+  }
+`
+
+const ProfileImageLoader: React.FC<{ src: string; alt?: string }> = ({ src, alt }) => {
+  const [loaded, setLoaded] = useState(false)
+  const [error, setError] = useState(false)
+  return (
+    <ImageWrapper>
+      {!loaded && !error && <Skeleton />}
+      {!error && (
+        <img
+          src={src}
+          alt={alt}
+          onLoad={() => setLoaded(true)}
+          onError={() => setError(true)}
+          style={{
+            display: loaded ? 'block' : 'none',
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
+        />
+      )}
+      {error && (
+        <div
+          style={{
+            width: '100%',
+            height: '100%',
+            background: '#444',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#fff',
+            fontSize: '1.2rem',
+          }}
+        >
+          ?
+        </div>
+      )}
+    </ImageWrapper>
+  )
+}
 
 const InfoText = styled.div`
   display: flex;
@@ -191,13 +264,6 @@ const PaginationButton = styled.button<{ $active?: boolean }>`
   }
 `
 
-// 누락된 상태 컴포넌트
-const LoadingMessage = styled.div`
-  text-align: center;
-  color: #ccc;
-  font-size: 1.1rem;
-  margin: 2rem 0;
-`
 const ErrorMessage = styled.div`
   text-align: center;
   color: #ff4444;
@@ -378,7 +444,6 @@ const MyPageFollowList: React.FC = () => {
             팔로잉
           </Tab>
         </Tabs>
-        {page === 0 && loading && <LoadingMessage>사용자를 불러오는 중…</LoadingMessage>}
 
         {error && <ErrorMessage>사용자를 불러오는 중 오류가 발생했습니다.</ErrorMessage>}
         {!loading && !error && users.length === 0 && (
@@ -398,7 +463,7 @@ const MyPageFollowList: React.FC = () => {
                     {user.profileImg &&
                     user.profileImg !== 'null' &&
                     user.profileImg !== 'string' ? (
-                      <ProfileImg src={user.profileImg} alt="프로필 이미지" />
+                      <ProfileImageLoader src={user.profileImg} alt={user.name} />
                     ) : (
                       <Avatar size={70}>{user.name.charAt(0)}</Avatar>
                     )}
