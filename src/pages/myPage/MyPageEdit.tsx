@@ -311,6 +311,13 @@ const MyPageEdit = () => {
       console.log('프로필 이미지 변경 성공')
     }
 
+    // 커스텀 이벤트 발생 (useTokenObserver가 이걸 감지함)
+    window.dispatchEvent(
+      new CustomEvent('tokenStorage', {
+        detail: { newToken: localStorage.getItem('accessToken') },
+      }),
+    )
+
     await Swal.fire({
       title: '회원 정보 수정 완료',
       text: '회원 정보가 성공적으로 저장되었습니다.',
