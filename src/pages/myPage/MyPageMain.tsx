@@ -24,7 +24,7 @@ import {
 
 import { getBookmarkCount, getWatchedCount, getLikeCount } from '@/services/moviePreference'
 import { getMyPlaylists, getPlaylistsByNickname } from '@/services/playlist'
-import { getUserReviewsLatest, getUserDebatesBySort } from '@/services/memberPost'
+import { getUserReviewsLatest, getUserDebatesBySort, reviewArray } from '@/services/memberPost'
 import { useAuth } from '@/context/AuthContext'
 import { Star } from 'lucide-react'
 
@@ -358,15 +358,6 @@ function getPopcornIcon(percent: number) {
 
 type TabType = '찜했어요' | '좋아요' | '봤어요'
 
-// 리뷰 아이템 타입
-type reviewArray = {
-  reviewId: number
-  movieTitle: string
-  posterImg: string
-  star: number
-  content: string
-}
-
 // 플레이리스트 아이템 타입
 type playlistArray = {
   playListId: number
@@ -515,6 +506,7 @@ const MyPageMain: React.FC = () => {
       try {
         const res = await getUserReviewsLatest(nickname)
         const content = res.data.data.reviews
+        // console.log(content)
         setUserReviews(content)
         setReviewTotalCount(res.data.data.totalElements)
       } catch (err) {
@@ -685,7 +677,10 @@ const MyPageMain: React.FC = () => {
                 </SectionHeader>
                 <CardList>
                   {userReviews.map(review => (
-                    <Card key={review.reviewId} onClick={() => navigate(`/movie/detail`)}>
+                    <Card
+                      key={review.id}
+                      onClick={() => navigate(`/movie/detail/${review.tmdbId}`)}
+                    >
                       <ReviewImage
                         src={`https://image.tmdb.org/t/p/w500${review.posterImg}`}
                         alt="리뷰 포스터"

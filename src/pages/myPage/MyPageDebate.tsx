@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import styled, { keyframes } from 'styled-components'
 import { useMediaQuery } from 'react-responsive'
-import zzanggu from './zzanggu.jpg'
 import BaseContainer from '@/components/common/BaseContainer'
 import { getUserDebatesBySort, Debate, SortBy } from '@/services/memberPost'
 import {
@@ -17,6 +16,7 @@ import {
 import { useAuth } from '@/context/AuthContext'
 import { timeForToday } from '@/utils/timeForToday'
 import { useNavigate } from 'react-router-dom'
+import FlipflickTransparency from '@/assets/common/flipflick_transparency.png'
 
 interface IsMobile {
   $ismobile: boolean
@@ -205,6 +205,7 @@ const Skeleton = styled.div`
 const DebateCard = styled(BaseContainer)<{ $$ismobile: boolean }>`
   display: flex;
   flex-direction: ${props => (props.$$ismobile ? 'column' : 'row')};
+  cursor: pointer;
   border-radius: 8px;
   position: relative;
   overflow: hidden;
@@ -215,20 +216,20 @@ const DebateCard = styled(BaseContainer)<{ $$ismobile: boolean }>`
   height: auto;
   animation: ${fadeInUp} 0.3s ease both;
 `
-const TopIcons = styled.div<IsMobile>`
-  position: ${({ $ismobile }) => ($ismobile ? 'absolute' : 'absolute')};
-  top: ${({ $ismobile }) => ($ismobile ? '12px' : '12px')};
-  right: ${({ $ismobile }) => ($ismobile ? '12px' : '12px')};
-  display: flex;
-  gap: 8px;
-  z-index: 2;
+// const TopIcons = styled.div<IsMobile>`
+//   position: ${({ $ismobile }) => ($ismobile ? 'absolute' : 'absolute')};
+//   top: ${({ $ismobile }) => ($ismobile ? '12px' : '12px')};
+//   right: ${({ $ismobile }) => ($ismobile ? '12px' : '12px')};
+//   display: flex;
+//   gap: 8px;
+//   z-index: 2;
 
-  & > span {
-    cursor: pointer;
-    color: #fff;
-    font-size: 1rem;
-  }
-`
+//   & > span {
+//     cursor: pointer;
+//     color: #fff;
+//     font-size: 1rem;
+//   }
+// `
 const ImageWrapper = styled.div<IsMobile>`
   width: ${({ $ismobile }) => ($ismobile ? '100%' : '140px')};
   display: flex;
@@ -237,6 +238,16 @@ const ImageWrapper = styled.div<IsMobile>`
   gap: 4px;
   padding: ${({ $ismobile }) => ($ismobile ? '0.7rem' : '8px')};
   box-sizing: border-box;
+  overflow: hidden;
+`
+
+const Overlay = styled.div<IsMobile>`
+  position: ${({ $ismobile }) => ($ismobile ? '' : 'absolute')};
+  top: ${({ $ismobile }) => ($ismobile ? '' : '12px')};
+  right: ${({ $ismobile }) => ($ismobile ? '' : '12px')};
+  display: flex;
+  gap: 8px;
+  z-index: 2;
 `
 
 const MovieTitle = styled.div<IsMobile>`
@@ -268,7 +279,7 @@ const ImageLoader: React.FC<{
           style={{
             display: loaded ? 'block' : 'none',
             width: '100%',
-            height: '100%',
+            height: isMobile ? '250px' : '100px',
             objectFit: 'cover',
             borderRadius: '3px',
           }}
@@ -276,7 +287,7 @@ const ImageLoader: React.FC<{
       )}
       {error && (
         <img
-          src={zzanggu} // fallback image
+          src={FlipflickTransparency} // fallback image
           alt="fallback"
           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
         />
@@ -330,9 +341,7 @@ const DebateContent = styled.div<IsMobile>`
 const Header = styled.div<IsMobile>`
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 10px;
+  width: 100%;
 `
 const DebateTitle = styled.div<IsMobile>`
   flex: 1;
@@ -348,6 +357,7 @@ const DebateTitle = styled.div<IsMobile>`
   white-space: normal;
   margin-top: 5px;
   margin-left: ${({ $ismobile }) => ($ismobile ? '0.3rem' : '0')};
+  align-self: baseline;
 `
 const TimeStamp = styled.div`
   flex-shrink: 0;
@@ -358,12 +368,13 @@ const TimeStamp = styled.div`
 const DebateText = styled.div<IsMobile>`
   font-size: 0.85rem;
   margin: ${({ $ismobile }) => ($ismobile ? '0.7rem' : '0')};
-  margin-top: 0.7rem;
+  margin-top: ${({ $ismobile }) => ($ismobile ? '0' : '1rem')};
   color: #ccc;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: ${({ $ismobile }) => ($ismobile ? '1' : '3')};
   overflow: hidden;
+  align-self: baseline;
 `
 
 const PaginationWrapper = styled.div`
@@ -395,12 +406,7 @@ const PaginationButton = styled.button<{ $active?: boolean }>`
 `
 
 // 누락된 상태 컴포넌트
-const LoadingMessage = styled.div`
-  text-align: center;
-  color: #ccc;
-  font-size: 1rem;
-  margin: 2rem 0;
-`
+
 const ErrorMessage = styled.div`
   text-align: center;
   color: #ff4444;
@@ -482,12 +488,25 @@ export default function MyPageDebate() {
     [isMobile, isLastPage, totalPages],
   )
 
+  function extractImageUrls(html: string): string[] {
+    return (
+      html
+        .match(/<img[^>]+src="([^">]+)"/g)
+        ?.map(tag => {
+          const m = tag.match(/src="([^">]+)"/)
+          return m ? m[1] : ''
+        })
+        .filter(src => !!src) || []
+    )
+  }
+
   const fetchDebates = async (pageNum = 0) => {
     try {
       setIsLoading(true)
       setHasError(false)
       const res = await getUserDebatesBySort(nickname, pageNum, pageSize, sortBy)
       const newData = res.data.data.content
+
       const total = res.data.data.totalElements
       setTotalElements(total)
       setIsLastPage(newData.length < pageSize)
@@ -556,7 +575,6 @@ export default function MyPageDebate() {
             </DropdownMenu>
           </SortContainer>
         </FlexRow>
-        {isLoading && !hasLoaded && <LoadingMessage>토론 글을 불러오는 중입니다...</LoadingMessage>}
         {hasError && <ErrorMessage>토론 글을 불러오는 중 오류가 발생했습니다.</ErrorMessage>}
         {debates.length === 0 ? (
           <EmptyMessage>작성한 리뷰가 없습니다.</EmptyMessage>
@@ -566,12 +584,18 @@ export default function MyPageDebate() {
               {debates.map((d, idx) => {
                 const isLast = isMobile && idx === debates.length - 1
                 const isOwner = user?.nickname === nickname
+                const imgUrls = extractImageUrls(d.content)
+                const imgSrc = imgUrls.length > 0 ? imgUrls[0] : FlipflickTransparency
+
                 return (
                   <div key={d.debateId} ref={isLast ? lastItemRef : undefined}>
                     {isMobile ? (
                       <>
-                        <DebateCard $$ismobile={isMobile}>
-                          {isOwner && (
+                        <DebateCard
+                          $$ismobile={isMobile}
+                          onClick={() => navigate(`/debate/${d.debateId}`)}
+                        >
+                          {/* {isOwner && (
                             <TopIcons $ismobile={isMobile}>
                               <span>
                                 <Pencil size={20} onClick={() => navigate('/')} />
@@ -580,14 +604,15 @@ export default function MyPageDebate() {
                                 <Trash2 size={20} onClick={() => navigate('/')} />
                               </span>
                             </TopIcons>
-                          )}
+                          )} */}
                           <ImageWrapper $ismobile={isMobile}>
-                            <MovieTitle $ismobile={isMobile}>{d.movieTitle}</MovieTitle>
                             <Header $ismobile={isMobile}>
-                              <DebateTitle $ismobile={isMobile}>{d.debateTitle}</DebateTitle>
+                              <MovieTitle $ismobile={isMobile}>{d.movieTitle}</MovieTitle>
                               <TimeStamp>{timeForToday(d.createdAt)}</TimeStamp>
                             </Header>
-                            <ImageLoader src={zzanggu} alt="프로필" />
+                            <DebateTitle $ismobile={isMobile}>{d.debateTitle}</DebateTitle>
+
+                            <ImageLoader src={imgSrc} alt="프로필" />
 
                             <DebateText $ismobile={isMobile}>{d.content}</DebateText>
                             <ImageActions $ismobile={isMobile}>
@@ -609,8 +634,11 @@ export default function MyPageDebate() {
                       </>
                     ) : (
                       <>
-                        <DebateCard $$ismobile={isMobile}>
-                          {isOwner && (
+                        <DebateCard
+                          $$ismobile={isMobile}
+                          onClick={() => navigate(`/debate/${d.debateId}`)}
+                        >
+                          {/* {isOwner && (
                             <TopIcons $ismobile={isMobile}>
                               <span>
                                 <Pencil size={20} />
@@ -619,10 +647,14 @@ export default function MyPageDebate() {
                                 <Trash2 size={20} />
                               </span>
                             </TopIcons>
-                          )}
+                          )} */}
+
                           <ImageWrapper $ismobile={isMobile}>
                             <MovieTitle $ismobile={isMobile}>{d.movieTitle}</MovieTitle>
-                            <ImageLoader src={zzanggu} alt="프로필" />
+                            <Overlay $ismobile={isMobile}>
+                              <TimeStamp>{timeForToday(d.createdAt)}</TimeStamp>
+                            </Overlay>
+                            <ImageLoader src={imgSrc} alt="프로필" />
                             <ImageActions $ismobile={isMobile}>
                               <GroupWrapper>
                                 <ThumbsUp stroke="#fff" size={20} />
@@ -641,7 +673,6 @@ export default function MyPageDebate() {
                           <DebateContent $ismobile={isMobile}>
                             <Header $ismobile={isMobile}>
                               <DebateTitle $ismobile={isMobile}>{d.debateTitle}</DebateTitle>
-                              <TimeStamp>{timeForToday(d.createdAt)}</TimeStamp>
                             </Header>
                             <DebateText $ismobile={isMobile}>{d.content}</DebateText>
                           </DebateContent>
