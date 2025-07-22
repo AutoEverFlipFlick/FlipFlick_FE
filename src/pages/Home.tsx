@@ -1,25 +1,89 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import styled from 'styled-components'
-import JukeboxBg from '@/assets/home/jukebox-bg.png'
+import JukeboxImg from '@/assets/home/jukebox-top.webp'
 
+import media from '@/utils/breakpoints'
+import axios from 'axios'
+
+import Wavve from '@/assets/home/wavve-seeklogo.svg'
+
+// Styled Components
 const PageWrapper = styled.div`
   width: 100vw;
-  height: 100vh;
-  overflow: hidden;
+  height: calc(100vh - 80px);
+  overflow-y: hidden;
+  overflow-x: auto; /* 가로 스크롤 허용 */
   position: relative;
-  background-color: #100806;
+  background: radial-gradient(ellipse at center, #2a1a14 0%, #100806 70%);
+
+  ${media.tablet`
+    height: calc(100vh - 60px);
+  `}
+`
+
+const ButtonWrapper = styled.div`
+  position: absolute;
+  width: 100%;
+  height: 100%;
+
   display: flex;
-  align-items: center;
+`
+
+const ButtonSection = styled.div`
+  flex: 1 1 0;
+  height: 100%;
+
+  display: flex;
   justify-content: center;
+  align-items: center;
+
+  z-index: 3;
+`
+
+const ButtonGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 10px;
+`
+
+const ImageSection = styled.div<{ $imgWidth?: number }>`
+  width: ${({ $imgWidth = 0 }) => $imgWidth}px;
+  height: 100%;
+`
+
+const JukeboxContainer = styled.div`
+  position: relative;
+  display: inline-block; /* 내용에 맞게 너비 조절 */
+  height: calc(100vh - 80px); /* 항상 화면 높이를 꽉 채움 */
+  min-width: 100vw; /* 최소 너비는 화면 너비 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  ${media.tablet`
+    height: calc(100vh - 60px);
+  `}
+`
+
+const JukeboxWrapper = styled.div`
+  height: 100%;
+  width: auto;
+
+  position: relative;
 `
 
 const JukeboxBackground = styled.img`
+  height: 100%; /* 핵심: 높이를 100%로 고정 */
+  width: auto; /* 너비는 비율에 맞게 자동 조절 */
   object-fit: contain;
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
+
+  position: relative;
+`
+
+const JukeboxAbsoluteCotainer = styled.div`
+  position: absolute;
+  width: 80%;
 `
 
 const CarouselContainer = styled.div`
@@ -52,16 +116,6 @@ const NavButton = styled.button`
   &.right {
     right: -1rem;
   }
-
-  @media (max-width: 768px) {
-    padding: 0.25rem;
-    &.left {
-      left: 0.2rem;
-    }
-    &.right {
-      right: 0.2rem;
-    }
-  }
 `
 
 const CarouselItemWrapper = styled.div<{
@@ -85,7 +139,7 @@ const PosterImage = styled.img<{ isCenter: boolean; isActive: boolean }>`
   border-radius: 0.5rem;
   box-shadow: ${({ isCenter }) =>
     isCenter
-      ? `0 0 60px rgba(37, 9, 4, 0.9), 0 0 120px rgba(37, 9, 0, 0.7), 0 40px 80px rgba(0, 0, 0, 0.8)`
+      ? `0 0 60px rgba(255, 107, 53, 0.9), 0 0 120px rgba(255, 107, 53, 0.7), 0 40px 80px rgba(0, 0, 0, 0.8)`
       : `0 10px 20px rgba(0, 0, 0, 0.7)`};
   transform-style: preserve-3d;
   filter: ${({ isActive, isCenter }) => (isActive && !isCenter ? 'blur(1px)' : 'none')};
@@ -97,7 +151,7 @@ const PosterWrapper = styled.div`
 
 const MovieTitleAbove = styled.div`
   position: absolute;
-  bottom: 105%;
+  bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
   text-align: center;
@@ -111,15 +165,130 @@ const MovieTitleAbove = styled.div`
       0 0 12px #ff6b35,
       0 2px 4px rgba(0, 0, 0, 0.7);
   }
-  @media (max-width: 1024px) {
-    h3 {
-      font-size: 1.5rem;
-    }
+`
+
+const LoadingCotnainer = styled.div`
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  justify-content: center;
+`
+
+interface ButtonState {
+  name: string
+  providerId: number
+  logoSrc: string
+}
+
+// 버튼 상태를 나타내는 인터페이스
+interface OttState {
+  name: string // 버튼 표시 이름
+  providerId: number // TMDB 프로바이더 ID
+  logoSrc: string // 로고 이미지 URL
+}
+
+// 버튼 상태 배열
+const OttStates: OttState[] = [
+  {
+    name: '넷플릭스',
+    providerId: 8,
+    // Netflix 공식 로고 (SVG)
+    logoSrc: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg', //  [oai_citation:0‡위키백과](https://en.m.wikipedia.org/wiki/File%3ANetflix_2015_logo.svg)
+  },
+  {
+    name: 'Disney+',
+    providerId: 337,
+    // Disney+ 공식 로고 (SVG)
+    logoSrc: 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg', //  [oai_citation:1‡위키백과](https://en.m.wikipedia.org/wiki/File%3ADisney%2B_logo.svg)
+  },
+  // {
+  //   name: 'Apple TV+',
+  //   providerId: 2,
+  //   // Apple TV+ 공식 로고 (SVG)
+  //   logoSrc: 'https://upload.wikimedia.org/wikipedia/commons/2/28/Apple_TV_Plus_Logo.svg', //  [oai_citation:2‡위키백과](https://en.m.wikipedia.org/wiki/File%3AApple_TV_Plus_Logo.svg)
+  // },
+  {
+    name: '웨이브',
+    providerId: 356,
+    logoSrc: Wavve,
+  },
+  {
+    name: '왓챠',
+    providerId: 97,
+    // 아직 찾지 못한 로고 URL — 공식 로고 이미지 URL을 알려주면 업데이트한다.
+    logoSrc:
+      'https://oopy.lazyrockets.com/api/v2/notion/image?src=https%3A%2F%2Fs3-us-west-2.amazonaws.com%2Fsecure.notion-static.com%2Fd05ded51-54bf-4174-8b7e-e021c6eb6b5a%2FWATCHA_LOGO.svg&blockId=400d70c6-5698-4877-9ddf-83be123fb341',
+  },
+  // {
+  //   name: '티빙',
+  //   providerId: 1883,
+  //   // TVING 공식 로고 (SVG)
+  //   logoSrc: 'https://upload.wikimedia.org/wikipedia/commons/a/a3/TVING_logo.svg', //  [oai_citation:3‡upload.wikimedia.org](https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/TVING_logo.svg/120px-TVING_logo.svg.png)
+  // },
+]
+
+const ButtonContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 10px;
+  font-size: var(--font-size-sm);
+`
+
+const RetroButton = styled.button<{ iconSize?: string }>`
+  /* inline-flex로 자식 요소 정렬 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem; /* 아이콘과 텍스트 사이 간격 */
+
+  /* 패딩: 상하 1rem, 좌우 1.5rem */
+  padding: 10px 15px;
+  /* 배경색: stone-200 */
+  background-color: #e7e5e4;
+  /* 모서리 둥글게 */
+  border-radius: 0.5rem;
+  /* 폰트 설정 */
+  font-family: serif;
+  font-weight: bold;
+  font-size: 1.5rem;
+  line-height: 2rem;
+  /* 텍스트 색상 */
+  color: rgba(146, 64, 14, 0.8);
+  /* 테두리 */
+  border-top: 2px solid #f5f5f4;
+  border-left: 2px solid #a8a29e;
+  border-right: 2px solid #a8a29e;
+  border-bottom: 8px solid #a8a29e;
+  /* 그림자 */
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  /* 트랜지션 */
+  transition: transform 150ms ease-in-out;
+
+  cursor: pointer;
+
+  /* 포커스 아웃라인 제거 */
+  &:focus {
+    outline: none;
   }
-  @media (max-width: 768px) {
-    h3 {
-      font-size: 1rem;
-    }
+  /* 클릭 시 효과 */
+  &:active {
+    transform: translateY(0.25rem);
+    border-bottom-width: 4px;
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  /* 버튼 내부 img 크기 지정 */
+  & img {
+    width: ${({ iconSize = '1.5rem' }) => iconSize};
+    height: ${({ iconSize = '1.5rem' }) => iconSize};
+    object-fit: contain;
   }
 `
 
@@ -134,13 +303,34 @@ export default function Component() {
   const touchStartTime = useRef(0)
   const carouselRef = useRef<HTMLDivElement>(null)
   const jukeboxRef = useRef<HTMLImageElement>(null)
+
   const [carouselStyle, setCarouselStyle] = useState({})
-  const [isMobile, setIsMobile] = useState(false)
+  const [posterDimensions, setPosterDimensions] = useState({ width: 180, height: 270 })
+  const [transformValues, setTransformValues] = useState({
+    radius: 250,
+    shelfY: 210,
+    centerRiseY: -40,
+    centerRiseZ: 200,
+    sideRiseY: 15,
+    sidePushZ: -60,
+  })
+  const [checkMobile, setCheckMobile] = useState(window.innerWidth <= 767)
+  const [isLoading, setIsLoading] = useState(true)
+  useEffect(() => {
+    const handleResize = () => {
+      setCheckMobile(window.innerWidth <= 767)
+    }
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const updateLayout = useCallback(() => {
     if (jukeboxRef.current) {
       const rect = jukeboxRef.current.getBoundingClientRect()
       if (rect.width === 0 || rect.height === 0) return
+
+      const isMobile = window.innerWidth < 768
 
       setCarouselStyle({
         width: `${rect.width * 0.68}px`,
@@ -149,68 +339,74 @@ export default function Component() {
         left: `${rect.left + rect.width * 0.5}px`,
         transform: 'translate(-50%, -50%)',
       })
+
+      const newPosterWidth = rect.width * (isMobile ? 0.15 : 0.18)
+      setPosterDimensions({
+        width: newPosterWidth,
+        height: newPosterWidth * 1.5,
+      })
+
+      setTransformValues({
+        radius: rect.width * (isMobile ? 0.23 : 0.25),
+        shelfY: rect.height * (isMobile ? 0.14 : 0.17),
+        centerRiseY: rect.height * (isMobile ? -0.06 : -0.03),
+        centerRiseZ: rect.width * 0.2,
+        sideRiseY: rect.height * 0.012,
+        sidePushZ: rect.width * -0.06,
+      })
     }
-    setIsMobile(window.innerWidth < 768)
   }, [])
 
   useEffect(() => {
     updateLayout()
     window.addEventListener('resize', updateLayout)
-    return () => window.removeEventListener('resize', updateLayout)
+    const imgElement = jukeboxRef.current
+    imgElement?.addEventListener('load', updateLayout)
+
+    return () => {
+      window.removeEventListener('resize', updateLayout)
+      imgElement?.removeEventListener('load', updateLayout)
+    }
   }, [updateLayout])
 
-  const movies = [
-    {
-      id: 1,
-      title: 'Pulp Fiction',
-      poster: 'https://image.tmdb.org/t/p/w342/vQWk5YBFWF4bZaofAbv0tShwBvQ.jpg',
-    },
-    {
-      id: 2,
-      title: 'The Godfather',
-      poster: 'https://image.tmdb.org/t/p/w342/3bhkrj58Vtu7enYsRolD1fZdja1.jpg',
-    },
-    {
-      id: 3,
-      title: 'Casablanca',
-      poster: 'https://image.tmdb.org/t/p/w342/oyGRZVIthHJjc98ekKpeWpDh8Ws.jpg',
-    },
-    {
-      id: 4,
-      title: 'Citizen Kane',
-      poster: 'https://image.tmdb.org/t/p/w342/sav0jxhqiH0bPr2vZFU0Kjt2nZL.jpg',
-    },
-    {
-      id: 5,
-      title: 'Vertigo',
-      poster: 'https://image.tmdb.org/t/p/w342/qFbuT4BhuLvN7Zj4yCJ8Im80mNP.jpg',
-    },
-    {
-      id: 6,
-      title: 'Sunset Boulevard',
-      poster: 'https://image.tmdb.org/t/p/w342/sC4Dpmn87oz9AuxZ15Lmip0Ftgr.jpg',
-    },
-    {
-      id: 7,
-      title: 'Goodfellas',
-      poster: 'https://image.tmdb.org/t/p/w342/kct4oTX7j2DuOP2sE2nPwIJ80Zr.jpg',
-    },
-    {
-      id: 8,
-      title: 'Apocalypse Now',
-      poster: 'https://image.tmdb.org/t/p/w342/gQB8Y5RCMkv2zwzFHbUJX3kAhvA.jpg',
-    },
-    {
-      id: 9,
-      title: 'The Shining',
-      poster: 'https://image.tmdb.org/t/p/w342/xazWoLealQwEgqZ89MLZklLZD3k.jpg',
-    },
-    {
-      id: 10,
-      title: 'Taxi Driver',
-      poster: 'https://image.tmdb.org/t/p/w342/ekstpH614fwDX8DUln1a2Opz0N8.jpg',
-    },
-  ] as const
+  // 영화 데이터 상태 및 로딩 상태
+  const [movies, setMovies] = useState<{ id: number; title: string; poster: string }[]>([])
+
+  // 영화 프로바이더에 따라 api 호출
+  const [provider, setProvider] = useState(8)
+
+  // 영화 데이터 API 호출
+  useEffect(() => {
+    const fetchMovies = async () => {
+      try {
+        const response = await axios.get('https://api.themoviedb.org/3/discover/movie', {
+          params: {
+            api_key: 'b18e798ff377ef49f1c335283e7c43d6',
+            language: 'ko-KR',
+            region: 'KR',
+            sort_by: 'popularity.desc',
+            with_watch_providers: provider,
+            watch_region: 'KR',
+            page: 1,
+          },
+        })
+        // 필요 데이터 매핑: id, title, backdrop_path → poster URL
+        const results = response.data.results.map((item: any) => ({
+          id: item.id,
+          title: item.title,
+          poster: `https://image.tmdb.org/t/p/w342${item.poster_path}`,
+        }))
+        console.log(results)
+        setMovies(results)
+      } catch (error) {
+        console.error('영화 데이터 로드 실패', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    setIsLoading(true)
+    fetchMovies()
+  }, [provider])
 
   const nextMovie = () => setCurrentIndex(prev => (prev + 1) % movies.length)
   const prevMovie = () => setCurrentIndex(prev => (prev - 1 + movies.length) % movies.length)
@@ -234,7 +430,7 @@ export default function Component() {
       carouselElement?.removeEventListener('wheel', handleWheel)
       if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
     }
-  }, [])
+  }, [isLoading])
 
   useEffect(() => {
     const handleTouchStart = (e: TouchEvent) => {
@@ -276,99 +472,131 @@ export default function Component() {
       window.removeEventListener('touchmove', handleTouchMove)
       window.removeEventListener('touchend', handleTouchEnd)
     }
-  }, [])
+  }, [isLoading])
 
   return (
     <PageWrapper>
-      <JukeboxBackground
-        ref={jukeboxRef}
-        src={JukeboxBg}
-        alt="Wurlitzer Jukebox background"
-        width={1000}
-        height={1238}
-        onLoad={updateLayout}
-      />
-      <CarouselContainer ref={carouselRef} style={carouselStyle}>
-        <NavButton className="left" onClick={prevMovie}>
-          <ChevronLeft color="white" size={isMobile ? 16 : 24} />
-        </NavButton>
-        <NavButton className="right" onClick={nextMovie}>
-          <ChevronRight color="white" size={isMobile ? 16 : 24} />
-        </NavButton>
-        <div
-          style={{
-            position: 'relative',
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          {movies.map((movie, index) => {
-            let offset = index - currentIndex
-            if (offset > movies.length / 2) offset -= movies.length
-            else if (offset < -movies.length / 2) offset += movies.length
+      <ButtonWrapper>
+        <ButtonSection>
+          <ButtonGrid>
+            {OttStates.map(({ name, providerId, logoSrc }) => (
+              <ButtonContainer key={providerId}>
+                {/* 클릭 시 provider 상태를 변경하도록 onClick 설정 */}
+                <RetroButton iconSize="3rem" onClick={() => setProvider(providerId)}>
+                  <img src={logoSrc} alt={name} />
+                </RetroButton>
+                <div>{name}</div>
+              </ButtonContainer>
+            ))}
+          </ButtonGrid>
+        </ButtonSection>
+        <ImageSection $imgWidth={jukeboxRef.current?.width} />
+        <ButtonSection>
+          <ButtonGrid></ButtonGrid>
+        </ButtonSection>
+      </ButtonWrapper>
+      <JukeboxContainer>
+        <JukeboxWrapper>
+          <JukeboxBackground
+            ref={jukeboxRef}
+            src={JukeboxImg}
+            alt="Wurlitzer Jukebox background"
+            width={943}
+            height={1005}
+          />
+        </JukeboxWrapper>
+        {/* 여기서 loading을 확인할 필요가 있음 */}
+        {isLoading ? (
+          <div>로딩중 </div>
+        ) : (
+          <CarouselContainer ref={carouselRef} style={carouselStyle}>
+            {!checkMobile && (
+              <>
+                <NavButton className="left" onClick={prevMovie}>
+                  <ChevronLeft color="white" />
+                </NavButton>
+                <NavButton className="right" onClick={nextMovie}>
+                  <ChevronRight color="white" />
+                </NavButton>
+              </>
+            )}
 
-            if (Math.abs(offset) > 3) {
-              return null
-            }
+            <div
+              style={{
+                position: 'relative',
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginTop: '-28%',
+              }}
+            >
+              {movies.map((movie, index) => {
+                let offset = index - currentIndex
+                if (offset > movies.length / 2) offset -= movies.length
+                else if (offset < -movies.length / 2) offset += movies.length
 
-            const isCenter = offset === 0
-            let translateX, translateY, translateZ, rotateY, scale, opacity
+                if (Math.abs(offset) > 3) return null
 
-            if (isCenter) {
-              translateX = 0
-              translateY = isMobile ? -20 : -40
-              translateZ = isMobile ? 140 : 200
-              rotateY = 0
-              scale = isMobile ? 1.1 : 1.3
-              opacity = 1
-            } else {
-              const shelfY = isMobile ? 140 : 210
-              const radius = isMobile ? 160 : 250
-              const angle = offset * 0.55
+                const isCenter = offset === 0
+                let translateX, translateY, translateZ, rotateY, scale, opacity
 
-              translateX = Math.sin(angle) * radius
-              translateY = shelfY + Math.abs(Math.cos(angle)) * 15
-              translateZ = Math.cos(angle) * 50 - 60
-              rotateY = Math.sin(angle) * 25
-              scale = 0.7
-              opacity = Math.max(0.4, 1 - Math.abs(offset) * 0.2)
-            }
+                if (isCenter) {
+                  translateX = 0
+                  translateY = transformValues.centerRiseY
+                  translateZ = transformValues.centerRiseZ
+                  rotateY = 0
+                  scale = 1.3
+                  opacity = 1
+                } else {
+                  const angle = offset * 0.55
+                  translateX = Math.sin(angle) * transformValues.radius
+                  translateY =
+                    transformValues.shelfY + Math.abs(Math.cos(angle)) * transformValues.sideRiseY
+                  translateZ =
+                    Math.cos(angle) * (transformValues.radius * 0.2) + transformValues.sidePushZ
+                  rotateY = Math.sin(angle) * 25
+                  scale = 0.7
+                  opacity = Math.max(0.4, 1 - Math.abs(offset) * 0.2)
+                }
 
-            const transform = `translateX(${translateX}px) translateY(${translateY}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`
-            const isActive = isScrolling || isSwiping
+                const transform = `translateX(${translateX}px) translateY(${translateY}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`
+                const isActive = isScrolling || isSwiping
 
-            return (
-              <CarouselItemWrapper
-                key={movie.id}
-                transform={transform}
-                opacity={opacity}
-                zIndex={isCenter ? 25 : 15 - Math.abs(offset)}
-                transitionDuration={isActive ? '0.2s' : '0.6s'}
-                onClick={() => setCurrentIndex(index)}
-              >
-                <PosterWrapper>
-                  <PosterImage
-                    src={movie.poster}
-                    alt={movie.title}
-                    width={isMobile ? 120 : 180}
-                    height={isMobile ? 180 : 270}
-                    isCenter={isCenter}
-                    isActive={isActive}
-                  />
-                  {/* {isCenter && (
-                    <MovieTitleAbove>
-                      <h3>{movie.title}</h3>
-                    </MovieTitleAbove>
-                  )} */}
-                </PosterWrapper>
-              </CarouselItemWrapper>
-            )
-          })}
-        </div>
-      </CarouselContainer>
+                return (
+                  <CarouselItemWrapper
+                    key={movie.id}
+                    transform={transform}
+                    opacity={opacity}
+                    zIndex={isCenter ? 25 : 15 - Math.abs(offset)}
+                    transitionDuration={isActive ? '0.2s' : '0.6s'}
+                    onClick={() => setCurrentIndex(index)}
+                  >
+                    <PosterWrapper>
+                      <PosterImage
+                        src={movie.poster}
+                        alt={movie.title}
+                        width={posterDimensions.width}
+                        height={posterDimensions.height}
+                        isCenter={isCenter}
+                        isActive={isActive}
+                      />
+                      {isCenter && (
+                        <MovieTitleAbove>
+                          <h3 style={{ fontSize: `${posterDimensions.width * 0.01}rem` }}>
+                            {movie.title}
+                          </h3>
+                        </MovieTitleAbove>
+                      )}
+                    </PosterWrapper>
+                  </CarouselItemWrapper>
+                )
+              })}
+            </div>
+          </CarouselContainer>
+        )}
+      </JukeboxContainer>
     </PageWrapper>
   )
 }
