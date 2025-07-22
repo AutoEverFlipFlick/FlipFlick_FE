@@ -9,6 +9,10 @@ import axios from 'axios'
 import Wavve from '@/assets/home/wavve-seeklogo.svg'
 import { Icon } from '@iconify/react'
 
+import { topPopcorn, boxoffice } from '@/services/movie'
+
+import { useNavigate } from 'react-router-dom'
+
 // Styled Components
 const PageWrapper = styled.div`
   width: 100vw;
@@ -167,6 +171,24 @@ const CarouselItemWrapper = styled.div<{
   z-index: ${({ zIndex }) => zIndex};
 `
 
+const MovieTop = styled.div`
+  position: absolute; /* 절대 위치 지정 */
+  top: 0.5rem; /* 상단 여백 */
+  left: 0.5rem; /* 좌측 여백 */
+
+  padding: 0.25rem 0.5rem; /* 내부 여백 */
+  background-color: rgba(0, 0, 0, 0.6); /* 반투명 배경 */
+  color: white; /* 글자색 */
+  font-weight: 600; /* 글자 굵기 */
+  font-size: 0.85rem; /* 글자 크기 */
+
+  border-radius: 1rem; /* 둥근 직사각형 */
+  border: 1px solid rgba(255, 107, 53, 0.7); /* 주황빛 테두리 */
+  box-shadow: 0 0 6px rgba(255, 107, 53, 0.7); /* 네온 효과 */
+
+  z-index: 50;
+`
+
 const PosterImage = styled.img<{ isCenter: boolean; isActive: boolean }>`
   border-radius: 0.5rem;
   box-shadow: ${({ isCenter }) =>
@@ -183,11 +205,12 @@ const PosterWrapper = styled.div`
 
 const MovieTitleAbove = styled.div`
   position: absolute;
-  bottom: 100%;
+  bottom: 95%;
   left: 50%;
   transform: translateX(-50%);
   text-align: center;
-  width: 120%;
+  width: 500%;
+  text-wrap: nowrap;
   h3 {
     font-size: 1.8rem;
     font-weight: bold;
@@ -274,44 +297,34 @@ const ButtonContainer = styled.div`
 `
 
 const RetroButton = styled.button<{ iconSize?: string }>`
-  /* inline-flex로 자식 요소 정렬 */
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem; /* 아이콘과 텍스트 사이 간격 */
+  gap: 0.5rem;
 
-  /* 패딩: 상하 1rem, 좌우 1.5rem */
   padding: 10px 15px;
-  /* 배경색: stone-200 */
   background-color: #e7e5e4;
-  /* 모서리 둥글게 */
   border-radius: 0.5rem;
-  /* 폰트 설정 */
   font-family: serif;
   font-weight: bold;
   font-size: 1.5rem;
   line-height: 2rem;
-  /* 텍스트 색상 */
   color: rgba(146, 64, 14, 0.8);
-  /* 테두리 */
   border-top: 2px solid #f5f5f4;
   border-left: 2px solid #a8a29e;
   border-right: 2px solid #a8a29e;
   border-bottom: 8px solid #a8a29e;
-  /* 그림자 */
   box-shadow:
     0 10px 15px -3px rgba(0, 0, 0, 0.1),
     0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  /* 트랜지션 */
   transition: transform 150ms ease-in-out;
 
   cursor: pointer;
 
-  /* 포커스 아웃라인 제거 */
   &:focus {
     outline: none;
   }
-  /* 클릭 시 효과 */
+
   &:active {
     transform: translateY(0.25rem);
     border-bottom-width: 4px;
@@ -320,12 +333,77 @@ const RetroButton = styled.button<{ iconSize?: string }>`
       0 2px 4px -1px rgba(0, 0, 0, 0.06);
   }
 
-  /* 버튼 내부 img 크기 지정 */
   & img {
     width: ${({ iconSize = '1.5rem' }) => iconSize};
     height: ${({ iconSize = '1.5rem' }) => iconSize};
     object-fit: contain;
   }
+`
+
+const StyledBtn = styled.button`
+  box-sizing: border-box;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.7);
+  border: 2px solid #fff;
+  border-radius: 0.6em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.2em 0.4em;
+  min-width: 60px;
+  text-decoration: none;
+  text-align: center;
+  text-transform: uppercase;
+  transition:
+    background 0.2s,
+    color 0.2s;
+
+  &:hover,
+  &:focus {
+    border: 2px solid #fff;
+    color: #000;
+    background: #fff;
+    outline: 0;
+  }
+
+  ${media.mobile`
+      padding: 0.2rem 0rem;
+    `}
+`
+
+const BtnImg = styled.img`
+  width: 3em;
+  height: 2rem;
+  object-fit: contain;
+  vertical-align: middle;
+`
+
+// 하단 버튼 영역(모바일/데스크탑 모두)
+const FixedBottomBar = styled.div`
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12%;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: none;
+  pointer-events: none;
+`
+
+const ButtonBarGrid = styled.div`
+  display: flex;
+  gap: 0.7rem;
+  pointer-events: auto;
+
+  ${media.mobile`
+      gap : 0.05rem;
+    `}
 `
 
 export default function Component() {
@@ -352,6 +430,9 @@ export default function Component() {
   })
   const [checkMobile, setCheckMobile] = useState(window.innerWidth <= 767)
   const [isLoading, setIsLoading] = useState(true)
+
+  const navigate = useNavigate()
+
   useEffect(() => {
     const handleResize = () => {
       setCheckMobile(window.innerWidth <= 767)
@@ -413,6 +494,8 @@ export default function Component() {
 
   // 영화 데이터 API 호출
   useEffect(() => {
+    if (provider < 0) return
+
     const fetchMovies = async () => {
       try {
         const response = await axios.get('https://api.themoviedb.org/3/discover/movie', {
@@ -433,7 +516,7 @@ export default function Component() {
           poster: `https://image.tmdb.org/t/p/w342${item.poster_path}`,
         }))
         console.log(results)
-        setMovies(results)
+        setMovies(results.slice(0, 10))
       } catch (error) {
         console.error('영화 데이터 로드 실패', error)
       } finally {
@@ -443,6 +526,31 @@ export default function Component() {
     setIsLoading(true)
     fetchMovies()
   }, [provider])
+
+  const isCustomClicked = (mode: string) => {
+    setProvider(-1)
+    setIsLoading(true)
+    const fetchMovies = async () => {
+      try {
+        const res = mode === 'popcorn' ? await topPopcorn(10) : await boxoffice()
+        console.log(res)
+        const result = res.data.movies.map((item: any) => ({
+          id: item.tmdbId,
+          title: item.title,
+          poster: item.posterUrl,
+        }))
+
+        console.log(result)
+        setMovies(result)
+      } catch (e) {
+        console.error('볼래말래 영화 TOP10 불러오기 실패', e)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchMovies()
+  }
 
   const nextMovie = () => setCurrentIndex(prev => (prev + 1) % movies.length)
   const prevMovie = () => setCurrentIndex(prev => (prev - 1 + movies.length) % movies.length)
@@ -512,25 +620,31 @@ export default function Component() {
 
   return (
     <PageWrapper>
-      <ButtonWrapper>
-        <ButtonSection>
-          <ButtonGrid>
-            {OttStates.map(({ name, providerId, logoSrc }) => (
-              <ButtonContainer key={providerId}>
-                {/* 클릭 시 provider 상태를 변경하도록 onClick 설정 */}
-                <RetroButton iconSize="3rem" onClick={() => setProvider(providerId)}>
-                  <img src={logoSrc} alt={name} />
-                </RetroButton>
-                <div>{name}</div>
-              </ButtonContainer>
-            ))}
-          </ButtonGrid>
-        </ButtonSection>
-        <ImageSection $imgWidth={jukeboxRef.current?.width} />
-        <ButtonSection>
-          <ButtonGrid></ButtonGrid>
-        </ButtonSection>
-      </ButtonWrapper>
+      <FixedBottomBar>
+        <ButtonBarGrid
+          onClick={() => {
+            // 다른 순위를 봤을 땐 다시 0으로 초기화
+            setCurrentIndex(0)
+          }}
+        >
+          <StyledBtn
+            key={-2}
+            onClick={() => isCustomClicked('boxoffice')}
+            aria-label={'박스오피스'}
+          >
+            <div>예매</div>
+          </StyledBtn>
+          {OttStates.map(({ name, providerId, logoSrc }) => (
+            <StyledBtn key={providerId} onClick={() => setProvider(providerId)} aria-label={name}>
+              <BtnImg src={logoSrc} alt={name} />
+            </StyledBtn>
+          ))}
+          <StyledBtn key={-1} onClick={() => isCustomClicked('popcorn')} aria-label={'팝콘'}>
+            <div>팝콘</div>
+          </StyledBtn>
+        </ButtonBarGrid>
+      </FixedBottomBar>
+
       <JukeboxContainer>
         <JukeboxWrapper>
           <JukeboxBackground
@@ -540,20 +654,6 @@ export default function Component() {
             width={943}
             height={1005}
           />
-
-          <JukeboxAbsoluteCotainer>
-            <JukeAbsGrid>
-              {OttStates.map(({ name, providerId, logoSrc }) => (
-                <ButtonContainer key={providerId}>
-                  {/* 클릭 시 provider 상태를 변경하도록 onClick 설정 */}
-                  <RetroButton iconSize="2rem" onClick={() => setProvider(providerId)}>
-                    <img src={logoSrc} alt={name} />
-                  </RetroButton>
-                  <div>{name}</div>
-                </ButtonContainer>
-              ))}
-            </JukeAbsGrid>
-          </JukeboxAbsoluteCotainer>
         </JukeboxWrapper>
         {/* 여기서 loading을 확인할 필요가 있음 */}
         {isLoading ? (
@@ -623,8 +723,15 @@ export default function Component() {
                     opacity={opacity}
                     zIndex={isCenter ? 25 : 15 - Math.abs(offset)}
                     transitionDuration={isActive ? '0.2s' : '0.6s'}
-                    onClick={() => setCurrentIndex(index)}
+                    onClick={() => {
+                      setCurrentIndex(index)
+                      if (isCenter) {
+                        console.log(`${movie.id}의 tmdbId로 이동`)
+                        navigate(`movie/detail/${movie.id}`)
+                      }
+                    }}
                   >
+                    <MovieTop>{index + 1}</MovieTop>
                     <PosterWrapper>
                       <PosterImage
                         src={movie.poster}
