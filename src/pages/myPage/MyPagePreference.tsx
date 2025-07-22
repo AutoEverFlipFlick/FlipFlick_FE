@@ -140,6 +140,14 @@ const ErrorMessage = styled.div`
   font-size: 1.1rem;
   margin: 2rem 0;
 `
+
+const EmptyMessage = styled.div`
+  text-align: center;
+  color: #ccc;
+  font-size: 1rem;
+  margin: 2rem 0;
+`
+
 const PaginationWrapper = styled.div`
   display: flex;
   justify-content: center;
@@ -250,15 +258,15 @@ const MyPagePreference: React.FC = () => {
   const isMobile = useMediaQuery({ query: '(max-width: 767px)' })
   const navigate = useNavigate()
   const location = useLocation()
-  const state = location.state as LocationState | undefined
+  const state = location.state as LocationState
 
   // 페칭 상태
   const [loading, setLoading] = useState(false)
   const [hasLoaded, setHasLoaded] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // 탭·페이징·데이터
   const initialTab = state?.tab ?? '찜했어요'
-  const profileOwnerId = state?.ownerId
   const [activeTab, setActiveTab] = useState<TabType>(initialTab)
 
   const pageSize = 20
@@ -267,6 +275,7 @@ const MyPagePreference: React.FC = () => {
   const [items, setItems] = useState<MovieListItem[]>([])
   const [total, setTotal] = useState(0)
 
+  const profileOwnerId = state?.ownerId
   const observer = useRef<IntersectionObserver | null>(null)
 
   // 데이터 페칭 함수
@@ -348,15 +357,16 @@ const MyPagePreference: React.FC = () => {
           </TabItem>
         ))}
       </TabNav>
-
-      {loading && !hasLoaded && <LoadingMessage>로딩 중...</LoadingMessage>}
-      {error && <ErrorMessage>{error}</ErrorMessage>}
-
+      <FlexRow>
+        <TotalCount>총 {total}개</TotalCount>
+      </FlexRow>
+      {loading && !hasLoaded && <LoadingMessage>영화를 불러오는 중입니다...</LoadingMessage>}
+      {error && <ErrorMessage>영화를 불러오는 중 오류가 발생했습니다.</ErrorMessage>}
+      {!loading && !error && hasLoaded && items.length === 0 && (
+        <EmptyMessage>표시할 영화가 없습니다.</EmptyMessage>
+      )}
       {!loading && !error && hasLoaded && (
         <>
-          <FlexRow>
-            <TotalCount>총 {total}개</TotalCount>
-          </FlexRow>
           <ContentGrid $ismobile={isMobile}>
             {items.map((item, idx) => (
               <div

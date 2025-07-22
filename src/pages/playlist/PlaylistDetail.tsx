@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import styled, { keyframes } from 'styled-components'
+import Swal from 'sweetalert2'
 import {
   ArrowLeft,
   Bookmark,
@@ -179,9 +180,6 @@ const MovieTitle = styled.h3`
   margin: 0 0 0.25rem 0;
   font-size: 0.9rem;
   color: #fff;
-  /* overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap; */
 `;
 
 const MovieYear = styled.span`
@@ -253,6 +251,39 @@ const LoadingOverlay = styled.div`
   align-items: center;
   justify-content: center;
   z-index: 10;
+`
+
+// 스타일 컴포넌트 추가
+const BreadcrumbNav = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: #aaa;
+`
+
+const BreadcrumbItem = styled.button`
+  background: none;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+
+  &:hover {
+    color: #ff7849;
+  }
+`
+
+const BreadcrumbSeparator = styled.span`
+  margin: 0 0.5rem;
+  color: #666;
+`
+
+const CurrentPage = styled.span`
+  color: #fff;
+  font-weight: 500;
 `
 
 // 이미지 로더 컴포넌트
@@ -342,7 +373,13 @@ const PlaylistDetail: React.FC = () => {
         // 권한 검사: hidden이 true인 경우 작성자만 접근 가능
         if (playlistData.hidden) {
           if (!user || user.nickname !== playlistData.nickname) {
-            alert('권한이 없습니다. 비공개 플레이리스트는 작성자만 볼 수 있습니다.')
+            await Swal.fire({
+              title: '접근 권한 없음',
+              text: '비공개 플레이리스트는 작성자만 볼 수 있습니다.',
+              icon: 'error',
+              confirmButtonText: '확인',
+              confirmButtonColor: '#FF7849'
+            })
             navigate('/playlist')
             return
           }
@@ -356,7 +393,13 @@ const PlaylistDetail: React.FC = () => {
     } catch (err: any) {
       // 403 에러 처리
       if (err.response?.status === 403) {
-        alert('네트워크에러 발생')
+        await Swal.fire({
+          title: '네트워크 오류',
+          text: '네트워크 오류가 발생했습니다.',
+          icon: 'error',
+          confirmButtonText: '확인',
+          confirmButtonColor: '#FF7849'
+        })
         navigate('/playlist')
         return
       }
@@ -374,8 +417,20 @@ const PlaylistDetail: React.FC = () => {
     if (!playlist || bookmarking) return
 
     if (!isAuthenticated) {
-      alert('로그인이 필요합니다.')
-      navigate('/login')
+      const result = await Swal.fire({
+        title: '로그인이 필요합니다',
+        text: '북마크 기능을 이용하려면 로그인이 필요합니다.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '로그인하러 가기',
+        cancelButtonText: '취소',
+        confirmButtonColor: '#FF7849',
+        cancelButtonColor: '#6c757d'
+      })
+
+      if (result.isConfirmed) {
+        navigate('/login')
+      }
       return
     }
 
@@ -395,11 +450,23 @@ const PlaylistDetail: React.FC = () => {
             : null,
         )
       } else {
-        alert('북마크 처리에 실패했습니다.')
+        await Swal.fire({
+          title: '북마크 실패',
+          text: '북마크 처리에 실패했습니다.',
+          icon: 'error',
+          confirmButtonText: '확인',
+          confirmButtonColor: '#FF7849'
+        })
       }
     } catch (err: any) {
       console.error('Error toggling bookmark:', err)
-      alert('북마크 처리 중 오류가 발생했습니다.')
+      await Swal.fire({
+        title: '오류 발생',
+        text: '북마크 처리 중 오류가 발생했습니다.',
+        icon: 'error',
+        confirmButtonText: '확인',
+        confirmButtonColor: '#FF7849'
+      })
     } finally {
       setBookmarking(false)
     }
@@ -410,23 +477,49 @@ const PlaylistDetail: React.FC = () => {
     if (!playlist || deleting) return
 
     if (!isAuthenticated || !user) {
-      alert('로그인이 필요합니다.')
-      navigate('/login')
+      const result = await Swal.fire({
+        title: '로그인이 필요합니다',
+        text: '플레이리스트를 삭제하려면 로그인이 필요합니다.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '로그인하러 가기',
+        cancelButtonText: '취소',
+        confirmButtonColor: '#FF7849',
+        cancelButtonColor: '#6c757d'
+      })
+
+      if (result.isConfirmed) {
+        navigate('/login')
+      }
       return
     }
 
     // 작성자 확인
     if (user.nickname !== playlist.nickname) {
-      alert('삭제 권한이 없습니다.')
+      await Swal.fire({
+        title: '권한 없음',
+        text: '삭제 권한이 없습니다.',
+        icon: 'error',
+        confirmButtonText: '확인',
+        confirmButtonColor: '#FF7849'
+      })
       return
     }
 
     // 삭제 확인
-    const isConfirmed = window.confirm(
-      `"${playlist.title}" 플레이리스트를 정말 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`,
-    )
+    const result = await Swal.fire({
+      title: '플레이리스트 삭제',
+      text: `"${playlist.title}" 플레이리스트를 정말 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: '삭제',
+      cancelButtonText: '취소',
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d',
+      reverseButtons: true
+    })
 
-    if (!isConfirmed) return
+    if (!result.isConfirmed) return
 
     setDeleting(true)
 
@@ -434,22 +527,44 @@ const PlaylistDetail: React.FC = () => {
       const response = await deletePlaylist(id!)
 
       if (response.success) {
-        alert('플레이리스트가 성공적으로 삭제되었습니다.')
+        await Swal.fire({
+          title: '삭제 완료',
+          text: '플레이리스트가 성공적으로 삭제되었습니다.',
+          icon: 'success',
+          confirmButtonText: '확인',
+          confirmButtonColor: '#FF7849'
+        })
         navigate('/playlist')
       } else {
-        alert(response.message || '플레이리스트 삭제에 실패했습니다.')
+        await Swal.fire({
+          title: '삭제 실패',
+          text: response.message || '플레이리스트 삭제에 실패했습니다.',
+          icon: 'error',
+          confirmButtonText: '확인',
+          confirmButtonColor: '#FF7849'
+        })
       }
     } catch (err: any) {
       console.error('Delete playlist error:', err)
 
+      let errorMessage = '플레이리스트 삭제 중 오류가 발생했습니다.'
+      
       // 에러 상태별 처리
       if (err.response?.status === 403) {
-        alert('삭제 권한이 없습니다.')
+        errorMessage = '삭제 권한이 없습니다.'
       } else if (err.response?.status === 404) {
-        alert('플레이리스트를 찾을 수 없습니다.')
-      } else {
-        alert(err.response?.data?.message || '플레이리스트 삭제 중 오류가 발생했습니다.')
+        errorMessage = '플레이리스트를 찾을 수 없습니다.'
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message
       }
+
+      await Swal.fire({
+        title: '오류 발생',
+        text: errorMessage,
+        icon: 'error',
+        confirmButtonText: '확인',
+        confirmButtonColor: '#FF7849'
+      })
     } finally {
       setDeleting(false)
     }
@@ -672,36 +787,3 @@ const PlaylistDetail: React.FC = () => {
 }
 
 export default PlaylistDetail
-
-// 스타일 컴포넌트 추가
-const BreadcrumbNav = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  font-size: 0.9rem;
-  color: #aaa;
-`
-
-const BreadcrumbItem = styled.button`
-  background: none;
-  border: none;
-  color: #aaa;
-  cursor: pointer;
-  padding: 0;
-  font-size: 0.9rem;
-  transition: color 0.2s;
-
-  &:hover {
-    color: #ff7849;
-  }
-`
-
-const BreadcrumbSeparator = styled.span`
-  margin: 0 0.5rem;
-  color: #666;
-`
-
-const CurrentPage = styled.span`
-  color: #fff;
-  font-weight: 500;
-`

@@ -48,8 +48,8 @@ import ExamplePage from '@/pages/example/ExamplePage'
 import PlaylistPage from '@/pages/playlist/playlist'
 import CreatePlaylist from '@/pages/playlist/CreatePlaylist'
 import PlaylistDetail from '@/pages/playlist/PlaylistDetail'
-import { AuthProvider } from '../context/AuthContext'
-import { BookmarkProvider } from '../context/BookmarkContext'
+import { AuthProvider } from '@/context/AuthContext'
+import { BookmarkProvider } from '@/context/BookmarkContext'
 import ProtectedRoute from '../components/common/ProtectedRoute'
 import PublicRoute from '../components/common/PublicRoute'
 import EditPlaylist from '@/pages/playlist/EditPlaylist'
@@ -178,7 +178,7 @@ const AppRoutes = () => {
               </BookmarkProvider>
             }
           />
-          <Route path="/movie/detail" element={<MovieDetailPage />} />
+          <Route path="/movie/detail/:tmdbId" element={<MovieDetailPage />} />
           <Route path="/totalsearch" element={<TotalSearch />} />
           <Route path="/bolkinator" element={<Bolkinator />} />
           <Route path="/example" element={<ExamplePage />} />
@@ -202,7 +202,16 @@ const AppRoutes = () => {
             }
           />
 
-          {/* 마이페이지 */}
+          <Route path="/example" element={<ExamplePage />} />
+
+          <Route path="/filmography/:tmdbId" element={<div style={{overflowY : 'hidden'}}><Filmography /></div>} />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+
+          <Route path="/oauth/kakao/callback" element={<KakaoRedirectHandler />} />
+
+          <Route path="/oauth/naver/callback" element={<NaverRedirectHandler />} />
+
           <Route path="/my-page" element={<MyPageMain />} />
           <Route path="/my-page-edit" element={<MyPageEdit />} />
           <Route path="/my-page-preference" element={<MyPagePreference />} />
