@@ -21,7 +21,7 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
           color: 'white',
         }}
       >
-        로딩 중...
+        로딩 중
       </div>
     )
   }
