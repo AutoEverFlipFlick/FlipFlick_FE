@@ -59,7 +59,7 @@ interface ReviewTextAreaProps {
 }
 
 export const ReviewTextArea = ({tmdbId, onSuccess, rating, isAuthenticated, myReview}: ReviewTextAreaProps) => {
-  console.log("[ReviewTextArea] props:", {tmdbId, rating, isAuthenticated, myReview});
+  // console.log("[ReviewTextArea] props:", {tmdbId, rating, isAuthenticated, myReview});
 
   const [value, setValue] = useState("");
   const [isSpoiler, setIsSpoiler] = useState(false);
@@ -84,7 +84,7 @@ export const ReviewTextArea = ({tmdbId, onSuccess, rating, isAuthenticated, myRe
     if (inputValue.length <= 500) {
       setValue(inputValue);
     }
-    console.log("[ReviewTextArea] handleChange value:", inputValue);
+    // console.log("[ReviewTextArea] handleChange value:", inputValue);
   };
   const handleSpoilerToggle = () => {
     setIsSpoiler((prev) => !prev);
@@ -185,8 +185,7 @@ export const ReviewTextArea = ({tmdbId, onSuccess, rating, isAuthenticated, myRe
     }
   };
 
-  console.log("[ReviewTextArea] 렌더링 : value:", value, "isSpoiler:", isSpoiler, "isEditMode:", isEditMode);
-
+  // console.log("[ReviewTextArea] 렌더링 : value:", value, "isSpoiler:", isSpoiler, "isEditMode:", isEditMode);
   return (
     <ReviewInputContainer>
       <ReviewInputTitle>

@@ -551,10 +551,14 @@ export default function MovieDetailPage() {
                     isAuthenticated={isAuthenticated}
                     onSuccess={async () => {
                       try {
-                        const response = await getMyMovieReview(tmdbId!)
-                        const data = response.data
+                        const myReviewResponse = await getMyMovieReview(tmdbId!)
+                        const data = myReviewResponse.data
                         const mappedData: Review | null = mapToMyReviewData(data)
                         setMyReview(mappedData)
+                        const reviewResponse = await getMovieReview(tmdbId!, 0)
+                        const reviewData = reviewResponse.data
+                        const mappedReviewData: ReviewData = mapToReviewData(reviewData, user?.id, user?.nickname)
+                        setReviewData(mappedReviewData)
                       } catch (error) {
                         console.error('내 리뷰 불러오기 실패:', error)
                       }
