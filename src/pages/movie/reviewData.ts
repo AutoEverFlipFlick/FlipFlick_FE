@@ -6,7 +6,7 @@ export interface MemberProfile {
 
 export interface Review {
   member :  MemberProfile;
-  reviewId: number;
+  contentId: number;
   createdAt: string;
   updatedAt?: string; // 업데이트 날짜는 선택적
   content: string;
@@ -34,7 +34,7 @@ export function mapToMyReviewData(data: any): Review | null {
       profileImage: review.profileImage,
       popcornScore: review.popcornScore,
     },
-    reviewId: review.reviewId,
+    contentId: review.reviewId,
     createdAt: review.createdAt,
     updatedAt: review.updatedAt,
     content: review.content,
