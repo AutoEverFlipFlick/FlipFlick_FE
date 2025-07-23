@@ -3,26 +3,19 @@ import styled from 'styled-components'
 import BaseContainer from '@/components/common/BaseContainer'
 import ReviewDebateCard from '@/components/feature/movieDetail/ReviewDebateCard'
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, {useCallback, useEffect, useState} from 'react'
 import RatingCard from '@/components/starRating/RatingCard'
-import { mapToMovieData } from '@/pages/movie/movieDataMapper'
 import MovieDetailHeader from '@/pages/movie/MovieDetailHeader'
-import { useAuth } from '@/context/AuthContext'
-import { useParams, useNavigate } from 'react-router-dom'
-import { useOnClickAuth } from '@/hooks/useOnClickAuth'
-import BaseButton from '@/components/common/BaseButton'
-import { Eye, EyeOff, Flag, ListPlus, Star, StarOff } from 'lucide-react'
+import {Eye, EyeOff, Flag, ListPlus, Star, StarOff} from 'lucide-react'
 
-import { mapToMyReviewData, mapToReviewData, Review, ReviewData } from '@/pages/movie/reviewData'
-import { MovieData } from '@/pages/movie/movieData'
+import {mapToMyReviewData, mapToReviewData, Review, ReviewData} from '@/pages/movie/reviewData'
+import {MovieData} from '@/pages/movie/movieData'
 import ReviewTextArea from '@/pages/movie/ReviewTextArea'
 import {mapToMovieData} from "@/pages/movie/movieDataMapper";
-import MovieDetailHeader from "@/pages/movie/MovieDetailHeader";
 import {useAuth} from "@/context/AuthContext";
 import {useNavigate, useParams} from "react-router-dom";
 import {useOnClickAuth} from "@/hooks/useOnClickAuth";
 import BaseButton from "@/components/common/BaseButton";
-import {Eye, EyeOff, Flag, ListPlus, Star, StarOff} from "lucide-react";
 import {
   bookmarkMovie,
   getMovieDebate,
@@ -31,11 +24,8 @@ import {
   getMyMovieReview,
   watchedMovie
 } from "@/services/movieDetail";
-import {mapToMyReviewData, mapToReviewData, Review, ReviewData} from "@/pages/movie/reviewData";
-import {MovieData} from "@/pages/movie/movieData";
-import ReviewTextArea from "@/pages/movie/ReviewTextArea";
 import Swal from 'sweetalert2'
-import { getMovieDebates, DebateData } from '@/services/debate'
+import {DebateData, getMovieDebates} from '@/services/debate'
 import {Icon} from '@iconify/react'
 import {DebateData, mapToDebateData} from "@/pages/movie/debateData";
 import netflixImg from '@/assets/platform/netflix.png'
@@ -246,7 +236,6 @@ const DetailMyReviewCard = styled(BaseContainer)`
 `
 
 
-
 const DetailMyReviewWrapper = styled.div`
     width: 100%;
     min-height: 100px;
@@ -324,85 +313,84 @@ const PlatformTabButton = styled.button<{ $active?: boolean }>`
 const ActionButton = styled(BaseButton).attrs({
   size: 'small',
 })`
-  align-items: center;
+    align-items: center;
 `
 
 // 스타일드 컴포넌트 추가
 const SpoilerToggle = styled.div`
-  display: flex;
-  align-items: center;
-  margin-right: 20px;
-  gap: 10px;
+    display: flex;
+    align-items: center;
+    margin-right: 20px;
+    gap: 10px;
 `
 
 const SpoilerToggleLabel = styled.span`
-  color: #fff;
-  font-size: 14px;
-  font-weight: 500;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
 `
 
 const SpoilerToggleSwitch = styled.div<{ $active: boolean }>`
-  position: relative;
-  width: 50px;
-  height: 24px;
-  background-color: ${({ $active }) => ($active ? '#FE6A3C' : '#666')};
-  border-radius: 24px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+    position: relative;
+    width: 50px;
+    height: 24px;
+    background-color: ${({$active}) => ($active ? '#FE6A3C' : '#666')};
+    border-radius: 24px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 
-  &:hover {
-    background-color: ${({ $active }) => ($active ? '#E55A2B' : '#777')};
-  }
+    &:hover {
+        background-color: ${({$active}) => ($active ? '#E55A2B' : '#777')};
+    }
 `
 
 const SpoilerToggleKnob = styled.div<{ $active: boolean }>`
-  position: absolute;
-  top: 2px;
-  left: ${({ $active }) => ($active ? '26px' : '2px')};
-  width: 20px;
-  height: 20px;
-  background-color: #fff;
-  border-radius: 50%;
-  transition: left 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    position: absolute;
+    top: 2px;
+    left: ${({$active}) => ($active ? '26px' : '2px')};
+    width: 20px;
+    height: 20px;
+    background-color: #fff;
+    border-radius: 50%;
+    transition: left 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 `
 
 const WriteButton = styled(BaseButton)`
-  margin-bottom: 20px;
+    margin-bottom: 20px;
 `
 
 const PaginationWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  margin-top: 20px;
-  padding: 20px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+    padding: 20px 0;
 `
 
 const PageButton = styled.button<{ $active?: boolean; $disabled?: boolean }>`
-  all: unset;
-  cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
-  padding: 8px 12px;
-  min-width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
+    all: unset;
+    cursor: ${({$disabled}) => ($disabled ? 'not-allowed' : 'pointer')};
+    padding: 8px 12px;
+    min-width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
 
-  background-color: ${({ $active, $disabled }) =>
-    $disabled ? '#333' : $active ? '#FE6A3C' : 'transparent'};
-  color: ${({ $active, $disabled }) => ($disabled ? '#666' : $active ? '#fff' : '#fff')};
-  border: 1px solid
-    ${({ $active, $disabled }) => ($disabled ? '#444' : $active ? '#FE6A3C' : '#666')};
+    background-color: ${({$active, $disabled}) =>
+            $disabled ? '#333' : $active ? '#FE6A3C' : 'transparent'};
+    color: ${({$active, $disabled}) => ($disabled ? '#666' : $active ? '#fff' : '#fff')};
+    border: 1px solid ${({$active, $disabled}) => ($disabled ? '#444' : $active ? '#FE6A3C' : '#666')};
 
-  &:hover {
-    background-color: ${({ $disabled, $active }) =>
-      $disabled ? '#333' : $active ? '#E55A2B' : 'rgba(254, 106, 60, 0.1)'};
-  }
+    &:hover {
+        background-color: ${({$disabled, $active}) =>
+                $disabled ? '#333' : $active ? '#E55A2B' : 'rgba(254, 106, 60, 0.1)'};
+    }
 `
 const WriteButton = styled(BaseButton)`
     margin-bottom: 20px;
@@ -437,8 +425,8 @@ export default function MovieDetailPage() {
   // const [isLiked, setIsLiked] = useState(false)
   const [isWatched, setIsWatched] = useState(false)
   const [isBookmarked, setIsBookmarked] = useState(false)
-  const { tmdbId } = useParams<{ tmdbId: string }>()
-  const { user, isAuthenticated, loading } = useAuth()
+  const {tmdbId} = useParams<{ tmdbId: string }>()
+  const {user, isAuthenticated, loading} = useAuth()
   const navigate = useNavigate()
 
   const onClickAuth = useOnClickAuth()
@@ -538,77 +526,77 @@ export default function MovieDetailPage() {
   }
 
   useEffect(() => {
-      const fetchMovieDetail = async () => {
-        try {
-          // setIsLoading(true)
-          console.log("영화 상세 정보 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
-          const response = await getMovieDetail(tmdbId)
-          const data = response.data
-          console.log("영화 정보 조회됨 : ", data)
-          const mappedData: MovieData = mapToMovieData(data)
-          console.log("영화 정보 매핑됨 : ", mappedData)
-          console.log("영화 providers 확인 : ", mappedData.providers)
-          setMovieData(mappedData)
-          // setIsLiked(mappedData.myLike)
-          setIsWatched(mappedData.myWatched)
-          setIsBookmarked(mappedData.myBookmark)
-        } catch (error) {
-          console.error('영화 상세 정보 불러오기 실패:', error)
-        } finally {
-          console.log("영화 상세 정보 불러오기 및 매핑 완료")
-        }
-      }
-      const fetchMovieReview = async () => {
-        try {
-          console.log("영화 리뷰 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
-          const response = await getMovieReview(tmdbId, 0)
-          const data = response.data
-          console.log("영화 리뷰 조회됨 : ", data)
-          console.log("영화 리뷰 매핑시 사용된 유저 정보 : ", user, isAuthenticated, user?.id)
-          const mappedData: ReviewData = mapToReviewData(data, user?.id, user?.nickname)
-          console.log("영화 리뷰 매핑됨 : ", mappedData)
-          // setMyReview(mappedData)
-          setReviewData(mappedData)
-        } catch (error) {
-          console.error('영화 리뷰 불러오기 실패:', error)
-        } finally {
-          console.log("영화 리뷰 불러오기 및 매핑 완료")
-        }
-      }
-
-      const fetchMyReview = async () => {
-        try {
-          console.log("내 리뷰 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
-          const response = await getMyMovieReview(tmdbId)
-          const data = response.data
-          console.log("내 리뷰 조회됨 : ", data)
-          const mappedData: Review | null = mapToMyReviewData(data)
-          console.log("내 리뷰 매핑됨 : ", mappedData)
-          setMyReview(mappedData)
-        } catch (error) {
-          console.error('내 리뷰 불러오기 실패:', error)
-        } finally {
-          console.log("내 리뷰 불러오기 및 매핑 완료")
-        }
-      }
-      const fetchMovieDebate = async () => {
-        try {
-          console.log("토론장 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
-          const response = await getMovieDebate(tmdbId, 0)
-          const data = response.data
-          console.log("토론장 조회됨 : ", response.data)
-          const mappedData = mapToDebateData(data, user?.id, user?.nickname)
-          console.log("토론장 매핑됨 : ", mappedData)
-          setDebateData(mappedData)
-        } catch (error) {
-          console.error('토론장 불러오기 실패:', error)
-        } finally {
-          console.log("토론장 불러오기 완료")
-        }
-      }
-
+    const fetchMovieDetail = async () => {
       try {
-        if (loading) return; // 로딩 중이면 아무것도 하지 않음
+        // setIsLoading(true)
+        console.log("영화 상세 정보 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
+        const response = await getMovieDetail(tmdbId)
+        const data = response.data
+        console.log("영화 정보 조회됨 : ", data)
+        const mappedData: MovieData = mapToMovieData(data)
+        console.log("영화 정보 매핑됨 : ", mappedData)
+        console.log("영화 providers 확인 : ", mappedData.providers)
+        setMovieData(mappedData)
+        // setIsLiked(mappedData.myLike)
+        setIsWatched(mappedData.myWatched)
+        setIsBookmarked(mappedData.myBookmark)
+      } catch (error) {
+        console.error('영화 상세 정보 불러오기 실패:', error)
+      } finally {
+        console.log("영화 상세 정보 불러오기 및 매핑 완료")
+      }
+    }
+    const fetchMovieReview = async () => {
+      try {
+        console.log("영화 리뷰 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
+        const response = await getMovieReview(tmdbId, 0)
+        const data = response.data
+        console.log("영화 리뷰 조회됨 : ", data)
+        console.log("영화 리뷰 매핑시 사용된 유저 정보 : ", user, isAuthenticated, user?.id)
+        const mappedData: ReviewData = mapToReviewData(data, user?.id, user?.nickname)
+        console.log("영화 리뷰 매핑됨 : ", mappedData)
+        // setMyReview(mappedData)
+        setReviewData(mappedData)
+      } catch (error) {
+        console.error('영화 리뷰 불러오기 실패:', error)
+      } finally {
+        console.log("영화 리뷰 불러오기 및 매핑 완료")
+      }
+    }
+
+    const fetchMyReview = async () => {
+      try {
+        console.log("내 리뷰 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
+        const response = await getMyMovieReview(tmdbId)
+        const data = response.data
+        console.log("내 리뷰 조회됨 : ", data)
+        const mappedData: Review | null = mapToMyReviewData(data)
+        console.log("내 리뷰 매핑됨 : ", mappedData)
+        setMyReview(mappedData)
+      } catch (error) {
+        console.error('내 리뷰 불러오기 실패:', error)
+      } finally {
+        console.log("내 리뷰 불러오기 및 매핑 완료")
+      }
+    }
+    const fetchMovieDebate = async () => {
+      try {
+        console.log("토론장 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
+        const response = await getMovieDebate(tmdbId, 0)
+        const data = response.data
+        console.log("토론장 조회됨 : ", response.data)
+        const mappedData = mapToDebateData(data, user?.id, user?.nickname)
+        console.log("토론장 매핑됨 : ", mappedData)
+        setDebateData(mappedData)
+      } catch (error) {
+        console.error('토론장 불러오기 실패:', error)
+      } finally {
+        console.log("토론장 불러오기 완료")
+      }
+    }
+
+    try {
+      if (loading) return; // 로딩 중이면 아무것도 하지 않음
 
       if (isAuthenticated && user) {
         // 인증된 경우에만 내 리뷰 호출
@@ -692,7 +680,7 @@ export default function MovieDetailPage() {
 
   return (
     <MovieDetailLayout>
-      <MovieDetailHeader movieData={movieData} />
+      <MovieDetailHeader movieData={movieData}/>
       <MovieDetailMainAction>
         <ActionButton size='small' icon={isBookmarked ? <StarOff/> : <Star/>}
                       onClick={handleBookmark}>{isBookmarked ? '찜 취소' : '찜하기'}</ActionButton>
@@ -877,13 +865,13 @@ export default function MovieDetailPage() {
                     $active={showSpoilers}
                     onClick={() => setShowSpoilers(!showSpoilers)}
                   >
-                    <SpoilerToggleKnob $active={showSpoilers} />
+                    <SpoilerToggleKnob $active={showSpoilers}/>
                   </SpoilerToggleSwitch>
                 </SpoilerToggle>
               </div>
 
               {debateLoading ? (
-                <div style={{ textAlign: 'center', padding: '40px', color: '#fff' }}>
+                <div style={{textAlign: 'center', padding: '40px', color: '#fff'}}>
                   토론 목록을 불러오는 중...
                 </div>
               ) : (
@@ -949,7 +937,7 @@ export default function MovieDetailPage() {
                       </PageButton>
 
                       {/* 페이지 번호 버튼들 */}
-                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      {Array.from({length: Math.min(5, totalPages)}, (_, i) => {
                         const startPage = Math.max(0, Math.min(currentPage - 2, totalPages - 5))
                         const pageNum = startPage + i
 
