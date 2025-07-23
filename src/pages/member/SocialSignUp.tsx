@@ -8,6 +8,7 @@ import cameraIcon from '@/assets/icons/camera.png'
 import { checkNicknameDuplicate, updateSocialInfo } from '@/services/member'
 import { uploadImage, deleteImage } from '@/services/s3'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/context/AuthContext'
 
 const Wrapper = styled.div`
   width: 100vw;
@@ -106,6 +107,7 @@ const SocialSignUp: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   const navigate = useNavigate()
+  const { updateUser } = useAuth()
 
   useEffect(() => {
     const socialType = sessionStorage.getItem('socialType')
@@ -169,8 +171,23 @@ const SocialSignUp: React.FC = () => {
         nickname,
         profileImage: profileImageUrl,
       }
+
+      // 1. 소셜 정보 업데이트
       await updateSocialInfo(payload)
 
+      // 2. 사용자 정보 가져오기
+      const { getUserInfo } = await import('@/services/member')
+      const userInfoResponse = await getUserInfo()
+
+      // 3. AuthContext 업데이트
+      if (userInfoResponse.success && userInfoResponse.data) {
+        updateUser(userInfoResponse.data) // 사용자 정보로 로그인 상태 설정
+      }
+
+      // 4. 세션 스토리지 정리
+      sessionStorage.removeItem('socialType')
+
+      // 5. 메인 페이지로 이동
       navigate('/')
     } catch (error) {
       console.error('설정 실패:', error)
