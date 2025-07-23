@@ -364,6 +364,7 @@ const AvatarContainer = styled.img`
   height: 40px;
   width: 40px;
   opacity: 0.3;
+  border-radius: var(--radius-full);
   ${media.tablet`
     height: 35px;
     width: 35px;
