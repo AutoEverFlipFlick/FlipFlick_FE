@@ -1,9 +1,8 @@
 // pages/movieData.ts
 
-export interface Providers {
-  type: '구매' | '정액제' | '대여';
-  name: string;
-  logoUrl: string;
+export interface Provider {
+  providerName: string,
+  providerType: 'BUY' | 'RENT' | 'FLATRATE',
 }
 
 export interface Actor {
@@ -52,7 +51,7 @@ export interface MovieData {
   likeCnt: number;
   hateCnt: number;
   genres: Genre[];
-  providers: Providers[];
+  providers: Provider[];
   casts: Actor[];
   images: string[];
   videos: string[];

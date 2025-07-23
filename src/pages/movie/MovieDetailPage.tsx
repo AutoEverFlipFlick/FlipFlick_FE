@@ -5,18 +5,34 @@ import ReviewDebateCard from '@/components/feature/movieDetail/ReviewDebateCard'
 
 import React, {useCallback, useEffect, useState} from 'react'
 import RatingCard from '@/components/starRating/RatingCard'
+import MovieDetailHeader from '@/pages/movie/MovieDetailHeader'
+import {Eye, EyeOff, Flag, ListPlus, Star, StarOff} from 'lucide-react'
+
+import {mapToMyReviewData, mapToReviewData, Review, ReviewData} from '@/pages/movie/reviewData'
+import {MovieData} from '@/pages/movie/movieData'
+import ReviewTextArea from '@/pages/movie/ReviewTextArea'
 import {mapToMovieData} from "@/pages/movie/movieDataMapper";
-import MovieDetailHeader from "@/pages/movie/MovieDetailHeader";
 import {useAuth} from "@/context/AuthContext";
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import {useOnClickAuth} from "@/hooks/useOnClickAuth";
 import BaseButton from "@/components/common/BaseButton";
-import {Eye, EyeOff, Flag, ListPlus, Star, StarOff} from "lucide-react";
-import {bookmarkMovie, getMovieDetail, getMovieReview, getMyMovieReview, watchedMovie} from "@/services/movieDetail";
-import {mapToMyReviewData, mapToReviewData, Review, ReviewData} from "@/pages/movie/reviewData";
-import {MovieData} from "@/pages/movie/movieData";
-import ReviewTextArea from "@/pages/movie/ReviewTextArea";
+import {
+  bookmarkMovie,
+  // getMovieDebate,
+  getMovieDetail,
+  getMovieReview,
+  getMyMovieReview,
+  watchedMovie
+} from "@/services/movieDetail";
 import Swal from 'sweetalert2'
+import DebateCard from '@/components/feature/movieDetail/DebateCard'
+import {DebateData, getMovieDebates} from '@/services/debate'
+import {Icon} from '@iconify/react'
+// import {DebateData, mapToDebateData} from "@/pages/movie/debateData";
+import netflixImg from '@/assets/platform/netflix.png'
+import watchaImg from '@/assets/platform/watcha.png'
+import disneyPlusImg from '@/assets/platform/disney_plus.png'
+import wavveImg from '@/assets/platform/wavve.png'
 
 const MovieDetailLayout = styled.div`
     display: flex;
@@ -44,9 +60,10 @@ const HeaderContentsContainer = styled(BaseContainer)`
     display: flex;
 `
 
-const DetailImage = styled.div`
+const DetailImage = styled.img`
     margin-bottom: 20px;
-    height: 150px;
+    height: 200px;
+    width: 300px;
     display: flex;
     justify-content: start;
 `
@@ -158,8 +175,9 @@ const ContentsHeader = styled.div`
     min-height: 50px;
 `
 const ContentsTitle = styled.div`
-    font-size: 25px;
+    font-size: 20px;
     margin: 20px 0 0 20px;
+    font-weight: bold;
 
 `
 
@@ -175,15 +193,29 @@ const ReviewDebateContents = styled.div`
     gap: 5px;
 `
 
-const DetailImageContents = styled.div`
+const DetailMediaContents = styled.div`
     display: flex;
+    flex-direction: column;
     max-width: 800px;
     min-width: 800px;
     min-height: 200px;
-    justify-content: start;
-    align-items: center;
+    align-items: start;
     margin: 0 auto;
     gap: 5px;
+`
+
+// 미디어를 2줄 가로로 배열, 좌우로 스크롤
+const MediaContents = styled.div`
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    align-items: center;
+    max-width: 800px;
+    min-width: 800px;
+    min-height: 200px;
+    overflow-x: auto;
+    margin: 0 auto;
+    gap: 10px;
 `
 const RatingWrapper = styled.div`
     display: flex;
@@ -203,7 +235,6 @@ const DetailMyReviewCard = styled(BaseContainer)`
     justify-content: center;
     align-items: center;
 `
-
 
 
 const DetailMyReviewWrapper = styled.div`
@@ -265,6 +296,7 @@ const TabButton = styled.button<{ $active: boolean }>`
     width: 100px;
     text-align: center;
     font-size: 20px;
+    font-weight: bold;
     color: ${({$active}) => ($active ? '#FE6A3C' : '#fff')};
     border-bottom: ${({$active}) => ($active ? '3px solid #FE6A3C' : 'none')};
 `
@@ -285,21 +317,130 @@ const ActionButton = styled(BaseButton).attrs({
     align-items: center;
 `
 
+// 스타일드 컴포넌트 추가
+const SpoilerToggle = styled.div`
+    display: flex;
+    align-items: center;
+    margin-right: 20px;
+    gap: 10px;
+`
+
+const SpoilerToggleLabel = styled.span`
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+`
+
+const SpoilerToggleSwitch = styled.div<{ $active: boolean }>`
+    position: relative;
+    width: 50px;
+    height: 24px;
+    background-color: ${({$active}) => ($active ? '#FE6A3C' : '#666')};
+    border-radius: 24px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+        background-color: ${({$active}) => ($active ? '#E55A2B' : '#777')};
+    }
+`
+
+const SpoilerToggleKnob = styled.div<{ $active: boolean }>`
+    position: absolute;
+    top: 2px;
+    left: ${({$active}) => ($active ? '26px' : '2px')};
+    width: 20px;
+    height: 20px;
+    background-color: #fff;
+    border-radius: 50%;
+    transition: left 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+`
+
+const WriteButton = styled(BaseButton)`
+    margin-bottom: 20px;
+`
+
+const PaginationWrapper = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+    padding: 20px 0;
+`
+
+const PageButton = styled.button<{ $active?: boolean; $disabled?: boolean }>`
+    all: unset;
+    cursor: ${({$disabled}) => ($disabled ? 'not-allowed' : 'pointer')};
+    padding: 8px 12px;
+    min-width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+
+    background-color: ${({$active, $disabled}) =>
+            $disabled ? '#333' : $active ? '#FE6A3C' : 'transparent'};
+    color: ${({$active, $disabled}) => ($disabled ? '#666' : $active ? '#fff' : '#fff')};
+    border: 1px solid ${({$active, $disabled}) => ($disabled ? '#444' : $active ? '#FE6A3C' : '#666')};
+
+    &:hover {
+        background-color: ${({$disabled, $active}) =>
+                $disabled ? '#333' : $active ? '#E55A2B' : 'rgba(254, 106, 60, 0.1)'};
+    }
+`
+
+const getPlatformSrc = (platformName: string) => {
+  console.log("플랫폼 이름 확인 : ", platformName)
+  switch (platformName) {
+    case 'Netflix':
+    case 'Netflix Standard with Ads':
+      console.log("Netflix 이미지 반환 : ", netflixImg)
+      return netflixImg
+    case 'Watcha':
+      console.log("Watcha 이미지 반환 : ", watchaImg)
+      return watchaImg
+    case 'Disney+':
+      console.log("Disney+ 이미지 반환 : ", disneyPlusImg)
+      return disneyPlusImg
+    case 'wavve':
+      console.log("wavve 이미지 반환 : ", wavveImg)
+      return wavveImg
+    default:
+      console.log("매칭되지 않는 플랫폼 : ", platformName)
+      return null // 기본값 설정
+  }
+}
 
 export default function MovieDetailPage() {
   const [movieData, setMovieData] = useState<MovieData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'overview' | 'review' | 'debate' | 'media'>('overview')
-  const [activePlatformTab, setActivePlatformTab] = useState<'구매' | '정액제' | '대여'>('구매')
-  const [isLiked, setIsLiked] = useState(false)
+  const [activePlatformTab, setActivePlatformTab] = useState<'BUY' | 'FLATRATE' | 'RENT'>('BUY')
+  // const [isLiked, setIsLiked] = useState(false)
   const [isWatched, setIsWatched] = useState(false)
   const [isBookmarked, setIsBookmarked] = useState(false)
   const {tmdbId} = useParams<{ tmdbId: string }>()
   const {user, isAuthenticated, loading} = useAuth()
+  const navigate = useNavigate()
 
   const onClickAuth = useOnClickAuth()
   const [reviewData, setReviewData] = useState<ReviewData | null>(null)
   const [myReview, setMyReview] = useState<Review | null>(null)
+  // const [debateData, setDebateData] = useState<DebateData | null>(null)
+
+  // 토론 관련 state 추가
+  const [debates, setDebates] = useState<DebateData[]>([])
+  const [debateLoading, setDebateLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+
+  // 스포일러 필터 state 추가
+  const [showSpoilers, setShowSpoilers] = useState(false)
 
   const handleBookmark = useCallback(
     () =>
@@ -358,99 +499,183 @@ export default function MovieDetailPage() {
     [onClickAuth, movieData?.movieId, isWatched],
   )
 
-  useEffect(() => {
-      const fetchMovieDetail = async () => {
-        try {
-          console.log("영화 상세 정보 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
-          const response = await getMovieDetail(tmdbId)
-          const data = response.data
-          console.log("영화 정보 조회됨 : ", data)
-          const mappedData: MovieData = mapToMovieData(data)
-          console.log("영화 정보 매핑됨 : ", mappedData)
-          setMovieData(mappedData)
-          setIsLiked(mappedData.myLike)
-          setIsWatched(mappedData.myWatched)
-          setIsBookmarked(mappedData.myBookmark)
-        } catch (error) {
-          console.error('영화 상세 정보 불러오기 실패:', error)
-        } finally {
-          console.log("영화 상세 정보 불러오기 및 매핑 완료")
-        }
+  // 토론 목록 가져오기 함수 추가
+  const fetchDebates = async (page: number = 0) => {
+    if (!tmdbId) return
+
+    setDebateLoading(true)
+    try {
+      console.log('🎬 토론 목록 조회 시작:', tmdbId)
+
+      const response = await getMovieDebates(tmdbId, page, 10, 'latest')
+
+      if (response.success) {
+        console.log('✅ 토론 목록 조회 성공:', response.data)
+        setDebates(response.data.content)
+        setCurrentPage(response.data.currentPage)
+        setTotalPages(response.data.totalPages)
+      } else {
+        console.error('❌ 토론 목록 조회 실패:', response.message)
       }
-      const fetchMovieReview = async () => {
-        try {
-          console.log("영화 리뷰 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
-          const response = await getMovieReview(tmdbId, 0)
-          const data = response.data
-          console.log("영화 리뷰 조회됨 : ", data)
-          console.log("영화 리뷰 매핑시 사용된 유저 정보 : ", user, isAuthenticated, user?.id)
-          const mappedData: ReviewData = mapToReviewData(data, user?.id, user?.nickname)
-          console.log("영화 리뷰 매핑됨 : ", mappedData)
-          // setMyReview(mappedData)
-          setReviewData(mappedData)
-        } catch (error) {
-          console.error('영화 리뷰 불러오기 실패:', error)
-        } finally {
-          console.log("영화 리뷰 불러오기 및 매핑 완료")
-        }
-      }
-
-      const fetchMyReview = async () => {
-        try {
-          console.log("내 리뷰 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
-          const response = await getMyMovieReview(tmdbId)
-          const data = response.data
-          console.log("내 리뷰 조회됨 : ", data)
-          const mappedData: Review | null = mapToMyReviewData(data)
-          console.log("내 리뷰 매핑됨 : ", mappedData)
-          setMyReview(mappedData)
-        } catch (error) {
-          console.error('내 리뷰 불러오기 실패:', error)
-        } finally {
-          console.log("내 리뷰 불러오기 및 매핑 완료")
-        }
-      }
-
-      try {
-        if (loading) return; // 로딩 중이면 아무것도 하지 않음
-
-        if (isAuthenticated && user) {
-          // 인증된 경우에만 내 리뷰 호출
-          console.log("유저 정보 로딩 완료, 영화 상세 정보 및 리뷰 불러오기 시작")
-          fetchMovieDetail()
-          fetchMovieReview()
-          fetchMyReview()
-        } else {
-          // 비로그인 상태
-          console.log("유저 정보 미인증 상태, 영화 상세 정보 및 리뷰 불러오기 시작")
-          fetchMovieDetail()
-          fetchMovieReview()
-        }
-
-      } catch (error) {
-        console.error('영화 상세 페이지 정보 불러오기 중 오류 발생:', error)
-        setIsLoading(false)
-      } finally {
-        setIsLoading(false)
-      }
-
+    } catch (error) {
+      console.error('❌ 토론 목록 조회 에러:', error)
+    } finally {
+      setDebateLoading(false)
     }
-    ,
-    [tmdbId, user, loading, isAuthenticated]
-  )
+  }
 
+  useEffect(() => {
+    const fetchMovieDetail = async () => {
+      try {
+        // setIsLoading(true)
+        console.log("영화 상세 정보 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
+        const response = await getMovieDetail(tmdbId)
+        const data = response.data
+        console.log("영화 정보 조회됨 : ", data)
+        const mappedData: MovieData = mapToMovieData(data)
+        console.log("영화 정보 매핑됨 : ", mappedData)
+        console.log("영화 providers 확인 : ", mappedData.providers)
+        setMovieData(mappedData)
+        // setIsLiked(mappedData.myLike)
+        setIsWatched(mappedData.myWatched)
+        setIsBookmarked(mappedData.myBookmark)
+      } catch (error) {
+        console.error('영화 상세 정보 불러오기 실패:', error)
+      } finally {
+        console.log("영화 상세 정보 불러오기 및 매핑 완료")
+      }
+    }
+    const fetchMovieReview = async () => {
+      try {
+        console.log("영화 리뷰 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
+        const response = await getMovieReview(tmdbId, 0)
+        const data = response.data
+        console.log("영화 리뷰 조회됨 : ", data)
+        console.log("영화 리뷰 매핑시 사용된 유저 정보 : ", user, isAuthenticated, user?.id)
+        const mappedData: ReviewData = mapToReviewData(data, user?.id, user?.nickname)
+        console.log("영화 리뷰 매핑됨 : ", mappedData)
+        // setMyReview(mappedData)
+        setReviewData(mappedData)
+      } catch (error) {
+        console.error('영화 리뷰 불러오기 실패:', error)
+      } finally {
+        console.log("영화 리뷰 불러오기 및 매핑 완료")
+      }
+    }
+
+    const fetchMyReview = async () => {
+      try {
+        console.log("내 리뷰 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
+        const response = await getMyMovieReview(tmdbId)
+        const data = response.data
+        console.log("내 리뷰 조회됨 : ", data)
+        const mappedData: Review | null = mapToMyReviewData(data)
+        console.log("내 리뷰 매핑됨 : ", mappedData)
+        setMyReview(mappedData)
+      } catch (error) {
+        console.error('내 리뷰 불러오기 실패:', error)
+      } finally {
+        console.log("내 리뷰 불러오기 및 매핑 완료")
+      }
+    }
+    // const fetchMovieDebate = async () => {
+    //   try {
+    //     console.log("토론장 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
+    //     const response = await getMovieDebate(tmdbId, 0)
+    //     const data = response.data
+    //     console.log("토론장 조회됨 : ", response.data)
+    //     const mappedData = mapToDebateData(data, user?.id, user?.nickname)
+    //     console.log("토론장 매핑됨 : ", mappedData)
+    //     setDebateData(mappedData)
+    //   } catch (error) {
+    //     console.error('토론장 불러오기 실패:', error)
+    //   } finally {
+    //     console.log("토론장 불러오기 완료")
+    //   }
+    // }
+
+    try {
+      if (loading) return; // 로딩 중이면 아무것도 하지 않음
+
+      if (isAuthenticated && user) {
+        // 인증된 경우에만 내 리뷰 호출
+        console.log('유저 정보 로딩 완료, 영화 상세 정보 및 리뷰 불러오기 시작')
+        fetchMovieDetail()
+        fetchMovieReview()
+        fetchMyReview()
+        // 토론 탭이 활성화된 경우에만 토론 로드
+        if (activeTab === 'debate') {
+          fetchDebates(0)
+        }
+      } else {
+        // 비로그인 상태
+        console.log('유저 정보 미인증 상태, 영화 상세 정보 및 리뷰 불러오기 시작')
+        fetchMovieDetail()
+        fetchMovieReview()
+        // 토론 탭이 활성화된 경우에만 토론 로드
+        if (activeTab === 'debate') {
+          fetchDebates(0)
+        }
+      }
+    } catch (error) {
+      console.error('영화 상세 페이지 정보 불러오기 중 오류 발생:', error)
+      setIsLoading(false)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [tmdbId, user, loading, isAuthenticated, activeTab]) // activeTab 의존성 추가
+
+  // HTML에서 이미지 URL 추출하는 함수
+  const extractImagesFromContent = (htmlContent: string): string[] => {
+    const imgRegex = /<img[^>]+src="([^">]+)"/g
+    const images: string[] = []
+    let match
+
+    while ((match = imgRegex.exec(htmlContent)) !== null) {
+      images.push(match[1])
+    }
+
+    return images
+  }
+
+  // // HTML 태그 제거하는 함수
+  // const stripHtmlTags = (html: string): string => {
+  //   const tmp = document.createElement('div')
+  //   tmp.innerHTML = html
+  //   return tmp.textContent || tmp.innerText || ''
+  // }
+
+  // 시간 포맷 함수
+  const formatTimeAgo = (dateString: string): string => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
+
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes}분 전`
+    } else if (diffInMinutes < 1440) {
+      return `${Math.floor(diffInMinutes / 60)}시간 전`
+    } else {
+      return `${Math.floor(diffInMinutes / 1440)}일 전`
+    }
+  }
 
   if (isLoading || !movieData) {
     console.debug(isLoading)
     return (
       <MovieDetailLayout>
-        <p style={{color: 'white'}}>로딩 중입니다...</p>
-        {/* 페이지 구성 자체에 최소 크기가 정해진 영역이 많음 */}
-        {/* 하위 컴포넌트에 예외 처리 추가 필요 */}
-        {/* isLoading, 정의되지 않음, 전달 받은 데이터가 특정 조건에 해당 */}
+        <Icon icon="line-md:loading-twotone-loop" fontSize={100}/>
       </MovieDetailLayout>
     )
   }
+
+  // 토론 클릭 핸들러 추가
+  const handleDebateClick = (debateId: number) => {
+    navigate(`/debate/${debateId}`)
+  }
+
+  // 스포일러 필터링된 토론 목록
+  const filteredDebates = debates.filter(debate => showSpoilers || !debate.spoiler)
 
   return (
     <MovieDetailLayout>
@@ -511,26 +736,37 @@ export default function MovieDetailPage() {
               <OverViewPlatformWrapper>
                 <OverViewPlatformTab>
                   <PlatformTabButton
-                    $active={activePlatformTab === '구매'}
-                    onClick={() => setActivePlatformTab('구매')}>
+                    $active={activePlatformTab === 'BUY'}
+                    onClick={() => setActivePlatformTab('BUY')}>
                     구매</PlatformTabButton>
                   <PlatformTabButton
-                    $active={activePlatformTab === '정액제'}
-                    onClick={() => setActivePlatformTab('정액제')}>
+                    $active={activePlatformTab === 'FLATRATE'}
+                    onClick={() => setActivePlatformTab('FLATRATE')}>
                     구독</PlatformTabButton>
                   <PlatformTabButton
-                    $active={activePlatformTab === '대여'}
-                    onClick={() => setActivePlatformTab('대여')}>
+                    $active={activePlatformTab === 'RENT'}
+                    onClick={() => setActivePlatformTab('RENT')}>
                     대여</PlatformTabButton>
                 </OverViewPlatformTab>
                 <OverViewPlatformImageWrapper>
                   {movieData.providers
-                    .filter(provider => provider.type === activePlatformTab)
-                    .map(provider => (
-                      <PlatFormImage key={provider.name}>
-                        <img src={provider.logoUrl} alt={provider.name} style={{width: '100px', height: '100px'}}/>
-                      </PlatFormImage>
-                    ))}
+                    .filter(provider => provider.providerType === activePlatformTab)
+                    .map((provider, index) => {
+                      const imageSrc = getPlatformSrc(provider.providerName)
+                      return imageSrc ? (
+                        <PlatFormImage key={index}>
+                          <img
+                            src={imageSrc}
+                            alt={provider.providerName}
+                            style={{width: '100px', height: '100px'}}
+                            onError={(e) => {
+                              console.error(`이미지 로드 실패: ${provider.providerName}`)
+                              e.currentTarget.style.display = 'none'
+                            }}
+                          />
+                        </PlatFormImage>
+                      ) : null
+                    })}
                 </OverViewPlatformImageWrapper>
               </OverViewPlatformWrapper>
             </OverViewContents>
@@ -567,13 +803,14 @@ export default function MovieDetailPage() {
               </DetailMyReviewWrapper>
               <ContentsListWrapper>
                 <ContentsListTitleTab>
-                  <ContentsTitle>리뷰</ContentsTitle>
+                  <ContentsTitle>리뷰 ({reviewData?.totalElements})</ContentsTitle>
                   {/* TODO : 정렬 버튼 및 랜더링 구현하기*/}
                   <ContentsListOrderDropdown>정렬 순서</ContentsListOrderDropdown>
                 </ContentsListTitleTab>
                 <ReviewDebateList>
-                  <DetailReviewCardWrapper>
-                    {reviewData?.reviews.map(review =>
+
+                  {reviewData?.reviews.map((review, index) => (
+                    <DetailReviewCardWrapper key={index}>
                       <ReviewDebateCard
                         key={review.contentId}
                         content={review.content}
@@ -583,13 +820,14 @@ export default function MovieDetailPage() {
                         isMyPost={review.isMyPost}
                         likes={review.likes}
                         hates={review.hates}
-                        // hates={review.hates}
                         rating={review.rating}
+                        isSpoiler={review.isSpoiler}
+                        profileImage={review.member.profileImage}
+                        contentId={review.contentId}
+                        memberId={review.member.memberId}
                       />
-                    )
-                    }
-                    {/*<ReviewDebateCard />*/}
-                  </DetailReviewCardWrapper>
+                    </DetailReviewCardWrapper>
+                  ))}
                 </ReviewDebateList>
               </ContentsListWrapper>
             </ReviewDebateContents>
@@ -598,30 +836,183 @@ export default function MovieDetailPage() {
             <ReviewDebateContents>
               <ContentsHeader>
                 <ContentsTitle>토론장</ContentsTitle>
+                {/* 로그인한 사용자만 토론 작성 버튼 표시 */}
+                {isAuthenticated && (
+                  <WriteButton
+                    variant="orange"
+                    size="small"
+                    onClick={() => navigate(`/debate/write?tmdbId=${tmdbId}`)}
+                  >
+                    토론 작성하기
+                  </WriteButton>
+                )}
               </ContentsHeader>
-              <ReviewDebateList>
-                <DetailReviewCardWrapper>
-                  {/* TODO : 토론 정보 불러오고 랜더링 */}
-                  <ReviewDebateCard
-                    content={'토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용'}
-                    createdAt={'1 시간 전'}
-                    likes={100}
-                    hates={10}
-                    username={'사용자'}
-                    comments={10}
-                    images={['https://placehold.co/600x600', 'https://placehold.co/600x600', 'https://placehold.co/600x600', 'https://placehold.co/600x600', 'https://placehold.co/600x600']}
-                    type={'debate'}
-                    isMyPost={true}
-                  />
-                </DetailReviewCardWrapper>
-              </ReviewDebateList>
+
+              {/* 스포일러 토글을 별도 영역으로 분리 */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  width: '100%',
+                  marginBottom: '16px',
+                }}
+              >
+                <SpoilerToggle>
+                  <SpoilerToggleLabel>스포일러 포함</SpoilerToggleLabel>
+                  <SpoilerToggleSwitch
+                    $active={showSpoilers}
+                    onClick={() => setShowSpoilers(!showSpoilers)}
+                  >
+                    <SpoilerToggleKnob $active={showSpoilers}/>
+                  </SpoilerToggleSwitch>
+                </SpoilerToggle>
+              </div>
+
+              {debateLoading ? (
+                <div style={{textAlign: 'center', padding: '40px', color: '#fff'}}>
+                  토론 목록을 불러오는 중...
+                </div>
+              ) : (
+                <>
+                  <ReviewDebateList>
+                    <DetailReviewCardWrapper>
+                      {filteredDebates.length > 0 ? (
+                        filteredDebates.map(debate => (
+                          <DebateCard
+                            key={debate.debateId}
+                            debateId={debate.debateId}
+                            title={debate.debateTitle}
+                            content={debate.content}
+                            username={debate.nickname}
+                            createdAt={formatTimeAgo(debate.createdAt)}
+                            likes={debate.likeCnt}
+                            hates={debate.hateCnt}
+                            comments={debate.commentCount}
+                            isMyPost={user?.id === debate.memberId}
+                            isSpoiler={debate.spoiler}
+                            profileImage={debate.profileImage}
+                            images={extractImagesFromContent(debate.content)}
+                            onClick={() => handleDebateClick(debate.debateId)}
+                          />
+                        ))
+                      ) : (
+                        <div
+                          style={{
+                            textAlign: 'center',
+                            padding: '40px',
+                            color: '#666',
+                            width: '100%',
+                          }}
+                        >
+                          {showSpoilers
+                            ? isAuthenticated
+                              ? '아직 작성된 토론이 없습니다. 첫 번째 토론을 시작해보세요!'
+                              : '아직 작성된 토론이 없습니다.'
+                            : isAuthenticated
+                              ? '스포일러가 아닌 토론이 없습니다. 스포일러 포함을 선택하거나 새로운 토론을 작성해보세요!'
+                              : '스포일러가 아닌 토론이 없습니다. 스포일러 포함을 선택해보세요.'}
+                        </div>
+                      )}
+                    </DetailReviewCardWrapper>
+                  </ReviewDebateList>
+
+                  {/* 페이지네이션 */}
+                  {totalPages > 1 && (
+                    <PaginationWrapper>
+                      {/* 이전 페이지 버튼 */}
+                      <PageButton
+                        $disabled={currentPage === 0}
+                        onClick={() => {
+                          if (currentPage > 0) {
+                            const newPage = currentPage - 1
+                            setCurrentPage(newPage)
+                            fetchDebates(newPage)
+                          }
+                        }}
+                      >
+                        이전
+                      </PageButton>
+
+                      {/* 페이지 번호 버튼들 */}
+                      {Array.from({length: Math.min(5, totalPages)}, (_, i) => {
+                        const startPage = Math.max(0, Math.min(currentPage - 2, totalPages - 5))
+                        const pageNum = startPage + i
+
+                        return (
+                          <PageButton
+                            key={pageNum}
+                            $active={pageNum === currentPage}
+                            onClick={() => {
+                              setCurrentPage(pageNum)
+                              fetchDebates(pageNum)
+                            }}
+                          >
+                            {pageNum + 1}
+                          </PageButton>
+                        )
+                      })}
+
+                      {/* 다음 페이지 버튼 */}
+                      <PageButton
+                        $disabled={currentPage >= totalPages - 1}
+                        onClick={() => {
+                          if (currentPage < totalPages - 1) {
+                            const newPage = currentPage + 1
+                            setCurrentPage(newPage)
+                            fetchDebates(newPage)
+                          }
+                        }}
+                      >
+                        다음
+                      </PageButton>
+                    </PaginationWrapper>
+                  )}
+                </>
+              )}
             </ReviewDebateContents>
           )}
           {activeTab === 'media' && (
-            <DetailImageContents>
-              {/* TODO : 영화 이미지와 유튜브 랜더링*/}
-              <DetailImage>영화 이미지 Grid</DetailImage>
-            </DetailImageContents>
+            <DetailMediaContents>
+              <ContentsTitle>유튜브 ({movieData.videos.length})</ContentsTitle>
+              {/* 영화 유튜브 랜더링*/}
+              <MediaContents>
+                {movieData.videos.length === 0 ?
+                  (<p>유튜브 영상이 없습니다.</p>) :
+                  (movieData.videos.map((video, index) => (
+                    <iframe
+                      width={300}
+                      height={200}
+                      style={{width: '300px', height: '200px', marginBottom: '10px', border: 'none'}}
+                      key={index}
+                      src={video.replace('watch?v=', 'embed/')}
+                      title={`YouTube video player ${index + 1}`}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  )))}
+              </MediaContents>
+              {/* 영화 이미지 */}
+              <ContentsTitle>이미지 ({movieData.images.length})</ContentsTitle>
+              <MediaContents>
+                {movieData.images.length === 0 ? (
+                  <p>이미지가 없습니다.</p>
+                ) : (movieData.images.map((image, index) => (
+                  <DetailImage
+                    key={index}
+                    src={image}
+                    alt={`Movie image ${index + 1}`}
+                    style={{width: '300px', height: 'auto', marginBottom: '10px'}}
+                    onError={(e) => {
+                      console.error(`이미지 로드 실패: ${image}`)
+                      e.currentTarget.style.display = 'none'
+                    }}
+                  />
+                )))}
+              </MediaContents>
+
+
+            </DetailMediaContents>
           )}
         </MovieDetailMainContent>
       </MovieDetailMain>
