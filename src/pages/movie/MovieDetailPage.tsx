@@ -1007,8 +1007,10 @@ export default function MovieDetailPage() {
                         rating={review.rating}
                         isSpoiler={review.isSpoiler}
                         profileImage={review.member.profileImage}
-                        contentId={review.contentId}
+                        contentId={review.reviewId}
                         memberId={review.member.memberId}
+                        isLiked={review.isLiked} // 추가
+                        isHated={review.isHated} // 추가
                       />
                     </DetailReviewCardWrapper>
                   ))}
