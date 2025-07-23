@@ -541,7 +541,7 @@ export default function Component() {
         console.log(res)
         const result =
           mode === 'popcorn'
-            ? res.data.data.map((item: any) => ({
+            ? res.data.map((item: any) => ({
                 id: item.tmdbId,
                 title: item.title,
                 poster: item.posterUrl,
