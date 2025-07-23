@@ -155,6 +155,12 @@ const MovieCard = styled.div`
   border-radius: 8px;
   overflow: hidden;
   transition: transform 0.2s ease;
+  cursor: pointer; // 클릭 가능하다는 시각적 표시
+
+  &:hover {
+    transform: translateY(-4px); // 호버 효과 추가
+    background: rgba(255, 255, 255, 0.08);
+  }
 `
 
 const ImageContainer = styled.div`
@@ -718,6 +724,11 @@ const PlaylistDetail: React.FC = () => {
   const isMobile = window.innerWidth <= 768
   const isOwner = user && playlist && user.nickname === playlist.nickname
 
+  // 영화 상세 페이지로 이동하는 핸들러
+  const handleMovieClick = (movieId: number) => {
+    navigate(`/movie/detail/${movieId}`)
+  }
+
   return (
     <Container ref={containerRef}>
       <BreadcrumbNav>
@@ -787,7 +798,10 @@ const PlaylistDetail: React.FC = () => {
       <div style={{ position: 'relative' }}>
         <MovieGrid style={{ opacity: loadingPage ? 0.5 : 1 }}>
           {(isMobile ? allMovies : playlist.movies.content).map(movie => (
-            <MovieCard key={movie.movieId}>
+            <MovieCard
+              key={movie.movieId}
+              onClick={() => handleMovieClick(movie.movieId)} // 클릭 이벤트 추가
+            >
               <ImageLoader
                 src={movie.posterUrl}
                 alt={movie.title}
