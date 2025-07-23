@@ -18,18 +18,17 @@ import {useOnClickAuth} from "@/hooks/useOnClickAuth";
 import BaseButton from "@/components/common/BaseButton";
 import {
   bookmarkMovie,
-  getMovieDebate,
+  // getMovieDebate,
   getMovieDetail,
   getMovieReview,
   getMyMovieReview,
   watchedMovie
 } from "@/services/movieDetail";
 import Swal from 'sweetalert2'
-import { getMovieDebates, DebateData } from '@/services/debate'
 import DebateCard from '@/components/feature/movieDetail/DebateCard'
 import {DebateData, getMovieDebates} from '@/services/debate'
 import {Icon} from '@iconify/react'
-import {DebateData, mapToDebateData} from "@/pages/movie/debateData";
+// import {DebateData, mapToDebateData} from "@/pages/movie/debateData";
 import netflixImg from '@/assets/platform/netflix.png'
 import watchaImg from '@/assets/platform/watcha.png'
 import disneyPlusImg from '@/assets/platform/disney_plus.png'
@@ -394,9 +393,7 @@ const PageButton = styled.button<{ $active?: boolean; $disabled?: boolean }>`
                 $disabled ? '#333' : $active ? '#E55A2B' : 'rgba(254, 106, 60, 0.1)'};
     }
 `
-const WriteButton = styled(BaseButton)`
-    margin-bottom: 20px;
-`
+
 const getPlatformSrc = (platformName: string) => {
   console.log("플랫폼 이름 확인 : ", platformName)
   switch (platformName) {
@@ -434,7 +431,7 @@ export default function MovieDetailPage() {
   const onClickAuth = useOnClickAuth()
   const [reviewData, setReviewData] = useState<ReviewData | null>(null)
   const [myReview, setMyReview] = useState<Review | null>(null)
-  const [debateData, setDebateData] = useState<DebateData | null>(null)
+  // const [debateData, setDebateData] = useState<DebateData | null>(null)
 
   // 토론 관련 state 추가
   const [debates, setDebates] = useState<DebateData[]>([])
@@ -581,21 +578,21 @@ export default function MovieDetailPage() {
         console.log("내 리뷰 불러오기 및 매핑 완료")
       }
     }
-    const fetchMovieDebate = async () => {
-      try {
-        console.log("토론장 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
-        const response = await getMovieDebate(tmdbId, 0)
-        const data = response.data
-        console.log("토론장 조회됨 : ", response.data)
-        const mappedData = mapToDebateData(data, user?.id, user?.nickname)
-        console.log("토론장 매핑됨 : ", mappedData)
-        setDebateData(mappedData)
-      } catch (error) {
-        console.error('토론장 불러오기 실패:', error)
-      } finally {
-        console.log("토론장 불러오기 완료")
-      }
-    }
+    // const fetchMovieDebate = async () => {
+    //   try {
+    //     console.log("토론장 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
+    //     const response = await getMovieDebate(tmdbId, 0)
+    //     const data = response.data
+    //     console.log("토론장 조회됨 : ", response.data)
+    //     const mappedData = mapToDebateData(data, user?.id, user?.nickname)
+    //     console.log("토론장 매핑됨 : ", mappedData)
+    //     setDebateData(mappedData)
+    //   } catch (error) {
+    //     console.error('토론장 불러오기 실패:', error)
+    //   } finally {
+    //     console.log("토론장 불러오기 완료")
+    //   }
+    // }
 
     try {
       if (loading) return; // 로딩 중이면 아무것도 하지 않음
@@ -641,12 +638,12 @@ export default function MovieDetailPage() {
     return images
   }
 
-  // HTML 태그 제거하는 함수
-  const stripHtmlTags = (html: string): string => {
-    const tmp = document.createElement('div')
-    tmp.innerHTML = html
-    return tmp.textContent || tmp.innerText || ''
-  }
+  // // HTML 태그 제거하는 함수
+  // const stripHtmlTags = (html: string): string => {
+  //   const tmp = document.createElement('div')
+  //   tmp.innerHTML = html
+  //   return tmp.textContent || tmp.innerText || ''
+  // }
 
   // 시간 포맷 함수
   const formatTimeAgo = (dateString: string): string => {

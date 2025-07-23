@@ -1,11 +1,13 @@
 // components/common/ReviewDebateCard.tsx
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useRef, useState} from 'react'
 import styled, {css} from 'styled-components'
 import BaseContainer from '@/components/common/BaseContainer'
 import {MessageSquareText, ThumbsDown, ThumbsUp} from 'lucide-react'
 import StarRating from '@/components/starRating/StarRating'
 import BaseButton from "@/components/common/BaseButton";
 import {useOnClickAuth} from '@/hooks/useOnClickAuth'
+import Swal from 'sweetalert2'
+import {likeDebate, likeReview} from "@/services/movieDetail";
 
 
 const Wrapper = styled(BaseContainer)`
@@ -51,14 +53,13 @@ const UserImage = styled.div`
     background-color: #f0f0f0;
 `
 
-const DebateTitle = styled.div`
-    font-size: 14px;
-    font-weight: bold;
-    margin: 0 10px;
-    cursor: pointer;
-    text-align: end;
-
-`
+// const DebateTitle = styled.div`
+//     font-size: 14px;
+//     font-weight: bold;
+//     margin: 0 10px;
+//     cursor: pointer;
+//     text-align: end;
+// `
 
 const BodyContents = styled.div<{ $blur?: boolean }>`
     padding: 15px;
@@ -93,19 +94,19 @@ const SpoilerOverlay = styled.button`
         background: rgba(0, 0, 0, 0.3);
     }
 `;
-const SpoilerWarning = styled.div`
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.7);
-    color: #fff;
-    padding: 8px 16px;
-    border-radius: 8px;
-    z-index: 2;
-    font-size: 14px;
-    text-align: center;
-`
+// const SpoilerWarning = styled.div`
+//     position: absolute;
+//     top: 50%;
+//     left: 50%;
+//     transform: translate(-50%, -50%);
+//     background: rgba(0, 0, 0, 0.7);
+//     color: #fff;
+//     padding: 8px 16px;
+//     border-radius: 8px;
+//     z-index: 2;
+//     font-size: 14px;
+//     text-align: center;
+// `
 
 const Footer = styled.div`
     display: flex;
@@ -160,35 +161,35 @@ const ReportDeleteButtonWrapper = styled.div`
     gap: 10px;
     align-items: end;
 `
-const ImageWrapper = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 10px auto;
-`
+// const ImageWrapper = styled.div`
+//     display: flex;
+//     flex-direction: column;
+//     align-items: center;
+//     margin: 10px auto;
+// `
 
-const ThumbnailsWrapper = styled.div`
-    width: 600px;
-    display: flex;
-    flex-direction: row;
-    justify-content: start;
-    align-content: start;
-    gap: 10px;
-    margin: 10px 0;
-`
+// const ThumbnailsWrapper = styled.div`
+//     width: 600px;
+//     display: flex;
+//     flex-direction: row;
+//     justify-content: start;
+//     align-content: start;
+//     gap: 10px;
+//     margin: 10px 0;
+// `
 
-const Thumbnail = styled.img`
-    width: 100px;
-    height: 100px;
-    border-radius: 4px;
-    object-fit: cover;
-`
-const MainImage = styled.img`
-    width: 400px;
-    height: 400px;
-    border-radius: 8px;
-    object-fit: cover;
-`
+// const Thumbnail = styled.img`
+//     width: 100px;
+//     height: 100px;
+//     border-radius: 4px;
+//     object-fit: cover;
+// `
+// const MainImage = styled.img`
+//     width: 400px;
+//     height: 400px;
+//     border-radius: 8px;
+//     object-fit: cover;
+// `
 
 const LikeButton = styled(BaseButton)`
     max-height: 30px;
@@ -250,13 +251,13 @@ const ContentWrapper = styled.div<{ $expanded: boolean; $maxHeight: number }>`
     overflow: hidden;
     position: relative;
 `;
-const LikeHate = styled.div`
-    height: 40px;
-    justify-content: start;
-    align-items: center;
-    display: flex;
-    gap: 10px;
-`
+// const LikeHate = styled.div`
+//     height: 40px;
+//     justify-content: start;
+//     align-items: center;
+//     display: flex;
+//     gap: 10px;
+// `
 
 
 interface ReviewDebateCardProps {
@@ -293,14 +294,10 @@ const ReviewDebateCard: React.FC<ReviewDebateCardProps> =
      hates,
      comments,
      isMyPost,
-     images,
      type,
      isSpoiler,
      maxLength = type === 'review' ? 500 : 5000,
      previewLength = 200,
-     onClick,
-     showLikeButtons = true, // 기본값은 true
-     showReportDelete = true, // 기본값은 true (리뷰에서는 표시)
      profileImage,
      contentId,
      memberId
