@@ -364,6 +364,7 @@ const AvatarContainer = styled.img`
   height: 40px;
   width: 40px;
   opacity: 0.3;
+  border-radius: var(--radius-full);
   ${media.tablet`
     height: 35px;
     width: 35px;
@@ -382,6 +383,9 @@ const DropdownContainer = styled.div`
   margin-top: 0.25rem;
   z-index: 10;
   color: #ccc;
+
+  max-width: 200px;
+  text-align: right;
 `
 
 // 드롭다운 아이템
@@ -409,6 +413,10 @@ const DrodownNickName = styled.div`
   padding: 8px 12px;
   cursor: none;
   pointer-events: none;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `
 
 const TextAvatarContainer = styled.div`
@@ -786,7 +794,8 @@ const BaseHeaderVer2 = () => {
                 ) : (
                   <AvatarContainer src={profileSrc} alt="프로필" style={{ opacity: 1 }} />
                 )}
-                <p style={{ marginLeft: '5px' }}>{profileName}</p>
+
+                {!isMobile && <p style={{ marginLeft: '5px' }}>{profileName}</p>}
 
                 {isDropdownOpen && (
                   <DropdownContainer ref={dropdownRef}>

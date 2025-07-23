@@ -27,16 +27,18 @@ const shimmer = keyframes`
 `
 
 const Container = styled.div`
-  min-height: 100%;
+  min-height: 100vh;
   padding: 2rem;
   box-sizing: border-box;
   overflow-x: hidden;
+  overflow-y: hidden;
 `
 
 const ContentWrapper = styled.div`
   max-width: 800px;
   margin: 0 auto;
   overflow-x: hidden;
+  min-height: 100%;
 `
 
 const BackButton = styled.button<IsMobile>`
@@ -108,6 +110,7 @@ const UserList = styled.div<IsMobile>`
   display: flex;
   flex-direction: column;
   gap: ${props => (props.$ismobile ? '1.2rem' : '1.2rem')};
+  min-height: 600px;
 `
 
 const UserItem = styled.div`
@@ -453,9 +456,10 @@ const MyPageFollowList: React.FC = () => {
         {users.length > 0 && (
           <UserList $ismobile={isMobile}>
             {users.map((user, idx) => {
+              const compositeKey = `${activeTab}-${user.id}`
               return (
                 <UserItem
-                  key={user.id}
+                  key={compositeKey}
                   ref={isMobile && idx === users.length - 1 ? lastItemRef : undefined}
                   onClick={() => goToProfile(user.id)}
                 >

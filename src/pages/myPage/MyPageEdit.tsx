@@ -176,6 +176,7 @@ const MyPageEdit = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null)
   const nicknamePattern = /^.{2,20}$/
   const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -193,9 +194,12 @@ const MyPageEdit = () => {
         // 선택 초기화
         e.target.value = ''
         setSelectedFile(null)
+        setPreviewImageUrl(null)
         return
       }
       setSelectedFile(file)
+      const previewUrl = URL.createObjectURL(file)
+      setPreviewImageUrl(previewUrl)
     }
   }
 
@@ -280,6 +284,14 @@ const MyPageEdit = () => {
         confirmButtonColor: '#FF7849',
         reverseButtons: true,
       })
+
+      // 커스텀 이벤트 발생 (useTokenObserver가 이걸 감지함)
+      console.log('프로필 닉네임 커스텀 이벤트 발생')
+      window.dispatchEvent(
+        new CustomEvent('tokenStorage', {
+          detail: { newToken: 'nickname changed' },
+        }),
+      )
       return
     }
 
@@ -312,9 +324,10 @@ const MyPageEdit = () => {
     }
 
     // 커스텀 이벤트 발생 (useTokenObserver가 이걸 감지함)
+    console.log('프로필 이미지 커스텀 이벤트 발생')
     window.dispatchEvent(
       new CustomEvent('tokenStorage', {
-        detail: { newToken: localStorage.getItem('accessToken') },
+        detail: { newToken: 'image changed' },
       }),
     )
 
@@ -337,11 +350,10 @@ const MyPageEdit = () => {
           <ArrowLeft size={24} />
         </BackButton>
         <ImageUploadWrapper htmlFor="profile-upload" $ismobile={isMobile}>
-          {profileImageUrl && profileImageUrl !== 'null' && profileImageUrl !== 'string' ? (
-            <ProfileImage
-              src={selectedFile ? URL.createObjectURL(selectedFile) : profileImageUrl}
-              alt="프로필 이미지"
-            />
+          {previewImageUrl ? (
+            <ProfileImage src={previewImageUrl} alt="프로필 이미지" />
+          ) : profileImageUrl && profileImageUrl !== 'null' && profileImageUrl !== 'string' ? (
+            <ProfileImage src={profileImageUrl} alt="프로필 이미지" />
           ) : (
             <Avatar size={120}>{nickname.charAt(0)}</Avatar>
           )}
