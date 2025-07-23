@@ -1007,7 +1007,7 @@ export default function MovieDetailPage() {
                         rating={review.rating}
                         isSpoiler={review.isSpoiler}
                         profileImage={review.member.profileImage}
-                        contentId={review.contentId}
+                        contentId={review.reviewId || review.contentId || 0}
                         memberId={review.member.memberId}
                       />
                     </DetailReviewCardWrapper>

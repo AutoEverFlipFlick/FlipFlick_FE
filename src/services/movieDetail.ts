@@ -94,20 +94,54 @@ export const getMovieDebate = async (tmdbId: string | undefined, page: number) =
 
 // 리뷰 좋아요 토글
 export const likeReview = async (reviewId: number) => {
-  const res = await axiosInstance.post(`/api/v1/review/like-hate`, {
-    reviewId: reviewId,
-    likeHateType: 'LIKE',
-  })
-  return res.data
+  console.log('📡 likeReview API 호출:', reviewId)
+
+  if (!reviewId || reviewId === 0) {
+    throw new Error('리뷰 ID가 필요합니다.')
+  }
+
+  try {
+    const requestBody = {
+      reviewId: reviewId,
+      type: 'LIKE',
+    }
+
+    console.log('📡 전송할 데이터:', requestBody)
+
+    const res = await axiosInstance.post(`/api/v1/review/like-hate`, requestBody) // URL 변경
+    console.log('📡 likeReview API 응답:', res.data)
+    return res.data
+  } catch (error: any) {
+    console.error('❌ likeReview API 에러:', error)
+    console.error('❌ 에러 응답:', error.response?.data)
+    throw error
+  }
 }
 
 // 리뷰 싫어요 토글
 export const hateReview = async (reviewId: number) => {
-  const res = await axiosInstance.post(`/api/v1/review/like-hate`, {
-    reviewId: reviewId,
-    likeHateType: 'HATE',
-  })
-  return res.data
+  console.log('📡 hateReview API 호출:', reviewId)
+
+  if (!reviewId || reviewId === 0) {
+    throw new Error('리뷰 ID가 필요합니다.')
+  }
+
+  try {
+    const requestBody = {
+      reviewId: reviewId,
+      type: 'HATE',
+    }
+
+    console.log('📡 전송할 데이터:', requestBody)
+
+    const res = await axiosInstance.post(`/api/v1/review/like-hate`, requestBody) // 같은 엔드포인트 사용
+    console.log('📡 hateReview API 응답:', res.data)
+    return res.data
+  } catch (error: any) {
+    console.error('❌ hateReview API 에러:', error)
+    console.error('❌ 에러 응답:', error.response?.data)
+    throw error
+  }
 }
 
 // 토론 좋아요 토글
