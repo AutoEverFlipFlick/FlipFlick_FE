@@ -24,6 +24,7 @@ import { MovieData } from '@/pages/movie/movieData'
 import ReviewTextArea from '@/pages/movie/ReviewTextArea'
 import Swal from 'sweetalert2'
 import { getMovieDebates, DebateData } from '@/services/debate'
+import DebateCard from '@/components/feature/movieDetail/DebateCard'
 
 const MovieDetailLayout = styled.div`
   display: flex;
@@ -826,22 +827,21 @@ export default function MovieDetailPage() {
                     <DetailReviewCardWrapper>
                       {filteredDebates.length > 0 ? (
                         filteredDebates.map(debate => (
-                          <ReviewDebateCard
+                          <DebateCard
                             key={debate.debateId}
+                            debateId={debate.debateId}
                             title={debate.debateTitle}
-                            content={stripHtmlTags(debate.content)}
+                            content={debate.content}
+                            username={debate.nickname}
                             createdAt={formatTimeAgo(debate.createdAt)}
                             likes={debate.likeCnt}
                             hates={debate.hateCnt}
-                            username={debate.nickname}
                             comments={debate.commentCount}
-                            images={extractImagesFromContent(debate.content)}
-                            type={'debate'}
                             isMyPost={user?.id === debate.memberId}
                             isSpoiler={debate.spoiler}
+                            profileImage={debate.profileImage}
+                            images={extractImagesFromContent(debate.content)}
                             onClick={() => handleDebateClick(debate.debateId)}
-                            showLikeButtons={false}
-                            showReportDelete={false}
                           />
                         ))
                       ) : (
