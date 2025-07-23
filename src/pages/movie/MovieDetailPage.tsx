@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import BaseContainer from '@/components/common/BaseContainer'
 import ReviewDebateCard from '@/components/feature/movieDetail/ReviewDebateCard'
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState, useRef } from 'react'
 import RatingCard from '@/components/starRating/RatingCard'
 import { mapToMovieData } from '@/pages/movie/movieDataMapper'
 import MovieDetailHeader from '@/pages/movie/MovieDetailHeader'
@@ -11,13 +11,15 @@ import { useAuth } from '@/context/AuthContext'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useOnClickAuth } from '@/hooks/useOnClickAuth'
 import BaseButton from '@/components/common/BaseButton'
-import { Eye, EyeOff, Flag, ListPlus, Star, StarOff } from 'lucide-react'
+import { Eye, EyeOff, Flag, ListPlus, Star, StarOff, ChevronDown } from 'lucide-react'
 import {
   bookmarkMovie,
   getMovieDetail,
   getMovieReview,
   getMyMovieReview,
   watchedMovie,
+  getMovieReviewByPopular,
+  getSimilarReviews,
 } from '@/services/movieDetail'
 import { mapToMyReviewData, mapToReviewData, Review, ReviewData } from '@/pages/movie/reviewData'
 import { MovieData } from '@/pages/movie/movieData'
@@ -368,6 +370,77 @@ const PageButton = styled.button<{ $active?: boolean; $disabled?: boolean }>`
   }
 `
 
+// SortContainer와 관련 컴포넌트들 추가
+const SortContainer = styled.div`
+  position: relative;
+`
+
+const SortButton = styled.button`
+  background: #2a2a2a;
+  border: 1px solid #444;
+  color: #ccc;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #333;
+    color: white;
+    border-color: #555;
+  }
+  
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+  }
+`
+
+const DropdownMenu = styled.div<{ $isOpen: boolean }>`
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  min-width: 120px;
+  display: ${props => props.$isOpen ? 'block' : 'none'};
+  margin-top: 0.25rem;
+`
+
+const DropdownItem = styled.button<{ $active: boolean }>`
+  width: 100%;
+  background: none;
+  border: none;
+  color: ${props => props.$active ? '#ff7849' : '#ccc'};
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #333;
+    color: white;
+  }
+
+  &:first-child {
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+  }
+
+  &:last-child {
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+  }
+`
+
 export default function MovieDetailPage() {
   const [movieData, setMovieData] = useState<MovieData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -392,6 +465,25 @@ export default function MovieDetailPage() {
 
   // 스포일러 필터 state 추가
   const [showSpoilers, setShowSpoilers] = useState(false)
+
+  // 정렬 방식 관련 state 추가
+  const [sortBy, setSortBy] = useState<'latest' | 'popular' | 'similar'>('latest')
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // 드롭다운 외부 클릭 처리
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
 
   const handleBookmark = useCallback(
     () =>
@@ -473,6 +565,54 @@ export default function MovieDetailPage() {
     } finally {
       setDebateLoading(false)
     }
+  }
+
+  // 정렬 방식에 따른 리뷰 조회 함수
+  const fetchReviewsBySort = async () => {
+    try {
+      let response
+      switch (sortBy) {
+        case 'popular':
+          response = await getMovieReviewByPopular(tmdbId, currentPage)
+          break
+        case 'similar':
+          response = await getSimilarReviews(tmdbId, currentPage)
+          break
+        default:
+          response = await getMovieReview(tmdbId, currentPage)
+      }
+      
+      if (response.success) {
+        const mappedData: ReviewData = mapToReviewData(response.data, user?.id, user?.nickname)
+        setReviewData(mappedData)
+      }
+    } catch (error) {
+      console.error('리뷰 조회 실패:', error)
+    }
+  }
+
+  // sortBy가 변경될 때마다 리뷰 다시 조회
+  useEffect(() => {
+    if (activeTab === 'review') {
+      fetchReviewsBySort()
+    }
+  }, [sortBy, currentPage, activeTab])
+
+  const getSortLabel = (sort: typeof sortBy) => {
+    switch (sort) {
+      case 'popular':
+        return '인기순'
+      case 'similar':
+        return '유사한 성향'
+      default:
+        return '최신순'
+    }
+  }
+
+  const handleSortChange = (newSort: typeof sortBy) => {
+    setSortBy(newSort)
+    setIsDropdownOpen(false)
+    setCurrentPage(0)
   }
 
   useEffect(() => {
@@ -755,26 +895,60 @@ export default function MovieDetailPage() {
               <ContentsListWrapper>
                 <ContentsListTitleTab>
                   <ContentsTitle>리뷰</ContentsTitle>
-                  {/* TODO : 정렬 버튼 및 랜더링 구현하기*/}
-                  <ContentsListOrderDropdown>정렬 순서</ContentsListOrderDropdown>
-                </ContentsListTitleTab>
+                  <SortContainer ref={dropdownRef}>
+                    <SortButton onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
+                      {getSortLabel(sortBy)} <ChevronDown size={16} />
+                    </SortButton>
+                    <DropdownMenu $isOpen={isDropdownOpen}>
+                      <DropdownItem
+                        $active={sortBy === 'latest'}
+                        onClick={() => handleSortChange('latest')}
+                      >
+                        최신순
+                      </DropdownItem>
+                      <DropdownItem
+                        $active={sortBy === 'popular'}
+                        onClick={() => handleSortChange('popular')}
+                      >
+                        인기순
+                      </DropdownItem>
+                      <DropdownItem
+                        $active={sortBy === 'similar'}
+                        onClick={() => handleSortChange('similar')}
+                      >
+                        유사한 성향
+                      </DropdownItem>
+                    </DropdownMenu>
+                    </SortContainer>
+                  </ContentsListTitleTab>
                 <ReviewDebateList>
                   <DetailReviewCardWrapper>
-                    {reviewData?.reviews.map(review => (
-                      <ReviewDebateCard
-                        key={review.contentId}
-                        content={review.content}
-                        createdAt={review.createdAt}
-                        username={review.member.nickname}
-                        type={'review'}
-                        isMyPost={review.isMyPost}
-                        likes={review.likes}
-                        hates={review.hates}
-                        // hates={review.hates}
-                        rating={review.rating}
-                      />
-                    ))}
-                    {/*<ReviewDebateCard />*/}
+                    {reviewData?.reviews.length > 0 ? (
+                      reviewData.reviews.map(review => (
+                        <ReviewDebateCard
+                          key={review.contentId}
+                          content={review.content}
+                          createdAt={review.createdAt}
+                          username={review.member.nickname}
+                          type={'review'}
+                          isMyPost={review.isMyPost}
+                          likes={review.likes}
+                          hates={review.hates}
+                          rating={review.rating}
+                        />
+                      ))
+                    ) : (
+                      <div style={{
+                        textAlign: 'center',
+                        padding: '40px',
+                        color: '#666',
+                        width: '100%',
+                      }}>
+                        {sortBy === 'similar' 
+                          ? '아직 정보가 부족합니다' 
+                          : '작성된 리뷰가 없습니다'}
+                      </div>
+                    )}
                   </DetailReviewCardWrapper>
                 </ReviewDebateList>
               </ContentsListWrapper>

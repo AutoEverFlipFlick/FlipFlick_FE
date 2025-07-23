@@ -81,3 +81,25 @@ export const getMyMovieReview = async (tmdbId: string | undefined) => {
   const res = await axiosInstance.get(`/api/v1/review/movie/${tmdbId}/my/status`)
   return res.data
 }
+
+// 인기순 리뷰 조회
+export const getMovieReviewByPopular = async (tmdbId: string | undefined, page: number) => {
+  const res = await axiosInstance.get(`/api/v1/review/movie/${tmdbId}/popular`, {
+    params: {
+      page: page,
+      size: 10,
+    }
+  })
+  return res.data
+}
+
+// 유사한 성향의 리뷰 조회
+export const getSimilarReviews = async (tmdbId: string | undefined, page: number) => {
+  const res = await axiosInstance.get(`/api/v1/recommendation/similar-reviews/${tmdbId}`, {
+    params: {
+      page: page,
+      size: 10,
+    }
+  })
+  return res.data
+}
