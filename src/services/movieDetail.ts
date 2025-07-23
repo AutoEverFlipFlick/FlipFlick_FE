@@ -81,3 +81,49 @@ export const getMyMovieReview = async (tmdbId: string | undefined) => {
   const res = await axiosInstance.get(`/api/v1/review/movie/${tmdbId}/my/status`)
   return res.data
 }
+
+export const getMovieDebate = async (tmdbId: string | undefined, page: number) => {
+  const res = await axiosInstance.get(`/api/v1/debate/movie/${tmdbId}/latest`, {
+    params: {
+      page: page,
+      size: 10, // 페이지당 토론 개수
+    }
+  })
+  return res.data
+}
+
+// 리뷰 좋아요 토글
+export const likeReview = async (reviewId: number) => {
+  const res = await axiosInstance.post(`/api/v1/review/like-hate`, {
+    reviewId: reviewId,
+    likeHateType: "LIKE"
+  })
+  return res.data
+}
+
+// 리뷰 싫어요 토글
+export const hateReview = async (reviewId: number) => {
+  const res = await axiosInstance.post(`/api/v1/review/like-hate`, {
+    reviewId: reviewId,
+    likeHateType: "HATE"
+  })
+  return res.data
+}
+
+// 토론 좋아요 토글
+export const likeDebate = async (debateId: number) => {
+  const res = await axiosInstance.post(`/api/v1/debate/like-hate`, {
+    debateId: debateId,
+    likeHateType: "LIKE"
+  })
+  return res.data
+}
+
+// 토론 싫어요 토글
+export const hateDebate = async (debateId: number) => {
+  const res = await axiosInstance.post(`/api/v1/debate/like-hate`, {
+    debateId: debateId,
+    likeHateType: "HATE"
+  })
+  return res.data
+}

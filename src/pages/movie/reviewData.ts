@@ -1,4 +1,5 @@
 export interface MemberProfile {
+  memberId?: number; // 선택적, 필요시 사용
   nickname: string;
   profileImage: string | null;
   popcornScore: number;
@@ -6,11 +7,13 @@ export interface MemberProfile {
 
 export interface Review {
   member :  MemberProfile;
+  tmdbId?: number; // 영화 ID는 선택적, 필요시 사용
+  movieTitle?: string; // 영화 제목은 선택적, 필요시 사용
   contentId: number;
   createdAt: string;
   updatedAt?: string; // 업데이트 날짜는 선택적
   content: string;
-  rating: number;
+  rating?: number;
   likes: number;
   hates: number;
   isMyPost: boolean;
@@ -30,11 +33,14 @@ export function mapToMyReviewData(data: any): Review | null {
   console.log("[mapToMyReviewData] data:", data);
   return {
     member: {
+      memberId: review.memberId,
       nickname: review.nickname,
       profileImage: review.profileImage,
       popcornScore: review.popcornScore,
     },
-    contentId: review.reviewId,
+    tmdbId: review.tmdbId,
+    movieTitle: review.movieTitle,
+    contentId: review.contentId,
     createdAt: review.createdAt,
     updatedAt: review.updatedAt,
     content: review.content,
@@ -56,6 +62,7 @@ export function mapToReviewData(data: any, currentUserId?: number, currentUserNi
         profileImage: review.profileImage,
         popcornScore: review.popcorn,
       },
+
       reviewId: review.reviewId,
       createdAt: review.createdAt,
       content: review.content,

@@ -12,11 +12,24 @@ import {useParams} from "react-router-dom";
 import {useOnClickAuth} from "@/hooks/useOnClickAuth";
 import BaseButton from "@/components/common/BaseButton";
 import {Eye, EyeOff, Flag, ListPlus, Star, StarOff} from "lucide-react";
-import {bookmarkMovie, getMovieDetail, getMovieReview, getMyMovieReview, watchedMovie} from "@/services/movieDetail";
+import {
+  bookmarkMovie,
+  getMovieDebate,
+  getMovieDetail,
+  getMovieReview,
+  getMyMovieReview,
+  watchedMovie
+} from "@/services/movieDetail";
 import {mapToMyReviewData, mapToReviewData, Review, ReviewData} from "@/pages/movie/reviewData";
 import {MovieData} from "@/pages/movie/movieData";
 import ReviewTextArea from "@/pages/movie/ReviewTextArea";
 import Swal from 'sweetalert2'
+import {Icon} from '@iconify/react'
+import {DebateData, mapToDebateData} from "@/pages/movie/debateData";
+import netflixImg from '@/assets/platform/netflix.png'
+import watchaImg from '@/assets/platform/watcha.png'
+import disneyPlusImg from '@/assets/platform/disney_plus.png'
+import wavveImg from '@/assets/platform/wavve.png'
 
 const MovieDetailLayout = styled.div`
     display: flex;
@@ -44,9 +57,10 @@ const HeaderContentsContainer = styled(BaseContainer)`
     display: flex;
 `
 
-const DetailImage = styled.div`
+const DetailImage = styled.img`
     margin-bottom: 20px;
-    height: 150px;
+    height: 200px;
+    width: 300px;
     display: flex;
     justify-content: start;
 `
@@ -158,8 +172,9 @@ const ContentsHeader = styled.div`
     min-height: 50px;
 `
 const ContentsTitle = styled.div`
-    font-size: 25px;
+    font-size: 20px;
     margin: 20px 0 0 20px;
+    font-weight: bold;
 
 `
 
@@ -175,16 +190,32 @@ const ReviewDebateContents = styled.div`
     gap: 5px;
 `
 
-const DetailImageContents = styled.div`
+const DetailMediaContents = styled.div`
     display: flex;
+    flex-direction: column;
     max-width: 800px;
     min-width: 800px;
     min-height: 200px;
-    justify-content: start;
-    align-items: center;
+    align-items: start;
     margin: 0 auto;
     gap: 5px;
 `
+
+// 미디어를 2줄 가로로 배열, 좌우로 스크롤
+const MediaContents = styled.div`
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    align-items: center;
+    max-width: 800px;
+    min-width: 800px;
+    min-height: 200px;
+    overflow-x: auto;
+    margin: 0 auto;
+    gap: 10px;
+`
+
+
 const RatingWrapper = styled.div`
     display: flex;
     flex-direction: row;
@@ -203,7 +234,6 @@ const DetailMyReviewCard = styled(BaseContainer)`
     justify-content: center;
     align-items: center;
 `
-
 
 
 const DetailMyReviewWrapper = styled.div`
@@ -265,6 +295,7 @@ const TabButton = styled.button<{ $active: boolean }>`
     width: 100px;
     text-align: center;
     font-size: 20px;
+    font-weight: bold;
     color: ${({$active}) => ($active ? '#FE6A3C' : '#fff')};
     border-bottom: ${({$active}) => ($active ? '3px solid #FE6A3C' : 'none')};
 `
@@ -286,12 +317,71 @@ const ActionButton = styled(BaseButton).attrs({
 `
 
 
+/* 플렛폼 이미지 경로
+@/assets/platform/disney_plus.png
+@/assets/platform/netflix.png
+@/assets/platform/watcha.png
+@/assets/platform/wavve.png
+*/
+
+{/* movieData.providers
+                providers
+:
+Array(7)
+0
+:
+{providerName: 'Netflix', providerType: 'FLATRATE'}
+1
+:
+{providerName: 'Watcha', providerType: 'FLATRATE'}
+2
+:
+{providerName: 'Netflix Standard with Ads', providerType: 'FLATRATE'}
+3
+:
+{providerName: 'wavve', providerType: 'RENT'}
+4
+:
+{providerName: 'Google Play Movies', providerType: 'RENT'}
+5
+:
+{providerName: 'wavve', providerType: 'BUY'}
+6
+:
+{providerName: 'Google Play Movies', providerType: 'BUY'}
+length
+:
+7
+*/
+}
+const getPlatformSrc = (platformName: string) => {
+  console.log("플랫폼 이름 확인 : ", platformName)
+  switch (platformName) {
+    case 'Netflix':
+    case 'Netflix Standard with Ads':
+      console.log("Netflix 이미지 반환 : ", netflixImg)
+      return netflixImg
+    case 'Watcha':
+      console.log("Watcha 이미지 반환 : ", watchaImg)
+      return watchaImg
+    case 'Disney+':
+      console.log("Disney+ 이미지 반환 : ", disneyPlusImg)
+      return disneyPlusImg
+    case 'wavve':
+      console.log("wavve 이미지 반환 : ", wavveImg)
+      return wavveImg
+    default:
+      console.log("매칭되지 않는 플랫폼 : ", platformName)
+      return null // 기본값 설정
+  }
+}
+
 export default function MovieDetailPage() {
   const [movieData, setMovieData] = useState<MovieData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'overview' | 'review' | 'debate' | 'media'>('overview')
-  const [activePlatformTab, setActivePlatformTab] = useState<'구매' | '정액제' | '대여'>('구매')
-  const [isLiked, setIsLiked] = useState(false)
+  const [activePlatformTab, setActivePlatformTab] = useState<'BUY' | 'FLATRATE' | 'RENT'>('BUY')
+  // const [isLiked, setIsLiked] = useState(false)
   const [isWatched, setIsWatched] = useState(false)
   const [isBookmarked, setIsBookmarked] = useState(false)
   const {tmdbId} = useParams<{ tmdbId: string }>()
@@ -300,6 +390,7 @@ export default function MovieDetailPage() {
   const onClickAuth = useOnClickAuth()
   const [reviewData, setReviewData] = useState<ReviewData | null>(null)
   const [myReview, setMyReview] = useState<Review | null>(null)
+  const [debateData, setDebateData] = useState<DebateData | null>(null)
 
   const handleBookmark = useCallback(
     () =>
@@ -361,14 +452,16 @@ export default function MovieDetailPage() {
   useEffect(() => {
       const fetchMovieDetail = async () => {
         try {
+          // setIsLoading(true)
           console.log("영화 상세 정보 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
           const response = await getMovieDetail(tmdbId)
           const data = response.data
           console.log("영화 정보 조회됨 : ", data)
           const mappedData: MovieData = mapToMovieData(data)
           console.log("영화 정보 매핑됨 : ", mappedData)
+          console.log("영화 providers 확인 : ", mappedData.providers)
           setMovieData(mappedData)
-          setIsLiked(mappedData.myLike)
+          // setIsLiked(mappedData.myLike)
           setIsWatched(mappedData.myWatched)
           setIsBookmarked(mappedData.myBookmark)
         } catch (error) {
@@ -410,21 +503,38 @@ export default function MovieDetailPage() {
           console.log("내 리뷰 불러오기 및 매핑 완료")
         }
       }
+      const fetchMovieDebate = async () => {
+        try {
+          console.log("토론장 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
+          const response = await getMovieDebate(tmdbId, 0)
+          const data = response.data
+          console.log("토론장 조회됨 : ", response.data)
+          const mappedData = mapToDebateData(data, user?.id, user?.nickname)
+          console.log("토론장 매핑됨 : ", mappedData)
+          setDebateData(mappedData)
+        } catch (error) {
+          console.error('토론장 불러오기 실패:', error)
+        } finally {
+          console.log("토론장 불러오기 완료")
+        }
+      }
 
       try {
         if (loading) return; // 로딩 중이면 아무것도 하지 않음
 
-        if (isAuthenticated && user) {
+        if (!loading && isAuthenticated && user) {
           // 인증된 경우에만 내 리뷰 호출
           console.log("유저 정보 로딩 완료, 영화 상세 정보 및 리뷰 불러오기 시작")
           fetchMovieDetail()
           fetchMovieReview()
           fetchMyReview()
-        } else {
+          fetchMovieDebate()
+        } else if (!loading) {
           // 비로그인 상태
           console.log("유저 정보 미인증 상태, 영화 상세 정보 및 리뷰 불러오기 시작")
           fetchMovieDetail()
           fetchMovieReview()
+          fetchMovieDebate()
         }
 
       } catch (error) {
@@ -434,9 +544,7 @@ export default function MovieDetailPage() {
         setIsLoading(false)
       }
 
-    }
-    ,
-    [tmdbId, user, loading, isAuthenticated]
+    }, [tmdbId, loading]
   )
 
 
@@ -444,10 +552,7 @@ export default function MovieDetailPage() {
     console.debug(isLoading)
     return (
       <MovieDetailLayout>
-        <p style={{color: 'white'}}>로딩 중입니다...</p>
-        {/* 페이지 구성 자체에 최소 크기가 정해진 영역이 많음 */}
-        {/* 하위 컴포넌트에 예외 처리 추가 필요 */}
-        {/* isLoading, 정의되지 않음, 전달 받은 데이터가 특정 조건에 해당 */}
+        <Icon icon="line-md:loading-twotone-loop" fontSize={100}/>
       </MovieDetailLayout>
     )
   }
@@ -494,7 +599,6 @@ export default function MovieDetailPage() {
                 <OverViewContainer>
                   <p>개봉일: {movieData.productionYear ?? '미정'}</p>
                   <p>제작국가: {movieData.productionCountry ?? '정보 없음'}</p>
-                  {/*<p>제작국가: {movieData.overviewData.productionCountry}</p>*/}
                 </OverViewContainer>
                 <OverViewContainer>
                   <p>연령등급: {movieData.ageRating ?? '정보 없음'}</p>
@@ -509,28 +613,68 @@ export default function MovieDetailPage() {
                 <ContentsTitle>플랫폼</ContentsTitle>
               </ContentsListTitleTab>
               <OverViewPlatformWrapper>
+                {/* movieData.providers 예시
+                providers
+:
+Array(7)
+0
+:
+{providerName: 'Netflix', providerType: 'FLATRATE'}
+1
+:
+{providerName: 'Watcha', providerType: 'FLATRATE'}
+2
+:
+{providerName: 'Netflix Standard with Ads', providerType: 'FLATRATE'}
+3
+:
+{providerName: 'wavve', providerType: 'RENT'}
+4
+:
+{providerName: 'Google Play Movies', providerType: 'RENT'}
+5
+:
+{providerName: 'wavve', providerType: 'BUY'}
+6
+:
+{providerName: 'Google Play Movies', providerType: 'BUY'}
+length
+:
+7
+*/}
                 <OverViewPlatformTab>
                   <PlatformTabButton
-                    $active={activePlatformTab === '구매'}
-                    onClick={() => setActivePlatformTab('구매')}>
+                    $active={activePlatformTab === 'BUY'}
+                    onClick={() => setActivePlatformTab('BUY')}>
                     구매</PlatformTabButton>
                   <PlatformTabButton
-                    $active={activePlatformTab === '정액제'}
-                    onClick={() => setActivePlatformTab('정액제')}>
+                    $active={activePlatformTab === 'FLATRATE'}
+                    onClick={() => setActivePlatformTab('FLATRATE')}>
                     구독</PlatformTabButton>
                   <PlatformTabButton
-                    $active={activePlatformTab === '대여'}
-                    onClick={() => setActivePlatformTab('대여')}>
+                    $active={activePlatformTab === 'RENT'}
+                    onClick={() => setActivePlatformTab('RENT')}>
                     대여</PlatformTabButton>
                 </OverViewPlatformTab>
                 <OverViewPlatformImageWrapper>
                   {movieData.providers
-                    .filter(provider => provider.type === activePlatformTab)
-                    .map(provider => (
-                      <PlatFormImage key={provider.name}>
-                        <img src={provider.logoUrl} alt={provider.name} style={{width: '100px', height: '100px'}}/>
-                      </PlatFormImage>
-                    ))}
+                    .filter(provider => provider.providerType === activePlatformTab)
+                    .map((provider, index) => {
+                      const imageSrc = getPlatformSrc(provider.providerName)
+                      return imageSrc ? (
+                        <PlatFormImage key={index}>
+                          <img
+                            src={imageSrc}
+                            alt={provider.providerName}
+                            style={{width: '100px', height: '100px'}}
+                            onError={(e) => {
+                              console.error(`이미지 로드 실패: ${provider.providerName}`)
+                              e.currentTarget.style.display = 'none'
+                            }}
+                          />
+                        </PlatFormImage>
+                      ) : null
+                    })}
                 </OverViewPlatformImageWrapper>
               </OverViewPlatformWrapper>
             </OverViewContents>
@@ -567,15 +711,15 @@ export default function MovieDetailPage() {
               </DetailMyReviewWrapper>
               <ContentsListWrapper>
                 <ContentsListTitleTab>
-                  <ContentsTitle>리뷰</ContentsTitle>
+                  <ContentsTitle>리뷰 ({reviewData?.totalElements})</ContentsTitle>
                   {/* TODO : 정렬 버튼 및 랜더링 구현하기*/}
                   <ContentsListOrderDropdown>정렬 순서</ContentsListOrderDropdown>
                 </ContentsListTitleTab>
                 <ReviewDebateList>
-                  <DetailReviewCardWrapper>
-                    {reviewData?.reviews.map(review =>
+
+                  {reviewData?.reviews.map((review, index) => (
+                    <DetailReviewCardWrapper key={index}>
                       <ReviewDebateCard
-                        key={review.contentId}
                         content={review.content}
                         createdAt={review.createdAt}
                         username={review.member.nickname}
@@ -583,13 +727,14 @@ export default function MovieDetailPage() {
                         isMyPost={review.isMyPost}
                         likes={review.likes}
                         hates={review.hates}
-                        // hates={review.hates}
                         rating={review.rating}
+                        isSpoiler={review.isSpoiler}
+                        profileImage={review.member.profileImage}
+                        contentId={review.contentId}
+                        memberId={review.member.memberId}
                       />
-                    )
-                    }
-                    {/*<ReviewDebateCard />*/}
-                  </DetailReviewCardWrapper>
+                    </DetailReviewCardWrapper>
+                  ))}
                 </ReviewDebateList>
               </ContentsListWrapper>
             </ReviewDebateContents>
@@ -597,31 +742,73 @@ export default function MovieDetailPage() {
           {activeTab === 'debate' && (
             <ReviewDebateContents>
               <ContentsHeader>
-                <ContentsTitle>토론장</ContentsTitle>
+                <ContentsTitle>토론장 ({debateData?.totalElements})</ContentsTitle>
               </ContentsHeader>
               <ReviewDebateList>
-                <DetailReviewCardWrapper>
-                  {/* TODO : 토론 정보 불러오고 랜더링 */}
-                  <ReviewDebateCard
-                    content={'토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용토론 내용'}
-                    createdAt={'1 시간 전'}
-                    likes={100}
-                    hates={10}
-                    username={'사용자'}
-                    comments={10}
-                    images={['https://placehold.co/600x600', 'https://placehold.co/600x600', 'https://placehold.co/600x600', 'https://placehold.co/600x600', 'https://placehold.co/600x600']}
-                    type={'debate'}
-                    isMyPost={true}
-                  />
-                </DetailReviewCardWrapper>
+                {debateData?.debates.map((debate, index) => (
+                  <DetailReviewCardWrapper key={index}>
+                    <ReviewDebateCard
+                      title={debate.debateTitle}
+                      content={debate.content}
+                      createdAt={debate.createdAt}
+                      username={debate.member.nickname}
+                      type='debate'
+                      isMyPost={debate.isMyPost}
+                      likes={debate.likes}
+                      hates={debate.hates}
+                      isSpoiler={debate.isSpoiler}
+                      comments={debate.commentCount}
+                      images={debate.imageUrls}
+                      profileImage={debate.member.profileImage}
+                      contentId={debate.contentId}
+                      memberId={debate.member.memberId}
+                    />
+                  </DetailReviewCardWrapper>
+                ))}
               </ReviewDebateList>
             </ReviewDebateContents>
           )}
           {activeTab === 'media' && (
-            <DetailImageContents>
-              {/* TODO : 영화 이미지와 유튜브 랜더링*/}
-              <DetailImage>영화 이미지 Grid</DetailImage>
-            </DetailImageContents>
+            <DetailMediaContents>
+              <ContentsTitle>유튜브 ({movieData.videos.length})</ContentsTitle>
+              {/* 영화 유튜브 랜더링*/}
+              <MediaContents>
+                { movieData.videos.length === 0 ?
+                  (<p>유튜브 영상이 없습니다.</p>) :
+                  (movieData.videos.map((video, index) => (
+                  <iframe
+                    width={300}
+                    height={200}
+                    style={{ width: '300px', height: '200px', marginBottom: '10px', border: 'none' }}
+                    key={index}
+                    src={video.replace('watch?v=', 'embed/')}
+                    title={`YouTube video player ${index + 1}`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                  )))}
+              </MediaContents>
+              {/* 영화 이미지 */}
+              <ContentsTitle>이미지 ({movieData.images.length})</ContentsTitle>
+              <MediaContents>
+                {movieData.images.length === 0 ? (
+                  <p>이미지가 없습니다.</p>
+                ) : ( movieData.images.map((image, index) => (
+                  <DetailImage
+                    key={index}
+                    src={image}
+                    alt={`Movie image ${index + 1}`}
+                    style={{width: '300px', height: 'auto', marginBottom: '10px'}}
+                    onError={(e) => {
+                      console.error(`이미지 로드 실패: ${image}`)
+                      e.currentTarget.style.display = 'none'
+                    }}
+                  />
+                )))}
+              </MediaContents>
+
+
+            </DetailMediaContents>
           )}
         </MovieDetailMainContent>
       </MovieDetailMain>
