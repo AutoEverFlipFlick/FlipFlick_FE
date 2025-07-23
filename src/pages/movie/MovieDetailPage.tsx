@@ -8,7 +8,7 @@ import RatingCard from '@/components/starRating/RatingCard'
 import {mapToMovieData} from "@/pages/movie/movieDataMapper";
 import MovieDetailHeader from "@/pages/movie/MovieDetailHeader";
 import {useAuth} from "@/context/AuthContext";
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import {useOnClickAuth} from "@/hooks/useOnClickAuth";
 import BaseButton from "@/components/common/BaseButton";
 import {Eye, EyeOff, Flag, ListPlus, Star, StarOff} from "lucide-react";
@@ -319,45 +319,6 @@ const ActionButton = styled(BaseButton).attrs({
 const WriteButton = styled(BaseButton)`
     margin-bottom: 20px;
 `
-
-
-/* 플렛폼 이미지 경로
-@/assets/platform/disney_plus.png
-@/assets/platform/netflix.png
-@/assets/platform/watcha.png
-@/assets/platform/wavve.png
-*/
-
-{/* movieData.providers
-                providers
-:
-Array(7)
-0
-:
-{providerName: 'Netflix', providerType: 'FLATRATE'}
-1
-:
-{providerName: 'Watcha', providerType: 'FLATRATE'}
-2
-:
-{providerName: 'Netflix Standard with Ads', providerType: 'FLATRATE'}
-3
-:
-{providerName: 'wavve', providerType: 'RENT'}
-4
-:
-{providerName: 'Google Play Movies', providerType: 'RENT'}
-5
-:
-{providerName: 'wavve', providerType: 'BUY'}
-6
-:
-{providerName: 'Google Play Movies', providerType: 'BUY'}
-length
-:
-7
-*/
-}
 const getPlatformSrc = (platformName: string) => {
   console.log("플랫폼 이름 확인 : ", platformName)
   switch (platformName) {
@@ -395,6 +356,7 @@ export default function MovieDetailPage() {
   const [reviewData, setReviewData] = useState<ReviewData | null>(null)
   const [myReview, setMyReview] = useState<Review | null>(null)
   const [debateData, setDebateData] = useState<DebateData | null>(null)
+  const navigate = useNavigate()
 
   const handleBookmark = useCallback(
     () =>
@@ -617,35 +579,6 @@ export default function MovieDetailPage() {
                 <ContentsTitle>플랫폼</ContentsTitle>
               </ContentsListTitleTab>
               <OverViewPlatformWrapper>
-                {/* movieData.providers 예시
-                providers
-:
-Array(7)
-0
-:
-{providerName: 'Netflix', providerType: 'FLATRATE'}
-1
-:
-{providerName: 'Watcha', providerType: 'FLATRATE'}
-2
-:
-{providerName: 'Netflix Standard with Ads', providerType: 'FLATRATE'}
-3
-:
-{providerName: 'wavve', providerType: 'RENT'}
-4
-:
-{providerName: 'Google Play Movies', providerType: 'RENT'}
-5
-:
-{providerName: 'wavve', providerType: 'BUY'}
-6
-:
-{providerName: 'Google Play Movies', providerType: 'BUY'}
-length
-:
-7
-*/}
                 <OverViewPlatformTab>
                   <PlatformTabButton
                     $active={activePlatformTab === 'BUY'}
