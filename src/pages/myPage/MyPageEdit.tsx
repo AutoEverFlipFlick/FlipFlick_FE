@@ -284,6 +284,14 @@ const MyPageEdit = () => {
         confirmButtonColor: '#FF7849',
         reverseButtons: true,
       })
+
+      // 커스텀 이벤트 발생 (useTokenObserver가 이걸 감지함)
+      console.log('프로필 닉네임 커스텀 이벤트 발생')
+      window.dispatchEvent(
+        new CustomEvent('tokenStorage', {
+          detail: { newToken: 'nickname changed' },
+        }),
+      )
       return
     }
 
@@ -316,9 +324,10 @@ const MyPageEdit = () => {
     }
 
     // 커스텀 이벤트 발생 (useTokenObserver가 이걸 감지함)
+    console.log('프로필 이미지 커스텀 이벤트 발생')
     window.dispatchEvent(
       new CustomEvent('tokenStorage', {
-        detail: { newToken: localStorage.getItem('accessToken') },
+        detail: { newToken: 'image changed' },
       }),
     )
 
