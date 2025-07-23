@@ -123,7 +123,7 @@ const DebateWritePage: React.FC = () => {
   const [content, setContent] = useState('')
   const [ready, setReady] = useState(false)
   const [spoiler, setSpoiler] = useState(false)
-  const [tmdbId, setTmdbId] = useState<number>(550)
+  const [tmdbId, setTmdbId] = useState<number>(872585)
 
   useEffect(() => {
     const style = document.createElement('style')

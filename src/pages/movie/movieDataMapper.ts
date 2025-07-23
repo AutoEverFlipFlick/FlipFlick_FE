@@ -1,5 +1,5 @@
 // src/pages/movie/movieDataMapper.ts
-import { MovieData, Genre, Actor, Providers } from "@/pages/movie/movieData";
+import { MovieData, Genre, Actor, Provider } from "@/pages/movie/movieData";
 
 export function mapToMovieData(data: any): MovieData {
   return {
@@ -31,6 +31,6 @@ export function mapToMovieData(data: any): MovieData {
     casts: (data.casts ?? []) as Actor[],
     images: data.images ?? [],
     videos: data.videos ?? [],
-    providers: (data.providers ?? []) as Providers[],
+    providers: (data.providers ?? []) as Provider[],
   }
 }

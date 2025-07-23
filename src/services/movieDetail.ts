@@ -100,6 +100,38 @@ export const getSimilarReviews = async (tmdbId: string | undefined, page: number
       page: page,
       size: 10,
     }
+// 리뷰 좋아요 토글
+export const likeReview = async (reviewId: number) => {
+  const res = await axiosInstance.post(`/api/v1/review/like-hate`, {
+    reviewId: reviewId,
+    likeHateType: "LIKE"
+  })
+  return res.data
+}
+
+// 리뷰 싫어요 토글
+export const hateReview = async (reviewId: number) => {
+  const res = await axiosInstance.post(`/api/v1/review/like-hate`, {
+    reviewId: reviewId,
+    likeHateType: "HATE"
+  })
+  return res.data
+}
+
+// 토론 좋아요 토글
+export const likeDebate = async (debateId: number) => {
+  const res = await axiosInstance.post(`/api/v1/debate/like-hate`, {
+    debateId: debateId,
+    likeHateType: "LIKE"
+  })
+  return res.data
+}
+
+// 토론 싫어요 토글
+export const hateDebate = async (debateId: number) => {
+  const res = await axiosInstance.post(`/api/v1/debate/like-hate`, {
+    debateId: debateId,
+    likeHateType: "HATE"
   })
   return res.data
 }
