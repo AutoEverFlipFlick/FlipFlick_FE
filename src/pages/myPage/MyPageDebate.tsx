@@ -614,7 +614,9 @@ export default function MyPageDebate() {
 
                             <ImageLoader src={imgSrc} alt="프로필" />
 
-                            <DebateText $ismobile={isMobile}>{d.content}</DebateText>
+                            <DebateText $ismobile={isMobile}>
+                              {d.content.replace(/<[^>]*>/g, '').substring(0, 250)}
+                            </DebateText>
                             <ImageActions $ismobile={isMobile}>
                               <GroupWrapper>
                                 <ThumbsUp stroke="#fff" size={20} />
@@ -674,7 +676,9 @@ export default function MyPageDebate() {
                             <Header $ismobile={isMobile}>
                               <DebateTitle $ismobile={isMobile}>{d.debateTitle}</DebateTitle>
                             </Header>
-                            <DebateText $ismobile={isMobile}>{d.content}</DebateText>
+                            <DebateText $ismobile={isMobile}>
+                              {d.content.replace(/<[^>]*>/g, '').substring(0, 250)}
+                            </DebateText>
                           </DebateContent>
                         </DebateCard>
                       </>
