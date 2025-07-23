@@ -18,7 +18,7 @@ const PageWrapper = styled.div`
   width: 100vw;
   height: calc(100vh - 80px);
   overflow-y: hidden;
-  overflow-x: auto; /* 가로 스크롤 허용 */
+  overflow-x: hidden; /* 가로 스크롤 불가능하게 변경 */
   position: relative;
   background: radial-gradient(ellipse at center, #2a1a14 0%, #100806 70%);
 
@@ -69,7 +69,7 @@ const JukeboxContainer = styled.div`
   position: relative;
   display: inline-block; /* 내용에 맞게 너비 조절 */
   height: calc(100vh - 80px); /* 항상 화면 높이를 꽉 채움 */
-  min-width: 100vw; /* 최소 너비는 화면 너비 */
+  /* min-width: 100vw; 최소 너비는 화면 너비 */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -210,7 +210,8 @@ const MovieTitleAbove = styled.div`
   transform: translateX(-50%);
   text-align: center;
   width: 500%;
-  text-wrap: nowrap;
+  white-space: nowrap;
+
   h3 {
     font-size: 1.8rem;
     font-weight: bold;
@@ -220,6 +221,10 @@ const MovieTitleAbove = styled.div`
       0 0 12px #ff6b35,
       0 2px 4px rgba(0, 0, 0, 0.7);
   }
+
+  ${media.mobile`
+  width : 300%
+  `}
 `
 
 const LoadingCotnainer = styled.div`
@@ -534,11 +539,18 @@ export default function Component() {
       try {
         const res = mode === 'popcorn' ? await topPopcorn(10) : await boxoffice()
         console.log(res)
-        const result = res.data.movies.map((item: any) => ({
-          id: item.tmdbId,
-          title: item.title,
-          poster: item.posterUrl,
-        }))
+        const result =
+          mode === 'popcorn'
+            ? res.data.data.map((item: any) => ({
+                id: item.tmdbId,
+                title: item.title,
+                poster: item.posterUrl,
+              }))
+            : res.data.movies.map((item: any) => ({
+                id: item.tmdbId,
+                title: item.title,
+                poster: item.posterUrl,
+              }))
 
         console.log(result)
         setMovies(result)

@@ -23,7 +23,6 @@ const useTokenObserver = () => {
       const CustomEvent = (e as CustomEvent).detail as {
         newToken: string | null
       }
-
       setToken(CustomEvent.newToken)
     }
 

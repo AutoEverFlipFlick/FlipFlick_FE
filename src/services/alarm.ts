@@ -27,7 +27,7 @@ export const subscribeToAlarmStream = (
   onReceive: (alarm: Alarm) => void,
 ): EventSource => {
   try {
-    const es = new EventSource(`http://localhost:8080/api/v1/alarms/stream?userId=${userId}`)
+    const es = new EventSource(`https://api.flipflick.life/api/v1/alarms/stream?userId=${userId}`)
 
     es.addEventListener('alarm', event => {
       try {
