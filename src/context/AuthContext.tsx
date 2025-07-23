@@ -17,6 +17,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>
   logout: () => void
   loading: boolean
+  updateUser: (userData: User) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -59,15 +60,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkAuth()
   }, [])
 
+  const fetchUserInfo = async (): Promise<User | null> => {
+    try {
+      const response = await axiosInstance.get('/api/v1/member/user-info')
+      if (response.data.success) {
+        return response.data.data
+      }
+    } catch (error) {
+      console.error('유저 정보 조회 실패:', error)
+    }
+    return null
+  }
+
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       const response = await apiLogin({ email, password })
 
       if (response.success) {
-        const { accessToken, user: userData } = response.data
+        const { accessToken } = response.data
         localStorage.setItem('accessToken', accessToken)
-        setUser(userData)
-        return true
+        console.log('👤 AuthContext: 유저 정보 조회 중...')
+        const userInfo = await fetchUserInfo()
+
+        if (userInfo) {
+          console.log('✅ AuthContext: 로그인 성공:', userInfo)
+          setUser(userInfo)
+          return true
+        } else {
+          console.log('❌ AuthContext: 유저 정보 조회 실패')
+          localStorage.removeItem('accessToken')
+          return false
+        }
       }
       return false
     } catch (error) {
@@ -81,6 +104,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null)
   }
 
+  // updateUser 함수 추가
+  const updateUser = (userData: User) => {
+    console.log('👤 유저 정보 업데이트:', userData)
+    setUser(userData)
+  }
+
   const isAuthenticated = !!user
 
   return (
@@ -91,6 +120,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         login,
         logout,
         loading,
+        updateUser,
       }}
     >
       {children}

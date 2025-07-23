@@ -3,8 +3,19 @@ import styled from 'styled-components'
 import BaseContainer from '@/components/common/BaseContainer'
 import ReviewDebateCard from '@/components/feature/movieDetail/ReviewDebateCard'
 
-import React, {useCallback, useEffect, useState} from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import RatingCard from '@/components/starRating/RatingCard'
+import { mapToMovieData } from '@/pages/movie/movieDataMapper'
+import MovieDetailHeader from '@/pages/movie/MovieDetailHeader'
+import { useAuth } from '@/context/AuthContext'
+import { useParams, useNavigate } from 'react-router-dom'
+import { useOnClickAuth } from '@/hooks/useOnClickAuth'
+import BaseButton from '@/components/common/BaseButton'
+import { Eye, EyeOff, Flag, ListPlus, Star, StarOff } from 'lucide-react'
+
+import { mapToMyReviewData, mapToReviewData, Review, ReviewData } from '@/pages/movie/reviewData'
+import { MovieData } from '@/pages/movie/movieData'
+import ReviewTextArea from '@/pages/movie/ReviewTextArea'
 import {mapToMovieData} from "@/pages/movie/movieDataMapper";
 import MovieDetailHeader from "@/pages/movie/MovieDetailHeader";
 import {useAuth} from "@/context/AuthContext";
@@ -24,6 +35,7 @@ import {mapToMyReviewData, mapToReviewData, Review, ReviewData} from "@/pages/mo
 import {MovieData} from "@/pages/movie/movieData";
 import ReviewTextArea from "@/pages/movie/ReviewTextArea";
 import Swal from 'sweetalert2'
+import { getMovieDebates, DebateData } from '@/services/debate'
 import {Icon} from '@iconify/react'
 import {DebateData, mapToDebateData} from "@/pages/movie/debateData";
 import netflixImg from '@/assets/platform/netflix.png'
@@ -214,8 +226,6 @@ const MediaContents = styled.div`
     margin: 0 auto;
     gap: 10px;
 `
-
-
 const RatingWrapper = styled.div`
     display: flex;
     flex-direction: row;
@@ -234,6 +244,7 @@ const DetailMyReviewCard = styled(BaseContainer)`
     justify-content: center;
     align-items: center;
 `
+
 
 
 const DetailMyReviewWrapper = styled.div`
@@ -313,9 +324,86 @@ const PlatformTabButton = styled.button<{ $active?: boolean }>`
 const ActionButton = styled(BaseButton).attrs({
   size: 'small',
 })`
-    align-items: center;
+  align-items: center;
 `
 
+// 스타일드 컴포넌트 추가
+const SpoilerToggle = styled.div`
+  display: flex;
+  align-items: center;
+  margin-right: 20px;
+  gap: 10px;
+`
+
+const SpoilerToggleLabel = styled.span`
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+`
+
+const SpoilerToggleSwitch = styled.div<{ $active: boolean }>`
+  position: relative;
+  width: 50px;
+  height: 24px;
+  background-color: ${({ $active }) => ($active ? '#FE6A3C' : '#666')};
+  border-radius: 24px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: ${({ $active }) => ($active ? '#E55A2B' : '#777')};
+  }
+`
+
+const SpoilerToggleKnob = styled.div<{ $active: boolean }>`
+  position: absolute;
+  top: 2px;
+  left: ${({ $active }) => ($active ? '26px' : '2px')};
+  width: 20px;
+  height: 20px;
+  background-color: #fff;
+  border-radius: 50%;
+  transition: left 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+`
+
+const WriteButton = styled(BaseButton)`
+  margin-bottom: 20px;
+`
+
+const PaginationWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 20px 0;
+`
+
+const PageButton = styled.button<{ $active?: boolean; $disabled?: boolean }>`
+  all: unset;
+  cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
+  padding: 8px 12px;
+  min-width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+
+  background-color: ${({ $active, $disabled }) =>
+    $disabled ? '#333' : $active ? '#FE6A3C' : 'transparent'};
+  color: ${({ $active, $disabled }) => ($disabled ? '#666' : $active ? '#fff' : '#fff')};
+  border: 1px solid
+    ${({ $active, $disabled }) => ($disabled ? '#444' : $active ? '#FE6A3C' : '#666')};
+
+  &:hover {
+    background-color: ${({ $disabled, $active }) =>
+      $disabled ? '#333' : $active ? '#E55A2B' : 'rgba(254, 106, 60, 0.1)'};
+  }
+`
 const WriteButton = styled(BaseButton)`
     margin-bottom: 20px;
 `
@@ -349,14 +437,23 @@ export default function MovieDetailPage() {
   // const [isLiked, setIsLiked] = useState(false)
   const [isWatched, setIsWatched] = useState(false)
   const [isBookmarked, setIsBookmarked] = useState(false)
-  const {tmdbId} = useParams<{ tmdbId: string }>()
-  const {user, isAuthenticated, loading} = useAuth()
+  const { tmdbId } = useParams<{ tmdbId: string }>()
+  const { user, isAuthenticated, loading } = useAuth()
+  const navigate = useNavigate()
 
   const onClickAuth = useOnClickAuth()
   const [reviewData, setReviewData] = useState<ReviewData | null>(null)
   const [myReview, setMyReview] = useState<Review | null>(null)
   const [debateData, setDebateData] = useState<DebateData | null>(null)
-  const navigate = useNavigate()
+
+  // 토론 관련 state 추가
+  const [debates, setDebates] = useState<DebateData[]>([])
+  const [debateLoading, setDebateLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+
+  // 스포일러 필터 state 추가
+  const [showSpoilers, setShowSpoilers] = useState(false)
 
   const handleBookmark = useCallback(
     () =>
@@ -414,6 +511,31 @@ export default function MovieDetailPage() {
       })(),
     [onClickAuth, movieData?.movieId, isWatched],
   )
+
+  // 토론 목록 가져오기 함수 추가
+  const fetchDebates = async (page: number = 0) => {
+    if (!tmdbId) return
+
+    setDebateLoading(true)
+    try {
+      console.log('🎬 토론 목록 조회 시작:', tmdbId)
+
+      const response = await getMovieDebates(tmdbId, page, 10, 'latest')
+
+      if (response.success) {
+        console.log('✅ 토론 목록 조회 성공:', response.data)
+        setDebates(response.data.content)
+        setCurrentPage(response.data.currentPage)
+        setTotalPages(response.data.totalPages)
+      } else {
+        console.error('❌ 토론 목록 조회 실패:', response.message)
+      }
+    } catch (error) {
+      console.error('❌ 토론 목록 조회 에러:', error)
+    } finally {
+      setDebateLoading(false)
+    }
+  }
 
   useEffect(() => {
       const fetchMovieDetail = async () => {
@@ -488,31 +610,68 @@ export default function MovieDetailPage() {
       try {
         if (loading) return; // 로딩 중이면 아무것도 하지 않음
 
-        if (!loading && isAuthenticated && user) {
-          // 인증된 경우에만 내 리뷰 호출
-          console.log("유저 정보 로딩 완료, 영화 상세 정보 및 리뷰 불러오기 시작")
-          fetchMovieDetail()
-          fetchMovieReview()
-          fetchMyReview()
-          fetchMovieDebate()
-        } else if (!loading) {
-          // 비로그인 상태
-          console.log("유저 정보 미인증 상태, 영화 상세 정보 및 리뷰 불러오기 시작")
-          fetchMovieDetail()
-          fetchMovieReview()
-          fetchMovieDebate()
+      if (isAuthenticated && user) {
+        // 인증된 경우에만 내 리뷰 호출
+        console.log('유저 정보 로딩 완료, 영화 상세 정보 및 리뷰 불러오기 시작')
+        fetchMovieDetail()
+        fetchMovieReview()
+        fetchMyReview()
+        // 토론 탭이 활성화된 경우에만 토론 로드
+        if (activeTab === 'debate') {
+          fetchDebates(0)
         }
-
-      } catch (error) {
-        console.error('영화 상세 페이지 정보 불러오기 중 오류 발생:', error)
-        setIsLoading(false)
-      } finally {
-        setIsLoading(false)
+      } else {
+        // 비로그인 상태
+        console.log('유저 정보 미인증 상태, 영화 상세 정보 및 리뷰 불러오기 시작')
+        fetchMovieDetail()
+        fetchMovieReview()
+        // 토론 탭이 활성화된 경우에만 토론 로드
+        if (activeTab === 'debate') {
+          fetchDebates(0)
+        }
       }
+    } catch (error) {
+      console.error('영화 상세 페이지 정보 불러오기 중 오류 발생:', error)
+      setIsLoading(false)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [tmdbId, user, loading, isAuthenticated, activeTab]) // activeTab 의존성 추가
 
-    }, [tmdbId, loading]
-  )
+  // HTML에서 이미지 URL 추출하는 함수
+  const extractImagesFromContent = (htmlContent: string): string[] => {
+    const imgRegex = /<img[^>]+src="([^">]+)"/g
+    const images: string[] = []
+    let match
 
+    while ((match = imgRegex.exec(htmlContent)) !== null) {
+      images.push(match[1])
+    }
+
+    return images
+  }
+
+  // HTML 태그 제거하는 함수
+  const stripHtmlTags = (html: string): string => {
+    const tmp = document.createElement('div')
+    tmp.innerHTML = html
+    return tmp.textContent || tmp.innerText || ''
+  }
+
+  // 시간 포맷 함수
+  const formatTimeAgo = (dateString: string): string => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
+
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes}분 전`
+    } else if (diffInMinutes < 1440) {
+      return `${Math.floor(diffInMinutes / 60)}시간 전`
+    } else {
+      return `${Math.floor(diffInMinutes / 1440)}일 전`
+    }
+  }
 
   if (isLoading || !movieData) {
     console.debug(isLoading)
@@ -523,9 +682,17 @@ export default function MovieDetailPage() {
     )
   }
 
+  // 토론 클릭 핸들러 추가
+  const handleDebateClick = (debateId: number) => {
+    navigate(`/debate/${debateId}`)
+  }
+
+  // 스포일러 필터링된 토론 목록
+  const filteredDebates = debates.filter(debate => showSpoilers || !debate.spoiler)
+
   return (
     <MovieDetailLayout>
-      <MovieDetailHeader movieData={movieData}/>
+      <MovieDetailHeader movieData={movieData} />
       <MovieDetailMainAction>
         <ActionButton size='small' icon={isBookmarked ? <StarOff/> : <Star/>}
                       onClick={handleBookmark}>{isBookmarked ? '찜 취소' : '찜하기'}</ActionButton>
@@ -565,6 +732,7 @@ export default function MovieDetailPage() {
                 <OverViewContainer>
                   <p>개봉일: {movieData.productionYear ?? '미정'}</p>
                   <p>제작국가: {movieData.productionCountry ?? '정보 없음'}</p>
+                  {/*<p>제작국가: {movieData.overviewData.productionCountry}</p>*/}
                 </OverViewContainer>
                 <OverViewContainer>
                   <p>연령등급: {movieData.ageRating ?? '정보 없음'}</p>
@@ -657,6 +825,7 @@ export default function MovieDetailPage() {
                   {reviewData?.reviews.map((review, index) => (
                     <DetailReviewCardWrapper key={index}>
                       <ReviewDebateCard
+                        key={review.contentId}
                         content={review.content}
                         createdAt={review.createdAt}
                         username={review.member.nickname}
@@ -679,8 +848,8 @@ export default function MovieDetailPage() {
           {activeTab === 'debate' && (
             <ReviewDebateContents>
               <ContentsHeader>
-                <ContentsTitle>토론장 ({debateData?.totalElements})</ContentsTitle>
-
+                <ContentsTitle>토론장</ContentsTitle>
+                {/* 로그인한 사용자만 토론 작성 버튼 표시 */}
                 {isAuthenticated && (
                   <WriteButton
                     variant="orange"
@@ -691,28 +860,130 @@ export default function MovieDetailPage() {
                   </WriteButton>
                 )}
               </ContentsHeader>
-              <ReviewDebateList>
-                {debateData?.debates.map((debate, index) => (
-                  <DetailReviewCardWrapper key={index}>
-                    <ReviewDebateCard
-                      title={debate.debateTitle}
-                      content={debate.content}
-                      createdAt={debate.createdAt}
-                      username={debate.member.nickname}
-                      type='debate'
-                      isMyPost={debate.isMyPost}
-                      likes={debate.likes}
-                      hates={debate.hates}
-                      isSpoiler={debate.isSpoiler}
-                      comments={debate.commentCount}
-                      images={debate.imageUrls}
-                      profileImage={debate.member.profileImage}
-                      contentId={debate.contentId}
-                      memberId={debate.member.memberId}
-                    />
-                  </DetailReviewCardWrapper>
-                ))}
-              </ReviewDebateList>
+
+              {/* 스포일러 토글을 별도 영역으로 분리 */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  width: '100%',
+                  marginBottom: '16px',
+                }}
+              >
+                <SpoilerToggle>
+                  <SpoilerToggleLabel>스포일러 포함</SpoilerToggleLabel>
+                  <SpoilerToggleSwitch
+                    $active={showSpoilers}
+                    onClick={() => setShowSpoilers(!showSpoilers)}
+                  >
+                    <SpoilerToggleKnob $active={showSpoilers} />
+                  </SpoilerToggleSwitch>
+                </SpoilerToggle>
+              </div>
+
+              {debateLoading ? (
+                <div style={{ textAlign: 'center', padding: '40px', color: '#fff' }}>
+                  토론 목록을 불러오는 중...
+                </div>
+              ) : (
+                <>
+                  <ReviewDebateList>
+                    <DetailReviewCardWrapper>
+                      {filteredDebates.length > 0 ? (
+                        filteredDebates.map(debate => (
+                          <ReviewDebateCard
+                            key={debate.debateId}
+                            title={debate.debateTitle}
+                            content={stripHtmlTags(debate.content)}
+                            createdAt={formatTimeAgo(debate.createdAt)}
+                            likes={debate.likeCnt}
+                            hates={debate.hateCnt}
+                            username={debate.nickname}
+                            comments={debate.commentCount}
+                            images={extractImagesFromContent(debate.content)}
+                            type={'debate'}
+                            isMyPost={user?.id === debate.memberId}
+                            isSpoiler={debate.spoiler}
+                            onClick={() => handleDebateClick(debate.debateId)}
+                            showLikeButtons={false}
+                            showReportDelete={false}
+                          />
+                        ))
+                      ) : (
+                        <div
+                          style={{
+                            textAlign: 'center',
+                            padding: '40px',
+                            color: '#666',
+                            width: '100%',
+                          }}
+                        >
+                          {showSpoilers
+                            ? isAuthenticated
+                              ? '아직 작성된 토론이 없습니다. 첫 번째 토론을 시작해보세요!'
+                              : '아직 작성된 토론이 없습니다.'
+                            : isAuthenticated
+                              ? '스포일러가 아닌 토론이 없습니다. 스포일러 포함을 선택하거나 새로운 토론을 작성해보세요!'
+                              : '스포일러가 아닌 토론이 없습니다. 스포일러 포함을 선택해보세요.'}
+                        </div>
+                      )}
+                    </DetailReviewCardWrapper>
+                  </ReviewDebateList>
+
+                  {/* 페이지네이션 */}
+                  {totalPages > 1 && (
+                    <PaginationWrapper>
+                      {/* 이전 페이지 버튼 */}
+                      <PageButton
+                        $disabled={currentPage === 0}
+                        onClick={() => {
+                          if (currentPage > 0) {
+                            const newPage = currentPage - 1
+                            setCurrentPage(newPage)
+                            fetchDebates(newPage)
+                          }
+                        }}
+                      >
+                        이전
+                      </PageButton>
+
+                      {/* 페이지 번호 버튼들 */}
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        const startPage = Math.max(0, Math.min(currentPage - 2, totalPages - 5))
+                        const pageNum = startPage + i
+
+                        return (
+                          <PageButton
+                            key={pageNum}
+                            $active={pageNum === currentPage}
+                            onClick={() => {
+                              setCurrentPage(pageNum)
+                              fetchDebates(pageNum)
+                            }}
+                          >
+                            {pageNum + 1}
+                          </PageButton>
+                        )
+                      })}
+
+                      {/* 다음 페이지 버튼 */}
+                      <PageButton
+                        $disabled={currentPage >= totalPages - 1}
+                        onClick={() => {
+                          if (currentPage < totalPages - 1) {
+                            const newPage = currentPage + 1
+                            setCurrentPage(newPage)
+                            fetchDebates(newPage)
+                          }
+                        }}
+                      >
+                        다음
+                      </PageButton>
+                    </PaginationWrapper>
+                  )}
+                </>
+              )}
             </ReviewDebateContents>
           )}
           {activeTab === 'media' && (

@@ -75,3 +75,9 @@ export const logout = async () => {
   })
   return res.data
 }
+
+// 유저 정보 조회 API 추가
+export const getUserInfo = async () => {
+  const res = await axiosInstance.get('/api/v1/member/user-info')
+  return res.data
+}

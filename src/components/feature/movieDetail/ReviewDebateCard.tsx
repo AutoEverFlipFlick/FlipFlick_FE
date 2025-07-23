@@ -1,13 +1,11 @@
 // components/common/ReviewDebateCard.tsx
-import React, {useEffect, useRef, useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import styled, {css} from 'styled-components'
 import BaseContainer from '@/components/common/BaseContainer'
 import {MessageSquareText, ThumbsDown, ThumbsUp} from 'lucide-react'
 import StarRating from '@/components/starRating/StarRating'
 import BaseButton from "@/components/common/BaseButton";
-import Swal from "sweetalert2";
-import {likeDebate, likeReview} from "@/services/movieDetail";
-import { useOnClickAuth } from '@/hooks/useOnClickAuth'
+import {useOnClickAuth} from '@/hooks/useOnClickAuth'
 
 
 const Wrapper = styled(BaseContainer)`
@@ -21,6 +19,16 @@ const Wrapper = styled(BaseContainer)`
     justify-content: center;
     border-radius: 15px;
     color: white;
+`
+
+// 토론 제목 스타일 추가
+const DebateTitle = styled.h3`
+    color: #fe6a3c;
+    font-size: 18px;
+    font-weight: bold;
+    margin: 10px 15px 5px 15px;
+    word-wrap: break-word;
+    line-height: 1.4;
 `
 
 const Header = styled.div`
@@ -56,11 +64,13 @@ const BodyContents = styled.div<{ $blur?: boolean }>`
     padding: 15px;
     font-size: 12px;
     word-wrap: break-word;
-    ${({$blur}) => $blur && css`
-        filter: blur(6px);
-        pointer-events: none;
-        user-select: none;
-    `}
+    ${({$blur}) =>
+            $blur &&
+            css`
+                filter: blur(6px);
+                pointer-events: none;
+                user-select: none;
+            `}
 `
 
 
@@ -83,6 +93,19 @@ const SpoilerOverlay = styled.button`
         background: rgba(0, 0, 0, 0.3);
     }
 `;
+const SpoilerWarning = styled.div`
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 8px;
+    z-index: 2;
+    font-size: 14px;
+    text-align: center;
+`
 
 const Footer = styled.div`
     display: flex;
@@ -135,8 +158,37 @@ const ReportDeleteButton = styled.div`
 const ReportDeleteButtonWrapper = styled.div`
     display: flex;
     gap: 10px;
-    align-items: end    ;
-    `
+    align-items: end;
+`
+const ImageWrapper = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 10px auto;
+`
+
+const ThumbnailsWrapper = styled.div`
+    width: 600px;
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    align-content: start;
+    gap: 10px;
+    margin: 10px 0;
+`
+
+const Thumbnail = styled.img`
+    width: 100px;
+    height: 100px;
+    border-radius: 4px;
+    object-fit: cover;
+`
+const MainImage = styled.img`
+    width: 400px;
+    height: 400px;
+    border-radius: 8px;
+    object-fit: cover;
+`
 
 const LikeButton = styled(BaseButton)`
     max-height: 30px;
@@ -198,6 +250,13 @@ const ContentWrapper = styled.div<{ $expanded: boolean; $maxHeight: number }>`
     overflow: hidden;
     position: relative;
 `;
+const LikeHate = styled.div`
+    height: 40px;
+    justify-content: start;
+    align-items: center;
+    display: flex;
+    gap: 10px;
+`
 
 
 interface ReviewDebateCardProps {
@@ -218,13 +277,14 @@ interface ReviewDebateCardProps {
   previewLength?: number // 기본값: 200
   contentId: number // 리뷰 ID, 토론 ID
   memberId?: number // 리뷰 작성자 ID, 토론 작성자 ID
+  onClick?: () => void // onClick prop 추가
+  showLikeButtons?: boolean // 좋아요/싫어요 버튼 표시 여부
+  showReportDelete?: boolean // 삭제/신고 버튼 표시 여부 추가
 }
-
 
 const ReviewDebateCard: React.FC<ReviewDebateCardProps> =
   ({
      title,
-     type,
      username,
      createdAt,
      content,
@@ -232,11 +292,18 @@ const ReviewDebateCard: React.FC<ReviewDebateCardProps> =
      likes,
      hates,
      comments,
-     isSpoiler,
      isMyPost,
+     images,
+     type,
+     isSpoiler,
+     maxLength = type === 'review' ? 500 : 5000,
+     previewLength = 200,
+     onClick,
+     showLikeButtons = true, // 기본값은 true
+     showReportDelete = true, // 기본값은 true (리뷰에서는 표시)
      profileImage,
-    contentId,
-    memberId
+     contentId,
+     memberId
    }) => {
     const onclickAuth = useOnClickAuth()
 
@@ -323,6 +390,11 @@ const ReviewDebateCard: React.FC<ReviewDebateCardProps> =
       }
     })
 
+  // 콘텐츠 처리
+  const snippet = content.slice(0, maxLength)
+  const isOverflow = snippet.length > previewLength
+  const displayText = expanded ? snippet : snippet.slice(0, previewLength)
+  const blur = type === 'review' && isSpoiler && !spoilerRevealed
 
     // 콘텐츠 처리
     const previewHeight = 65
@@ -333,9 +405,16 @@ const ReviewDebateCard: React.FC<ReviewDebateCardProps> =
         setHasOverflow(el.scrollHeight > previewHeight);
       }
     }, [content, previewHeight]);
+  // const commentCount = comments?.length ?? 0
+  // const imageList = props.images ?? []
 
-    // 스포일러 처리
-    const isBlur = isSpoiler && !spoilerRevealed
+  // 본문 길이 제한
+  const limitedContent = content.slice(0, maxLength)
+  const isLong = limitedContent.length > previewLength
+  const displayContent = expanded ? limitedContent : limitedContent.slice(0, previewLength)
+
+  // 스포일러 처리
+  const isBlur = isSpoiler && !spoilerRevealed
 
     return (
       <Wrapper>
