@@ -38,7 +38,7 @@ import Swal from 'sweetalert2'
 const getAccessToken = () => localStorage.getItem('accessToken')
 
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8080',
+  baseURL: 'https://api.flipflick.life',
   withCredentials: true,
 })
 
