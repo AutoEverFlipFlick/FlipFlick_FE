@@ -3,415 +3,412 @@ import styled from 'styled-components'
 import BaseContainer from '@/components/common/BaseContainer'
 import ReviewDebateCard from '@/components/feature/movieDetail/ReviewDebateCard'
 
-import React, {useCallback, useEffect, useState} from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import RatingCard from '@/components/starRating/RatingCard'
 import MovieDetailHeader from '@/pages/movie/MovieDetailHeader'
-import {Eye, EyeOff, Flag, ListPlus, Star, StarOff} from 'lucide-react'
+import { Eye, EyeOff, Flag, ListPlus, Star, StarOff } from 'lucide-react'
 
-import {mapToMyReviewData, mapToReviewData, Review, ReviewData} from '@/pages/movie/reviewData'
-import {MovieData} from '@/pages/movie/movieData'
+import { mapToMyReviewData, mapToReviewData, Review, ReviewData } from '@/pages/movie/reviewData'
+import { MovieData } from '@/pages/movie/movieData'
 import ReviewTextArea from '@/pages/movie/ReviewTextArea'
-import {mapToMovieData} from "@/pages/movie/movieDataMapper";
-import {useAuth} from "@/context/AuthContext";
-import {useNavigate, useParams} from "react-router-dom";
-import {useOnClickAuth} from "@/hooks/useOnClickAuth";
-import BaseButton from "@/components/common/BaseButton";
+import { mapToMovieData } from '@/pages/movie/movieDataMapper'
+import { useAuth } from '@/context/AuthContext'
+import { useNavigate, useParams } from 'react-router-dom'
+import { useOnClickAuth } from '@/hooks/useOnClickAuth'
+import BaseButton from '@/components/common/BaseButton'
 import {
   bookmarkMovie,
   // getMovieDebate,
   getMovieDetail,
   getMovieReview,
   getMyMovieReview,
-  watchedMovie
-} from "@/services/movieDetail";
+  watchedMovie,
+} from '@/services/movieDetail'
 import Swal from 'sweetalert2'
 import DebateCard from '@/components/feature/movieDetail/DebateCard'
-import {DebateData, getMovieDebates} from '@/services/debate'
-import {Icon} from '@iconify/react'
+import { DebateData, getMovieDebates } from '@/services/debate'
+import { Icon } from '@iconify/react'
 // import {DebateData, mapToDebateData} from "@/pages/movie/debateData";
 import netflixImg from '@/assets/platform/netflix.png'
 import watchaImg from '@/assets/platform/watcha.png'
 import disneyPlusImg from '@/assets/platform/disney_plus.png'
 import wavveImg from '@/assets/platform/wavve.png'
+import PlaylistAddModal from '@/components/feature/PlaylistAddModal'
 
 const MovieDetailLayout = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
 `
 
 const MovieDetailMain = styled.div`
-    max-width: 900px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `
 
-
 const PlatFormImage = styled.div`
-    min-width: 120px;
-    min-height: 120px;
+  min-width: 120px;
+  min-height: 120px;
 `
 
 const HeaderContentsContainer = styled(BaseContainer)`
-    margin: 5px 10px;
-    padding: 10px 10px;
-    display: flex;
+  margin: 5px 10px;
+  padding: 10px 10px;
+  display: flex;
 `
 
 const DetailImage = styled.img`
-    margin-bottom: 20px;
-    height: 200px;
-    width: 300px;
-    display: flex;
-    justify-content: start;
+  margin-bottom: 20px;
+  height: 200px;
+  width: 300px;
+  display: flex;
+  justify-content: start;
 `
 
-
 const MovieDetailMainAction = styled.div`
-    display: flex;
-    max-width: 700px;
-    margin: 20px auto;
-    height: 100%;
-    gap: 10px;
+  display: flex;
+  max-width: 700px;
+  margin: 20px auto;
+  height: 100%;
+  gap: 10px;
 `
 
 const MovieDetailMainContent = styled.div`
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    max-width: 800px;
-    min-width: 800px;
-    margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  max-width: 800px;
+  min-width: 800px;
+  margin: 0 auto;
 `
 
 const MovieDetailMainContentTab = styled.div`
-    display: flex;
-    justify-content: space-evenly;
-    flex-direction: row;
-    max-width: 900px;
-    min-width: 850px;
-    margin: 10px auto;
-    height: 30px;
-    gap: 50px;
-    border-bottom: white 1px solid;
+  display: flex;
+  justify-content: space-evenly;
+  flex-direction: row;
+  max-width: 900px;
+  min-width: 850px;
+  margin: 10px auto;
+  height: 30px;
+  gap: 50px;
+  border-bottom: white 1px solid;
 `
 
 const OverViewContents = styled.div`
-    display: flex;
-    flex-direction: column;
-    justify-content: start;
-    align-items: center;
-    max-width: 850px;
-    min-width: 800px;
-    margin: 0 auto;
-    gap: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+  max-width: 850px;
+  min-width: 800px;
+  margin: 0 auto;
+  gap: 20px;
 `
 
 const OverViewContainerWrapper = styled(HeaderContentsContainer)`
-
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-    max-width: 850px;
-    min-width: 800px;
-    margin: 20px auto;
-    padding: 30px 20px;
-    gap: 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  max-width: 850px;
+  min-width: 800px;
+  margin: 20px auto;
+  padding: 30px 20px;
+  gap: 20px;
 `
 const OverViewPlatformWrapper = styled.div`
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    align-items: center;
-    max-width: 850px;
-    min-width: 800px;
-    margin: 0 auto;
-    gap: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  max-width: 850px;
+  min-width: 800px;
+  margin: 0 auto;
+  gap: 20px;
 `
 const OverViewPlatformImageWrapper = styled.div`
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-    max-width: 850px;
-    min-width: 200px;
-    height: 100px;
-    margin: 10px auto;
-    gap: 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  max-width: 850px;
+  min-width: 200px;
+  height: 100px;
+  margin: 10px auto;
+  gap: 20px;
 `
 
 const OverViewPlatformTab = styled.div`
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-    max-width: 400px;
-    margin: 0 auto;
-    gap: 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  max-width: 400px;
+  margin: 0 auto;
+  gap: 20px;
 `
 
 const OverViewContainer = styled.div`
-    display: flex;
-    flex-direction: column;
-    max-width: 800px;
-    min-width: 220px;
-    word-wrap: break-word;
-    min-height: 40px;
-    max-height: 100px;
-    box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  max-width: 800px;
+  min-width: 220px;
+  word-wrap: break-word;
+  min-height: 40px;
+  max-height: 100px;
+  box-sizing: border-box;
 `
 const ContentsHeader = styled.div`
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 800px;
-    font-weight: bold;
-    width: 100%;
-    min-height: 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 800px;
+  font-weight: bold;
+  width: 100%;
+  min-height: 50px;
 `
 const ContentsTitle = styled.div`
-    font-size: 20px;
-    margin: 20px 0 0 20px;
-    font-weight: bold;
-
+  font-size: 20px;
+  margin: 20px 0 0 20px;
+  font-weight: bold;
 `
 
 const ReviewDebateContents = styled.div`
-    display: flex;
-    max-width: 800px;
-    min-width: 800px;
-    min-height: 100px;
-    flex-direction: column;
-    justify-content: start;
-    align-items: center;
-    margin: 0 auto;
-    gap: 5px;
+  display: flex;
+  max-width: 800px;
+  min-width: 800px;
+  min-height: 100px;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+  margin: 0 auto;
+  gap: 5px;
 `
 
 const DetailMediaContents = styled.div`
-    display: flex;
-    flex-direction: column;
-    max-width: 800px;
-    min-width: 800px;
-    min-height: 200px;
-    align-items: start;
-    margin: 0 auto;
-    gap: 5px;
+  display: flex;
+  flex-direction: column;
+  max-width: 800px;
+  min-width: 800px;
+  min-height: 200px;
+  align-items: start;
+  margin: 0 auto;
+  gap: 5px;
 `
 
 // 미디어를 2줄 가로로 배열, 좌우로 스크롤
 const MediaContents = styled.div`
-    display: flex;
-    flex-direction: row;
-    justify-content: start;
-    align-items: center;
-    max-width: 800px;
-    min-width: 800px;
-    min-height: 200px;
-    overflow-x: auto;
-    margin: 0 auto;
-    gap: 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  align-items: center;
+  max-width: 800px;
+  min-width: 800px;
+  min-height: 200px;
+  overflow-x: auto;
+  margin: 0 auto;
+  gap: 10px;
 `
 const RatingWrapper = styled.div`
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    align-items: center;
-    max-width: 800px;
-    min-width: 800px;
-    margin: 0 auto;
-    gap: 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+  max-width: 800px;
+  min-width: 800px;
+  margin: 0 auto;
+  gap: 10px;
 `
 
 const DetailMyReviewCard = styled(BaseContainer)`
-    min-width: 800px;
-    min-height: 100px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  min-width: 800px;
+  min-height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `
-
 
 const DetailMyReviewWrapper = styled.div`
-    width: 100%;
-    min-height: 100px;
-    max-height: 300px;
-    display: flex;
-    margin: 0 auto;
-    color: #191513;
-    justify-content: center;
-    align-items: center;
+  width: 100%;
+  min-height: 100px;
+  max-height: 300px;
+  display: flex;
+  margin: 0 auto;
+  color: #191513;
+  justify-content: center;
+  align-items: center;
 `
 const ContentsListWrapper = styled.div`
-    max-width: 800px;
-    width: 100%;
-    min-height: 100px;
-    display: flex;
-    flex-direction: column;
-    margin: 10px auto;
+  max-width: 800px;
+  width: 100%;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  margin: 10px auto;
 `
 const ReviewDebateList = styled.div`
-    width: 100%;
-    min-height: 100px;
-    display: flex;
-    flex-direction: column;
-    margin: 5px auto;
+  width: 100%;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  margin: 5px auto;
 `
 const DetailReviewCardWrapper = styled.div`
-    width: 100%;
-    height: 100%;
-    min-height: 100px;
-    display: flex;
-    margin: 0 auto;
+  width: 100%;
+  height: 100%;
+  min-height: 100px;
+  display: flex;
+  margin: 0 auto;
 `
 
 const ContentsListTitleTab = styled.div`
-    width: 100%;
-    height: 40px;
-    display: flex;
-    justify-content: space-between;
-    align-content: center;
-    align-items: center;
+  width: 100%;
+  height: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-content: center;
+  align-items: center;
 `
 
 const ContentsListOrderDropdown = styled.div`
-    width: 80px;
-    height: 30px;
-    display: flex;
-    border-radius: 5px;
-    background-color: #191513;
-    text-align: center;
-    align-items: center;
-    justify-content: center;
+  width: 80px;
+  height: 30px;
+  display: flex;
+  border-radius: 5px;
+  background-color: #191513;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
 `
 
 const TabButton = styled.button<{ $active: boolean }>`
-    all: unset;
-    cursor: pointer;
-    width: 100px;
-    text-align: center;
-    font-size: 20px;
-    font-weight: bold;
-    color: ${({$active}) => ($active ? '#FE6A3C' : '#fff')};
-    border-bottom: ${({$active}) => ($active ? '3px solid #FE6A3C' : 'none')};
+  all: unset;
+  cursor: pointer;
+  width: 100px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+  color: ${({ $active }) => ($active ? '#FE6A3C' : '#fff')};
+  border-bottom: ${({ $active }) => ($active ? '3px solid #FE6A3C' : 'none')};
 `
 
 const PlatformTabButton = styled.button<{ $active?: boolean }>`
-    all: unset;
-    cursor: pointer;
-    width: 100px;
-    text-align: center;
-    font-size: 20px;
-    color: ${({$active}) => ($active ? '#FE6A3C' : '#fff')};
-    border-bottom: ${({$active}) => ($active ? '1px solid #FE6A3C' : 'none')};
+  all: unset;
+  cursor: pointer;
+  width: 100px;
+  text-align: center;
+  font-size: 20px;
+  color: ${({ $active }) => ($active ? '#FE6A3C' : '#fff')};
+  border-bottom: ${({ $active }) => ($active ? '1px solid #FE6A3C' : 'none')};
 `
 
 const ActionButton = styled(BaseButton).attrs({
   size: 'small',
 })`
-    align-items: center;
+  align-items: center;
 `
 
 // 스타일드 컴포넌트 추가
 const SpoilerToggle = styled.div`
-    display: flex;
-    align-items: center;
-    margin-right: 20px;
-    gap: 10px;
+  display: flex;
+  align-items: center;
+  margin-right: 20px;
+  gap: 10px;
 `
 
 const SpoilerToggleLabel = styled.span`
-    color: #fff;
-    font-size: 14px;
-    font-weight: 500;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
 `
 
 const SpoilerToggleSwitch = styled.div<{ $active: boolean }>`
-    position: relative;
-    width: 50px;
-    height: 24px;
-    background-color: ${({$active}) => ($active ? '#FE6A3C' : '#666')};
-    border-radius: 24px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+  position: relative;
+  width: 50px;
+  height: 24px;
+  background-color: ${({ $active }) => ($active ? '#FE6A3C' : '#666')};
+  border-radius: 24px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 
-    &:hover {
-        background-color: ${({$active}) => ($active ? '#E55A2B' : '#777')};
-    }
+  &:hover {
+    background-color: ${({ $active }) => ($active ? '#E55A2B' : '#777')};
+  }
 `
 
 const SpoilerToggleKnob = styled.div<{ $active: boolean }>`
-    position: absolute;
-    top: 2px;
-    left: ${({$active}) => ($active ? '26px' : '2px')};
-    width: 20px;
-    height: 20px;
-    background-color: #fff;
-    border-radius: 50%;
-    transition: left 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  position: absolute;
+  top: 2px;
+  left: ${({ $active }) => ($active ? '26px' : '2px')};
+  width: 20px;
+  height: 20px;
+  background-color: #fff;
+  border-radius: 50%;
+  transition: left 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 `
 
 const WriteButton = styled(BaseButton)`
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 `
 
 const PaginationWrapper = styled.div`
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    margin-top: 20px;
-    padding: 20px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 20px 0;
 `
 
 const PageButton = styled.button<{ $active?: boolean; $disabled?: boolean }>`
-    all: unset;
-    cursor: ${({$disabled}) => ($disabled ? 'not-allowed' : 'pointer')};
-    padding: 8px 12px;
-    min-width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 500;
+  all: unset;
+  cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
+  padding: 8px 12px;
+  min-width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
 
-    background-color: ${({$active, $disabled}) =>
-            $disabled ? '#333' : $active ? '#FE6A3C' : 'transparent'};
-    color: ${({$active, $disabled}) => ($disabled ? '#666' : $active ? '#fff' : '#fff')};
-    border: 1px solid ${({$active, $disabled}) => ($disabled ? '#444' : $active ? '#FE6A3C' : '#666')};
+  background-color: ${({ $active, $disabled }) =>
+    $disabled ? '#333' : $active ? '#FE6A3C' : 'transparent'};
+  color: ${({ $active, $disabled }) => ($disabled ? '#666' : $active ? '#fff' : '#fff')};
+  border: 1px solid
+    ${({ $active, $disabled }) => ($disabled ? '#444' : $active ? '#FE6A3C' : '#666')};
 
-    &:hover {
-        background-color: ${({$disabled, $active}) =>
-                $disabled ? '#333' : $active ? '#E55A2B' : 'rgba(254, 106, 60, 0.1)'};
-    }
+  &:hover {
+    background-color: ${({ $disabled, $active }) =>
+      $disabled ? '#333' : $active ? '#E55A2B' : 'rgba(254, 106, 60, 0.1)'};
+  }
 `
 
 const getPlatformSrc = (platformName: string) => {
-  console.log("플랫폼 이름 확인 : ", platformName)
+  console.log('플랫폼 이름 확인 : ', platformName)
   switch (platformName) {
     case 'Netflix':
     case 'Netflix Standard with Ads':
-      console.log("Netflix 이미지 반환 : ", netflixImg)
+      console.log('Netflix 이미지 반환 : ', netflixImg)
       return netflixImg
     case 'Watcha':
-      console.log("Watcha 이미지 반환 : ", watchaImg)
+      console.log('Watcha 이미지 반환 : ', watchaImg)
       return watchaImg
     case 'Disney+':
-      console.log("Disney+ 이미지 반환 : ", disneyPlusImg)
+      console.log('Disney+ 이미지 반환 : ', disneyPlusImg)
       return disneyPlusImg
     case 'wavve':
-      console.log("wavve 이미지 반환 : ", wavveImg)
+      console.log('wavve 이미지 반환 : ', wavveImg)
       return wavveImg
     default:
-      console.log("매칭되지 않는 플랫폼 : ", platformName)
+      console.log('매칭되지 않는 플랫폼 : ', platformName)
       return null // 기본값 설정
   }
 }
@@ -424,8 +421,8 @@ export default function MovieDetailPage() {
   // const [isLiked, setIsLiked] = useState(false)
   const [isWatched, setIsWatched] = useState(false)
   const [isBookmarked, setIsBookmarked] = useState(false)
-  const {tmdbId} = useParams<{ tmdbId: string }>()
-  const {user, isAuthenticated, loading} = useAuth()
+  const { tmdbId } = useParams<{ tmdbId: string }>()
+  const { user, isAuthenticated, loading } = useAuth()
   const navigate = useNavigate()
 
   const onClickAuth = useOnClickAuth()
@@ -441,6 +438,9 @@ export default function MovieDetailPage() {
 
   // 스포일러 필터 state 추가
   const [showSpoilers, setShowSpoilers] = useState(false)
+
+  // 플레이리스트 모달 state 추가
+  const [playlistModalOpen, setPlaylistModalOpen] = useState(false)
 
   const handleBookmark = useCallback(
     () =>
@@ -499,6 +499,20 @@ export default function MovieDetailPage() {
     [onClickAuth, movieData?.movieId, isWatched],
   )
 
+  const handlePlaylistAdd = useCallback(() => {
+    if (!isAuthenticated) {
+      Swal.fire({
+        title: '로그인이 필요합니다',
+        text: '플레이리스트에 추가하려면 로그인이 필요합니다.',
+        icon: 'warning',
+        confirmButtonText: '확인',
+        confirmButtonColor: '#fe6a3c',
+      })
+      return
+    }
+    setPlaylistModalOpen(true)
+  }, [isAuthenticated])
+
   // 토론 목록 가져오기 함수 추가
   const fetchDebates = async (page: number = 0) => {
     if (!tmdbId) return
@@ -528,13 +542,13 @@ export default function MovieDetailPage() {
     const fetchMovieDetail = async () => {
       try {
         // setIsLoading(true)
-        console.log("영화 상세 정보 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
+        console.log('영화 상세 정보 불러오기 시작, 영화 ID : ', tmdbId, typeof tmdbId)
         const response = await getMovieDetail(tmdbId)
         const data = response.data
-        console.log("영화 정보 조회됨 : ", data)
+        console.log('영화 정보 조회됨 : ', data)
         const mappedData: MovieData = mapToMovieData(data)
-        console.log("영화 정보 매핑됨 : ", mappedData)
-        console.log("영화 providers 확인 : ", mappedData.providers)
+        console.log('영화 정보 매핑됨 : ', mappedData)
+        console.log('영화 providers 확인 : ', mappedData.providers)
         setMovieData(mappedData)
         // setIsLiked(mappedData.myLike)
         setIsWatched(mappedData.myWatched)
@@ -542,40 +556,40 @@ export default function MovieDetailPage() {
       } catch (error) {
         console.error('영화 상세 정보 불러오기 실패:', error)
       } finally {
-        console.log("영화 상세 정보 불러오기 및 매핑 완료")
+        console.log('영화 상세 정보 불러오기 및 매핑 완료')
       }
     }
     const fetchMovieReview = async () => {
       try {
-        console.log("영화 리뷰 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
+        console.log('영화 리뷰 불러오기 시작, 영화 ID : ', tmdbId, typeof tmdbId)
         const response = await getMovieReview(tmdbId, 0)
         const data = response.data
-        console.log("영화 리뷰 조회됨 : ", data)
-        console.log("영화 리뷰 매핑시 사용된 유저 정보 : ", user, isAuthenticated, user?.id)
+        console.log('영화 리뷰 조회됨 : ', data)
+        console.log('영화 리뷰 매핑시 사용된 유저 정보 : ', user, isAuthenticated, user?.id)
         const mappedData: ReviewData = mapToReviewData(data, user?.id, user?.nickname)
-        console.log("영화 리뷰 매핑됨 : ", mappedData)
+        console.log('영화 리뷰 매핑됨 : ', mappedData)
         // setMyReview(mappedData)
         setReviewData(mappedData)
       } catch (error) {
         console.error('영화 리뷰 불러오기 실패:', error)
       } finally {
-        console.log("영화 리뷰 불러오기 및 매핑 완료")
+        console.log('영화 리뷰 불러오기 및 매핑 완료')
       }
     }
 
     const fetchMyReview = async () => {
       try {
-        console.log("내 리뷰 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
+        console.log('내 리뷰 불러오기 시작, 영화 ID : ', tmdbId, typeof tmdbId)
         const response = await getMyMovieReview(tmdbId)
         const data = response.data
-        console.log("내 리뷰 조회됨 : ", data)
+        console.log('내 리뷰 조회됨 : ', data)
         const mappedData: Review | null = mapToMyReviewData(data)
-        console.log("내 리뷰 매핑됨 : ", mappedData)
+        console.log('내 리뷰 매핑됨 : ', mappedData)
         setMyReview(mappedData)
       } catch (error) {
         console.error('내 리뷰 불러오기 실패:', error)
       } finally {
-        console.log("내 리뷰 불러오기 및 매핑 완료")
+        console.log('내 리뷰 불러오기 및 매핑 완료')
       }
     }
     // const fetchMovieDebate = async () => {
@@ -595,7 +609,7 @@ export default function MovieDetailPage() {
     // }
 
     try {
-      if (loading) return; // 로딩 중이면 아무것도 하지 않음
+      if (loading) return // 로딩 중이면 아무것도 하지 않음
 
       if (isAuthenticated && user) {
         // 인증된 경우에만 내 리뷰 호출
@@ -664,7 +678,7 @@ export default function MovieDetailPage() {
     console.debug(isLoading)
     return (
       <MovieDetailLayout>
-        <Icon icon="line-md:loading-twotone-loop" fontSize={100}/>
+        <Icon icon="line-md:loading-twotone-loop" fontSize={100} />
       </MovieDetailLayout>
     )
   }
@@ -679,16 +693,25 @@ export default function MovieDetailPage() {
 
   return (
     <MovieDetailLayout>
-      <MovieDetailHeader movieData={movieData}/>
+      <MovieDetailHeader movieData={movieData} />
       <MovieDetailMainAction>
-        <ActionButton size='small' icon={isBookmarked ? <StarOff/> : <Star/>}
-                      onClick={handleBookmark}>{isBookmarked ? '찜 취소' : '찜하기'}</ActionButton>
-        <ActionButton size='small' icon={isWatched ? <EyeOff/> : <Eye/>}
-                      onClick={handleView}>{isWatched ? '봤어요 취소' : '봤어요'}</ActionButton>
-        {/* TODO : 플레이리스트 모달 호출 구현하기 */}
-        <ActionButton size='small' icon={<ListPlus/>}>플레이리스트 추가</ActionButton>
-        {/* TODO : 수정/신고 모달 호출 구현하기 */}
-        <ActionButton size='small' icon={<Flag/>}>수정 요청</ActionButton>
+        <ActionButton
+          size="small"
+          icon={isBookmarked ? <StarOff /> : <Star />}
+          onClick={handleBookmark}
+        >
+          {isBookmarked ? '찜 취소' : '찜하기'}
+        </ActionButton>
+        <ActionButton size="small" icon={isWatched ? <EyeOff /> : <Eye />} onClick={handleView}>
+          {isWatched ? '봤어요 취소' : '봤어요'}
+        </ActionButton>
+        {/* 플레이리스트 추가 버튼 수정 */}
+        <ActionButton size="small" icon={<ListPlus />} onClick={handlePlaylistAdd}>
+          플레이리스트 추가
+        </ActionButton>
+        <ActionButton size="small" icon={<Flag />}>
+          수정 요청
+        </ActionButton>
       </MovieDetailMainAction>
       <MovieDetailMain>
         <MovieDetailMainContentTab>
@@ -724,9 +747,10 @@ export default function MovieDetailPage() {
                 <OverViewContainer>
                   <p>연령등급: {movieData.ageRating ?? '정보 없음'}</p>
                   <p>
-                    평균 평점: {movieData.voteAverage === 0
-                    ? '집계중'
-                    : `${movieData.voteAverage.toFixed(1)}점`}
+                    평균 평점:{' '}
+                    {movieData.voteAverage === 0
+                      ? '집계중'
+                      : `${movieData.voteAverage.toFixed(1)}점`}
                   </p>
                 </OverViewContainer>
               </OverViewContainerWrapper>
@@ -737,16 +761,22 @@ export default function MovieDetailPage() {
                 <OverViewPlatformTab>
                   <PlatformTabButton
                     $active={activePlatformTab === 'BUY'}
-                    onClick={() => setActivePlatformTab('BUY')}>
-                    구매</PlatformTabButton>
+                    onClick={() => setActivePlatformTab('BUY')}
+                  >
+                    구매
+                  </PlatformTabButton>
                   <PlatformTabButton
                     $active={activePlatformTab === 'FLATRATE'}
-                    onClick={() => setActivePlatformTab('FLATRATE')}>
-                    구독</PlatformTabButton>
+                    onClick={() => setActivePlatformTab('FLATRATE')}
+                  >
+                    구독
+                  </PlatformTabButton>
                   <PlatformTabButton
                     $active={activePlatformTab === 'RENT'}
-                    onClick={() => setActivePlatformTab('RENT')}>
-                    대여</PlatformTabButton>
+                    onClick={() => setActivePlatformTab('RENT')}
+                  >
+                    대여
+                  </PlatformTabButton>
                 </OverViewPlatformTab>
                 <OverViewPlatformImageWrapper>
                   {movieData.providers
@@ -758,8 +788,8 @@ export default function MovieDetailPage() {
                           <img
                             src={imageSrc}
                             alt={provider.providerName}
-                            style={{width: '100px', height: '100px'}}
-                            onError={(e) => {
+                            style={{ width: '100px', height: '100px' }}
+                            onError={e => {
                               console.error(`이미지 로드 실패: ${provider.providerName}`)
                               e.currentTarget.style.display = 'none'
                             }}
@@ -774,8 +804,8 @@ export default function MovieDetailPage() {
           {activeTab === 'review' && (
             <ReviewDebateContents>
               <RatingWrapper>
-                <RatingCard title="전체 평점" rating={movieData.voteAverage} size={40}/>
-                <RatingCard title="평가하기" rating={movieData.myRating} size={40}/>
+                <RatingCard title="전체 평점" rating={movieData.voteAverage} size={40} />
+                <RatingCard title="평가하기" rating={movieData.myRating} size={40} />
               </RatingWrapper>
               <DetailMyReviewWrapper>
                 <DetailMyReviewCard>
@@ -792,7 +822,11 @@ export default function MovieDetailPage() {
                         setMyReview(mappedData)
                         const reviewResponse = await getMovieReview(tmdbId!, 0)
                         const reviewData = reviewResponse.data
-                        const mappedReviewData: ReviewData = mapToReviewData(reviewData, user?.id, user?.nickname)
+                        const mappedReviewData: ReviewData = mapToReviewData(
+                          reviewData,
+                          user?.id,
+                          user?.nickname,
+                        )
                         setReviewData(mappedReviewData)
                       } catch (error) {
                         console.error('내 리뷰 불러오기 실패:', error)
@@ -808,7 +842,6 @@ export default function MovieDetailPage() {
                   <ContentsListOrderDropdown>정렬 순서</ContentsListOrderDropdown>
                 </ContentsListTitleTab>
                 <ReviewDebateList>
-
                   {reviewData?.reviews.map((review, index) => (
                     <DetailReviewCardWrapper key={index}>
                       <ReviewDebateCard
@@ -864,13 +897,13 @@ export default function MovieDetailPage() {
                     $active={showSpoilers}
                     onClick={() => setShowSpoilers(!showSpoilers)}
                   >
-                    <SpoilerToggleKnob $active={showSpoilers}/>
+                    <SpoilerToggleKnob $active={showSpoilers} />
                   </SpoilerToggleSwitch>
                 </SpoilerToggle>
               </div>
 
               {debateLoading ? (
-                <div style={{textAlign: 'center', padding: '40px', color: '#fff'}}>
+                <div style={{ textAlign: 'center', padding: '40px', color: '#fff' }}>
                   토론 목록을 불러오는 중...
                 </div>
               ) : (
@@ -935,7 +968,7 @@ export default function MovieDetailPage() {
                       </PageButton>
 
                       {/* 페이지 번호 버튼들 */}
-                      {Array.from({length: Math.min(5, totalPages)}, (_, i) => {
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                         const startPage = Math.max(0, Math.min(currentPage - 2, totalPages - 5))
                         const pageNum = startPage + i
 
@@ -977,45 +1010,61 @@ export default function MovieDetailPage() {
               <ContentsTitle>유튜브 ({movieData.videos.length})</ContentsTitle>
               {/* 영화 유튜브 랜더링*/}
               <MediaContents>
-                {movieData.videos.length === 0 ?
-                  (<p>유튜브 영상이 없습니다.</p>) :
-                  (movieData.videos.map((video, index) => (
+                {movieData.videos.length === 0 ? (
+                  <p>유튜브 영상이 없습니다.</p>
+                ) : (
+                  movieData.videos.map((video, index) => (
                     <iframe
                       width={300}
                       height={200}
-                      style={{width: '300px', height: '200px', marginBottom: '10px', border: 'none'}}
+                      style={{
+                        width: '300px',
+                        height: '200px',
+                        marginBottom: '10px',
+                        border: 'none',
+                      }}
                       key={index}
                       src={video.replace('watch?v=', 'embed/')}
                       title={`YouTube video player ${index + 1}`}
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
                     />
-                  )))}
+                  ))
+                )}
               </MediaContents>
               {/* 영화 이미지 */}
               <ContentsTitle>이미지 ({movieData.images.length})</ContentsTitle>
               <MediaContents>
                 {movieData.images.length === 0 ? (
                   <p>이미지가 없습니다.</p>
-                ) : (movieData.images.map((image, index) => (
-                  <DetailImage
-                    key={index}
-                    src={image}
-                    alt={`Movie image ${index + 1}`}
-                    style={{width: '300px', height: 'auto', marginBottom: '10px'}}
-                    onError={(e) => {
-                      console.error(`이미지 로드 실패: ${image}`)
-                      e.currentTarget.style.display = 'none'
-                    }}
-                  />
-                )))}
+                ) : (
+                  movieData.images.map((image, index) => (
+                    <DetailImage
+                      key={index}
+                      src={image}
+                      alt={`Movie image ${index + 1}`}
+                      style={{ width: '300px', height: 'auto', marginBottom: '10px' }}
+                      onError={e => {
+                        console.error(`이미지 로드 실패: ${image}`)
+                        e.currentTarget.style.display = 'none'
+                      }}
+                    />
+                  ))
+                )}
               </MediaContents>
-
-
             </DetailMediaContents>
           )}
         </MovieDetailMainContent>
       </MovieDetailMain>
+      {/* 플레이리스트 추가 모달 추가 */}
+      <PlaylistAddModal
+        isOpen={playlistModalOpen}
+        onClose={() => setPlaylistModalOpen(false)}
+        movieId={movieData.tmdbId}
+        movieTitle={movieData.title}
+        moviePosterUrl={movieData.posterImg}
+        movieReleaseDate={movieData.productionYear?.toString()} // number를 string으로 변환
+      />
     </MovieDetailLayout>
   )
 }
