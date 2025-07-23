@@ -539,11 +539,18 @@ export default function Component() {
       try {
         const res = mode === 'popcorn' ? await topPopcorn(10) : await boxoffice()
         console.log(res)
-        const result = res.data.movies.map((item: any) => ({
-          id: item.tmdbId,
-          title: item.title,
-          poster: item.posterUrl,
-        }))
+        const result =
+          mode === 'popcorn'
+            ? res.data.data.map((item: any) => ({
+                id: item.tmdbId,
+                title: item.title,
+                poster: item.posterUrl,
+              }))
+            : res.data.movies.map((item: any) => ({
+                id: item.tmdbId,
+                title: item.title,
+                poster: item.posterUrl,
+              }))
 
         console.log(result)
         setMovies(result)
