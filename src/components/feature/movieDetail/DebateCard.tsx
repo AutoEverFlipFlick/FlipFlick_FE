@@ -47,7 +47,7 @@ const UserCard = styled.div`
   gap: 10px;
 `
 
-const UserAvatar = styled.div<{ $backgroundImage?: string }>`
+const UserAvatar = styled.div<{ $backgroundImage?: string | null }>`
   width: 30px;
   height: 30px;
   border-radius: 50%;
@@ -300,7 +300,7 @@ const DebateCard: React.FC<DebateCardProps> = ({
     <Wrapper onClick={handleCardClick}>
       <Header>
         <UserCard>
-          <UserAvatar $backgroundImage={profileImage} />
+          <UserAvatar $backgroundImage={profileImage || undefined} />
           <UserInfo>
             <Username>{username}</Username>
             <CreatedAt>{createdAt}</CreatedAt>
