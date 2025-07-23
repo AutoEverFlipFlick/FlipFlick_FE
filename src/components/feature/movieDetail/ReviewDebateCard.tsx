@@ -7,7 +7,7 @@ import StarRating from '@/components/starRating/StarRating'
 import BaseButton from '@/components/common/BaseButton'
 import { useOnClickAuth } from '@/hooks/useOnClickAuth'
 import Swal from 'sweetalert2'
-import { likeDebate, likeReview } from '@/services/movieDetail'
+import { likeDebate, likeReview, hateReview } from '@/services/movieDetail'
 
 const Wrapper = styled(BaseContainer)`
   width: 100%;
