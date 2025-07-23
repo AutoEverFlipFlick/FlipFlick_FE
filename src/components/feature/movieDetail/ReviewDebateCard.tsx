@@ -388,10 +388,10 @@ const ReviewDebateCard: React.FC<ReviewDebateCardProps> =
     })
 
   // 콘텐츠 처리
-  const snippet = content.slice(0, maxLength)
-  const isOverflow = snippet.length > previewLength
-  const displayText = expanded ? snippet : snippet.slice(0, previewLength)
-  const blur = type === 'review' && isSpoiler && !spoilerRevealed
+  // const snippet = content.slice(0, maxLength)
+  // const isOverflow = snippet.length > previewLength
+  // const displayText = expanded ? snippet : snippet.slice(0, previewLength)
+  // const blur = type === 'review' && isSpoiler && !spoilerRevealed
 
     // 콘텐츠 처리
     const previewHeight = 65
@@ -407,8 +407,8 @@ const ReviewDebateCard: React.FC<ReviewDebateCardProps> =
 
   // 본문 길이 제한
   const limitedContent = content.slice(0, maxLength)
-  const isLong = limitedContent.length > previewLength
-  const displayContent = expanded ? limitedContent : limitedContent.slice(0, previewLength)
+  // const isLong = limitedContent.length > previewLength
+  // const displayContent = expanded ? limitedContent : limitedContent.slice(0, previewLength)
 
   // 스포일러 처리
   const isBlur = isSpoiler && !spoilerRevealed
