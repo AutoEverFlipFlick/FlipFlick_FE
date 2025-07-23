@@ -297,7 +297,6 @@ const ReviewDebateCard: React.FC<ReviewDebateCardProps> =
      type,
      isSpoiler,
      maxLength = type === 'review' ? 500 : 5000,
-     previewLength = 200,
      profileImage,
      contentId,
      memberId
@@ -406,7 +405,7 @@ const ReviewDebateCard: React.FC<ReviewDebateCardProps> =
   // const imageList = props.images ?? []
 
   // 본문 길이 제한
-  const limitedContent = content.slice(0, maxLength)
+  // const limitedContent = content.slice(0, maxLength)
   // const isLong = limitedContent.length > previewLength
   // const displayContent = expanded ? limitedContent : limitedContent.slice(0, previewLength)
 
