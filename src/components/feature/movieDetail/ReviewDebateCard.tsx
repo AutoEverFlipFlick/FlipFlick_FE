@@ -1,178 +1,267 @@
 // components/common/ReviewDebateCard.tsx
-import React, { useState } from 'react'
-import styled, { css } from 'styled-components'
+import React, {useEffect, useRef, useState} from 'react'
+import styled, {css} from 'styled-components'
 import BaseContainer from '@/components/common/BaseContainer'
-import { MessageSquareText, ThumbsDown, ThumbsUp } from 'lucide-react'
+import {MessageSquareText, ThumbsDown, ThumbsUp} from 'lucide-react'
 import StarRating from '@/components/starRating/StarRating'
-import BaseButton from '@/components/common/BaseButton'
+import BaseButton from "@/components/common/BaseButton";
+import {useOnClickAuth} from '@/hooks/useOnClickAuth'
+import Swal from 'sweetalert2'
+import {likeDebate, likeReview} from "@/services/movieDetail";
 
-const PLACEHOLDER = 'https://placehold.co/600x600'
 
-const Wrapper = styled(BaseContainer)<{ $type: 'review' | 'debate' }>`
-  width: 100%;
-  max-width: 800px;
-  min-height: 100px;
-  margin: 5px auto;
-  padding: 10px 10px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  border-radius: 15px;
-  color: white;
-  cursor: ${({ $type }) => ($type === 'debate' ? 'pointer' : 'default')};
+const Wrapper = styled(BaseContainer)`
+    width: 100%;
+    max-width: 800px;
+    min-height: 100px;
+    margin: 5px auto;
+    padding: 10px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-radius: 15px;
+    color: white;
 `
 
 // 토론 제목 스타일 추가
 const DebateTitle = styled.h3`
-  color: #fe6a3c;
-  font-size: 18px;
-  font-weight: bold;
-  margin: 10px 15px 5px 15px;
-  word-wrap: break-word;
-  line-height: 1.4;
+    color: #fe6a3c;
+    font-size: 18px;
+    font-weight: bold;
+    margin: 10px 15px 5px 15px;
+    word-wrap: break-word;
+    line-height: 1.4;
 `
 
 const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  padding: 5px;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
 `
 
 const UserCard = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    //margin: 0 5px;
 `
+const UserImage = styled.div`
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #f0f0f0;
+`
+
+// const DebateTitle = styled.div`
+//     font-size: 14px;
+//     font-weight: bold;
+//     margin: 0 10px;
+//     cursor: pointer;
+//     text-align: end;
+// `
 
 const BodyContents = styled.div<{ $blur?: boolean }>`
-  padding: 15px;
-  font-size: 12px;
-  word-wrap: break-word;
-  ${({ $blur }) =>
-    $blur &&
-    css`
-      filter: blur(6px);
-      pointer-events: none;
-      user-select: none;
-    `}
-`
-const SpoilerWarning = styled.div`
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(0, 0, 0, 0.7);
-  color: #fff;
-  padding: 8px 16px;
-  border-radius: 8px;
-  z-index: 2;
-  font-size: 14px;
-  text-align: center;
+    padding: 15px;
+    font-size: 12px;
+    word-wrap: break-word;
+    ${({$blur}) =>
+            $blur &&
+            css`
+                filter: blur(6px);
+                pointer-events: none;
+                user-select: none;
+            `}
 `
 
+
+const SpoilerOverlay = styled.button`
+    position: absolute;
+    top: 55px;
+    left: 0;
+    width: 100%;
+    height: calc(90% - 80px);
+    background: rgba(0, 0, 0, 0.6);
+    color: var(--color-text);
+    border: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+    z-index: 10;
+
+    &:focus {
+        background: rgba(0, 0, 0, 0.3);
+    }
+`;
+// const SpoilerWarning = styled.div`
+//     position: absolute;
+//     top: 50%;
+//     left: 50%;
+//     transform: translate(-50%, -50%);
+//     background: rgba(0, 0, 0, 0.7);
+//     color: #fff;
+//     padding: 8px 16px;
+//     border-radius: 8px;
+//     z-index: 2;
+//     font-size: 14px;
+//     text-align: center;
+// `
+
 const Footer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 10px;
 `
 
 const LikeHateCommentWrapper = styled.div`
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  font-size: 12px;
-  color: white;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-size: 12px;
+    color: white;
 `
 
 const CommentsWrapper = styled.div`
-  display: flex;
-  gap: 5px;
-  align-items: center;
-  font-size: 12px;
-  color: white;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    font-size: 12px;
+    color: white;
 `
 
 const ShowMoreButton = styled.div`
-  display: inline-block;
-  margin-left: 16px;
-  margin-bottom: 8px;
-  font-size: 13px;
-  color: #fff;
-  cursor: pointer;
-  background: none;
-  border: none;
-  padding: 0;
+    display: inline-block;
+    font-size: 13px;
+    color: #fff;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
 
-  &:hover {
-    text-decoration: underline;
-  }
+    &:hover {
+        text-decoration: underline;
+    }
 `
 
 const ReportDeleteButton = styled.div`
-  font-size: 12px;
-  color: white;
-  cursor: pointer;
-  transition: text-decoration 0.2s ease-in-out;
+    font-size: 12px;
+    color: white;
+    cursor: pointer;
+    transition: text-decoration 0.2s ease-in-out;
 
-  &:hover {
-    text-decoration: underline;
-  }
-`
-
-const ImageWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 10px auto;
+    &:hover {
+        text-decoration: underline;
+    }
 `
 
-const ThumbnailsWrapper = styled.div`
-  width: 600px;
-  display: flex;
-  flex-direction: row;
-  justify-content: start;
-  align-content: start;
-  gap: 10px;
-  margin: 10px 0;
+const ReportDeleteButtonWrapper = styled.div`
+    display: flex;
+    gap: 10px;
+    align-items: end;
 `
+// const ImageWrapper = styled.div`
+//     display: flex;
+//     flex-direction: column;
+//     align-items: center;
+//     margin: 10px auto;
+// `
 
-const Thumbnail = styled.img`
-  width: 100px;
-  height: 100px;
-  border-radius: 4px;
-  object-fit: cover;
-`
-const MainImage = styled.img`
-  width: 400px;
-  height: 400px;
-  border-radius: 8px;
-  object-fit: cover;
-`
+// const ThumbnailsWrapper = styled.div`
+//     width: 600px;
+//     display: flex;
+//     flex-direction: row;
+//     justify-content: start;
+//     align-content: start;
+//     gap: 10px;
+//     margin: 10px 0;
+// `
+
+// const Thumbnail = styled.img`
+//     width: 100px;
+//     height: 100px;
+//     border-radius: 4px;
+//     object-fit: cover;
+// `
+// const MainImage = styled.img`
+//     width: 400px;
+//     height: 400px;
+//     border-radius: 8px;
+//     object-fit: cover;
+// `
 
 const LikeButton = styled(BaseButton)`
-  max-height: 30px;
-  width: 90px;
-  display: flex;
-  justify-content: space-between;
-  padding: 15px;
+    max-height: 30px;
+    width: 70px;
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    font-size: 14px;
 `
 const HateButton = styled(BaseButton)`
-  max-height: 30px;
-  width: 90px;
-  display: flex;
-  justify-content: space-between;
-  padding: 15px;
-`
-const LikeHate = styled.div`
-  height: 40px;
-  justify-content: start;
-  align-items: center;
-  display: flex;
-  gap: 10px;
+    max-height: 30px;
+    width: 70px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    padding: 12px;
 `
 
+const HTMLContent = styled.div<{ $blur?: boolean }>`
+    width: 90%;
+    box-sizing: border-box;
+    margin: 0 auto;
+
+    ${({$blur}) =>
+            $blur &&
+            css`
+                filter: blur(2px);
+                pointer-events: none;
+            `}
+        /* 이미지, 미디어 크기 제한 */
+    & img,
+    & video,
+    & iframe {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 8px 0;
+    }
+
+    /* 긴 텍스트 줄바꿈 */
+
+    & p {
+        word-break: break-word;
+        margin-bottom: 8px;
+    }
+
+    /* 테이블 스크롤 */
+
+    & table {
+        width: 100%;
+        overflow-x: auto;
+        display: block;
+    }
+`;
+
+// 콘텐츠 높이 제한용 래퍼
+const ContentWrapper = styled.div<{ $expanded: boolean; $maxHeight: number }>`
+    max-height: ${({$expanded, $maxHeight}) => ($expanded ? 'none' : `${$maxHeight}px`)};
+    overflow: hidden;
+    position: relative;
+`;
+// const LikeHate = styled.div`
+//     height: 40px;
+//     justify-content: start;
+//     align-items: center;
+//     display: flex;
+//     gap: 10px;
+// `
+
+
 interface ReviewDebateCardProps {
+  profileImage: string | null // 프로필 이미지 URL
   type: 'review' | 'debate'
   username: string
   createdAt: string
@@ -180,242 +269,258 @@ interface ReviewDebateCardProps {
   rating?: number
   likes: number
   hates: number
+  title?: string
   comments?: number
-  isMyPost?: boolean
-  images?: string[]
-  isSpoiler?: boolean
+  isMyPost: boolean
+  images?: string[] // 이미지 url 배열
+  isSpoiler?: boolean // 리뷰에서만 사용
+  maxLength?: number // 기본값: 리뷰 500, 토론 5000
+  previewLength?: number // 기본값: 200
+  contentId: number // 리뷰 ID, 토론 ID
+  memberId?: number // 리뷰 작성자 ID, 토론 작성자 ID
   onClick?: () => void // onClick prop 추가
-  maxLength?: number
-  previewLength?: number
-  title?: string // 이미 있음
   showLikeButtons?: boolean // 좋아요/싫어요 버튼 표시 여부
   showReportDelete?: boolean // 삭제/신고 버튼 표시 여부 추가
 }
 
-const ReviewDebateCard: React.FC<ReviewDebateCardProps> = ({
-  title,
-  username,
-  createdAt,
-  content,
-  rating,
-  likes,
-  hates,
-  comments,
-  isMyPost,
-  images,
-  type,
-  isSpoiler,
-  maxLength = type === 'review' ? 500 : 5000,
-  previewLength = 200,
-  onClick,
-  showLikeButtons = true, // 기본값은 true
-  showReportDelete = true, // 기본값은 true (리뷰에서는 표시)
-}) => {
-  const [expanded, setExpanded] = useState(false)
-  const [spoilerRevealed, setSpoilerRevealed] = useState(false)
+const ReviewDebateCard: React.FC<ReviewDebateCardProps> =
+  ({
+     title,
+     username,
+     createdAt,
+     content,
+     rating,
+     likes,
+     hates,
+     comments,
+     isMyPost,
+     type,
+     isSpoiler,
+     maxLength = type === 'review' ? 500 : 5000,
+     profileImage,
+     contentId,
+     memberId
+   }) => {
+    const onclickAuth = useOnClickAuth()
 
-  const [isLiked, setIsLiked] = useState(false)
-  const [isHated, setIsHated] = useState(false)
-  const [likeCnt, setLikeCnt] = useState(likes)
-  const [hateCnt, setHateCnt] = useState(hates)
+    const [expanded, setExpanded] = useState(false)
+    const [spoilerRevealed, setSpoilerRevealed] = useState(false)
 
-  const handleLikeClick = () => {
-    setIsLiked(!isLiked)
-    setLikeCnt(prev => (!isLiked ? prev + 1 : prev - 1))
-    if (isHated) {
-      setIsHated(false)
-      setHateCnt(prev => prev - 1)
-    }
-  }
-  const handleHateClick = () => {
-    setIsHated(!isHated)
-    setHateCnt(prev => (!isHated ? prev + 1 : prev - 1))
-    if (isLiked) {
-      setIsLiked(false)
-      setLikeCnt(prev => prev - 1)
-    }
-  }
+    const [isLiked, setIsLiked] = useState(false)
+    const [isHated, setIsHated] = useState(false)
+    const [likeCnt, setLikeCnt] = useState(likes)
+    const [hateCnt, setHateCnt] = useState(hates)
+
+    const [hasOverflow, setHasOverflow] = useState(false);
+    const wrapperRef = useRef<HTMLDivElement>(null);
+
+
+    const handleLike = onclickAuth(async () => {
+      // 자기의 게시물에 좋아요를 누를 수 없도록 처리
+      if (isMyPost) {
+        await Swal.fire({
+          icon: 'warning',
+          title: '자신의 게시물에는 좋아요를 누를 수 없어요.',
+          confirmButtonText: '확인',
+        })
+        return
+      }
+      setIsLiked(!isLiked)
+      setLikeCnt(prev => !isLiked ? prev + 1 : prev - 1)
+      if (isHated) {
+        setIsHated(false)
+        setHateCnt(prev => prev - 1)
+      }
+      // 좋아요 클릭 시 API 호출
+      try {
+        console.log('Like API 호출', contentId, memberId)
+        type === 'review' ? likeReview(contentId) : likeDebate(contentId)
+        Swal.fire({
+          icon: 'success',
+          title: !isLiked ? '좋아요 완료' : '좋아요 취소',
+          confirmButtonText: '확인',
+        })
+      } catch (error) {
+        console.error('Like API 호출 실패:', error)
+        Swal.fire({
+          icon: 'error',
+          title: '처리에 실패했어요.',
+          confirmButtonText: '확인',
+        })
+        setIsLiked(prev => !prev) // API 호출 실패 시 원래 상태로 되돌리기
+      }
+    })
+    const handleHate = onclickAuth(async () => {
+      // 자기의 게시물에 싫어요를 누를 수 없도록 처리
+      if (isMyPost) {
+        await Swal.fire({
+          icon: 'warning',
+          title: '자신의 게시물에는 싫어요를 누를 수 없어요.',
+          confirmButtonText: '확인',
+        })
+        return
+      }
+      setIsHated(!isHated)
+      setHateCnt(prev => !isHated ? prev + 1 : prev - 1)
+      if (isLiked) {
+        setIsLiked(false)
+        setLikeCnt(prev => prev - 1)
+      }
+      // 싫어요 클릭 시 API 호출
+      try {
+        console.log('Hate API 호출', contentId, memberId)
+        type === 'review' ? likeReview(contentId) : likeDebate(contentId)
+        Swal.fire({
+          icon: 'success',
+          title: !isHated ? '싫어요 완료' : '싫어요 취소',
+          confirmButtonText: '확인',
+        })
+      } catch (error) {
+        console.error('Hate API 호출 실패:', error)
+        Swal.fire({
+          icon: 'error',
+          title: '처리에 실패했어요.',
+          confirmButtonText: '확인',
+        })
+        setIsHated(prev => !prev) // API 호출 실패 시 원래 상태로 되돌리기
+      }
+    })
 
   // 콘텐츠 처리
-  const snippet = content.slice(0, maxLength)
-  const isOverflow = snippet.length > previewLength
-  const displayText = expanded ? snippet : snippet.slice(0, previewLength)
-  const blur = type === 'review' && isSpoiler && !spoilerRevealed
+  // const snippet = content.slice(0, maxLength)
+  // const isOverflow = snippet.length > previewLength
+  // const displayText = expanded ? snippet : snippet.slice(0, previewLength)
+  // const blur = type === 'review' && isSpoiler && !spoilerRevealed
 
+    // 콘텐츠 처리
+    const previewHeight = 65
+
+    useEffect(() => {
+      const el = wrapperRef.current;
+      if (el) {
+        setHasOverflow(el.scrollHeight > previewHeight);
+      }
+    }, [content, previewHeight]);
   // const commentCount = comments?.length ?? 0
   // const imageList = props.images ?? []
 
   // 본문 길이 제한
-  const limitedContent = content.slice(0, maxLength)
-  const isLong = limitedContent.length > previewLength
-  const displayContent = expanded ? limitedContent : limitedContent.slice(0, previewLength)
+  // const limitedContent = content.slice(0, maxLength)
+  // const isLong = limitedContent.length > previewLength
+  // const displayContent = expanded ? limitedContent : limitedContent.slice(0, previewLength)
 
   // 스포일러 처리
   const isBlur = isSpoiler && !spoilerRevealed
 
-  // TODO : 카드 클릭 핸들러 (토론장 이동)
-
-  const imageList = images && images.length > 0 ? images : []
-
-  return (
-    <Wrapper
-      $type={type}
-      onClick={type === 'debate' ? onClick : undefined} // 토론일 때만 클릭 가능
-      style={{
-        cursor: type === 'debate' ? 'pointer' : 'default',
-      }}
-    >
-      {/* 토론 제목 표시 (토론일 때만) */}
-
-      <Header>
-        <UserCard>
-          <div style={{ width: 30, height: 30, borderRadius: '50%', backgroundColor: '#f0f0f0' }} />
-          <div>
-            <div style={{ fontSize: 12 }}>{username}</div>
-            <div style={{ fontSize: 8 }}>{createdAt}</div>
-          </div>
-          {rating !== undefined && (
-            <div style={{ marginLeft: 8 }}>
-              <StarRating rating={rating} />
+    return (
+      <Wrapper>
+        <Header>
+          <UserCard>
+            <UserImage style={{
+              backgroundImage: `url(${profileImage})`
+            }}/>
+            <div>
+              <div style={{fontSize: 12}}>{username}</div>
+              <div style={{fontSize: 8}}>{createdAt}</div>
             </div>
+            {rating !== undefined && (
+              <div style={{marginLeft: 8}}>
+                <StarRating rating={rating}/>
+              </div>
+            )}
+          </UserCard>
+          {type === 'debate' && (
+            <DebateTitle style={{fontSize: 14, fontWeight: 'bold'}}>
+              {title}
+            </DebateTitle>
           )}
-        </UserCard>
-      </Header>
-      {type === 'debate' && title && <DebateTitle>{title}</DebateTitle>}
+        </Header>
+        <BodyContents
+          onClick={() => {
+            if (isBlur) {
+              setSpoilerRevealed(true);
+            } else if (type === 'debate') {
+              // 토론 카드 클릭 시 토론 상세 페이지로 이동
+              // 아니면 제목?
+            }
+          }}
+        >
+          {isBlur && (
+            <SpoilerOverlay onClick={() => setSpoilerRevealed(true)}>
+              스포일러 클릭 시 공개
+            </SpoilerOverlay>
+          )}
 
-      {/* 이미지 렌더링 */}
-      {imageList.length === 1 && (
-        <ImageWrapper>
-          <MainImage src={imageList[0] || PLACEHOLDER} alt="review" />
-        </ImageWrapper>
-      )}
-      {imageList.length > 1 && (
-        <ImageWrapper>
-          <MainImage src={imageList[0] || PLACEHOLDER} alt="review" style={{ marginTop: 4 }} />
-          <ThumbnailsWrapper>
-            {imageList.slice(1, 5).map((img, idx) => (
-              <Thumbnail key={idx} src={img || PLACEHOLDER} alt={`thumb${idx}`} />
-            ))}
-          </ThumbnailsWrapper>
-        </ImageWrapper>
-      )}
+          <ContentWrapper $expanded={expanded} $maxHeight={previewHeight} ref={wrapperRef}>
+            <HTMLContent $blur={isBlur} dangerouslySetInnerHTML={{__html: content}}/>
+          </ContentWrapper>
 
-      {/* 본문 */}
-      <BodyContents $blur={isBlur}>
-        {displayContent}
-        {isBlur && (
-          <SpoilerWarning>
-            스포일러 주의!{' '}
+          {hasOverflow && (
             <ShowMoreButton
               onClick={e => {
-                e.stopPropagation()
-                setSpoilerRevealed(true)
+                e.stopPropagation();
+                setExpanded(prev => !prev);
               }}
             >
-              내용 보기
+              {expanded ? '접기' : '더 보기'}
             </ShowMoreButton>
-          </SpoilerWarning>
-        )}
-      </BodyContents>
-
-      {/* 더보기/접기 버튼 */}
-      {isLong && !expanded && !isBlur && (
-        <ShowMoreButton
-          style={{ marginLeft: 16, marginBottom: 8 }}
-          onClick={e => {
-            e.stopPropagation()
-            setExpanded(true)
-          }}
-        >
-          ...더보기
-        </ShowMoreButton>
-      )}
-      {isLong && expanded && !isBlur && (
-        <ShowMoreButton
-          style={{ marginLeft: 16, marginBottom: 8 }}
-          onClick={e => {
-            e.stopPropagation()
-            setExpanded(false)
-          }}
-        >
-          접기
-        </ShowMoreButton>
-      )}
-
-      <Footer>
-        <LikeHateCommentWrapper>
-          {showLikeButtons ? (
-            // 기존 버튼 방식 (리뷰용)
-            <LikeHate>
-              <LikeButton
-                icon={<ThumbsUp size={20} />}
-                size="small"
-                variant={isLiked ? 'pink' : 'dark'}
-                onClick={handleLikeClick}
-              >
-                {likeCnt}
-              </LikeButton>
-              <HateButton
-                icon={<ThumbsDown size={20} />}
-                size="small"
-                variant={isHated ? 'blue' : 'dark'}
-                onClick={handleHateClick}
-              >
-                {hateCnt}
-              </HateButton>
-            </LikeHate>
-          ) : (
-            // 숫자만 표시 (토론용)
-            <LikeHateNumbers>
-              <LikeNumber>
-                <ThumbsUp size={16} color="#ff6b9d" />
-                <span>{likes}</span>
-              </LikeNumber>
-              <HateNumber>
-                <ThumbsDown size={16} color="#4ecdc4" />
-                <span>{hates}</span>
-              </HateNumber>
-            </LikeHateNumbers>
           )}
+        </BodyContents>
 
-          {comments !== undefined && (
-            <CommentsWrapper>
-              <MessageSquareText size={15} color="white" />
-              <span>{comments}</span>
-            </CommentsWrapper>
-          )}
-        </LikeHateCommentWrapper>
+        <Footer>
+          <LikeHateCommentWrapper>
+            <LikeButton variant={isLiked ? 'pink' : 'dark'} onClick={handleLike}>
+              <ThumbsUp size={16}/>{likeCnt}
+            </LikeButton>
+            <HateButton variant={isHated ? 'blue' : 'dark'} onClick={handleHate}>
+              <ThumbsDown size={16}/>{hateCnt}
+            </HateButton>
+            {comments !== undefined && (
+              <CommentsWrapper>
+                <MessageSquareText size={16}/>{comments}
+              </CommentsWrapper>
+            )}
+          </LikeHateCommentWrapper>
+          <ReportDeleteButtonWrapper>
+          {isMyPost && type === 'debate' && (
+            <ReportDeleteButton onClick={() =>
+            {
+              // 토론 수정 API 호출 및 라우팅
+              console.log('Edit Debate API')
+            }}>
+              수정
+            </ReportDeleteButton>)}
+          <ReportDeleteButton onClick={() => {
+            console.log(isMyPost ? 'Delete API' : 'Report API')
+            Swal.fire({
+              icon: 'warning',
+              title: isMyPost ? '정말 삭제하시겠습니까?' : '신고하시겠습니까?',
+              text: isMyPost ? '삭제된 데이터는 복구할 수 없습니다.' : '신고는 관리자에게 전달됩니다.',
+              showCancelButton: true,
+              input: isMyPost ? undefined : 'text',
+              confirmButtonText: isMyPost ? '삭제' : '신고',
+              cancelButtonText: '취소'
+            }).then(result => {
+              if (result.isConfirmed) {
+                // API 호출 및 파라미터 전달
+                if (isMyPost) {
+                  // 삭제 API 호출
+                  console.log('Deleting post...', )
+                } else {
+                  // 신고 API 호출
+                  console.log('Reporting post with reason:', result.value, contentId, type, memberId)
+                }
 
-        {/* 조건부로 삭제/신고 버튼 표시 */}
-        {showReportDelete && <ReportDeleteButton>{isMyPost ? '삭제' : '신고'}</ReportDeleteButton>}
-      </Footer>
-    </Wrapper>
-  )
-}
+              }
+            })
+          }}>
+            {isMyPost ? '삭제' : '신고'}
+          </ReportDeleteButton>
+          </ReportDeleteButtonWrapper>
 
-// 새로운 스타일드 컴포넌트 추가
-const LikeHateNumbers = styled.div`
-  display: flex;
-  gap: 16px;
-  align-items: center;
-`
+        </Footer>
+      </Wrapper>
+    );
+  };
 
-const LikeNumber = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: #ff6b9d;
-  font-size: 14px;
-  font-weight: 500;
-`
-
-const HateNumber = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: #4ecdc4;
-  font-size: 14px;
-  font-weight: 500;
-`
-
-export default ReviewDebateCard
+export default ReviewDebateCard;
