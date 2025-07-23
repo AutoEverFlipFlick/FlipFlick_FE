@@ -316,6 +316,10 @@ const ActionButton = styled(BaseButton).attrs({
     align-items: center;
 `
 
+const WriteButton = styled(BaseButton)`
+    margin-bottom: 20px;
+`
+
 
 /* 플렛폼 이미지 경로
 @/assets/platform/disney_plus.png
@@ -743,6 +747,16 @@ length
             <ReviewDebateContents>
               <ContentsHeader>
                 <ContentsTitle>토론장 ({debateData?.totalElements})</ContentsTitle>
+
+                {isAuthenticated && (
+                  <WriteButton
+                    variant="orange"
+                    size="small"
+                    onClick={() => navigate(`/debate/write?tmdbId=${tmdbId}`)}
+                  >
+                    토론 작성하기
+                  </WriteButton>
+                )}
               </ContentsHeader>
               <ReviewDebateList>
                 {debateData?.debates.map((debate, index) => (
@@ -773,19 +787,19 @@ length
               <ContentsTitle>유튜브 ({movieData.videos.length})</ContentsTitle>
               {/* 영화 유튜브 랜더링*/}
               <MediaContents>
-                { movieData.videos.length === 0 ?
+                {movieData.videos.length === 0 ?
                   (<p>유튜브 영상이 없습니다.</p>) :
                   (movieData.videos.map((video, index) => (
-                  <iframe
-                    width={300}
-                    height={200}
-                    style={{ width: '300px', height: '200px', marginBottom: '10px', border: 'none' }}
-                    key={index}
-                    src={video.replace('watch?v=', 'embed/')}
-                    title={`YouTube video player ${index + 1}`}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
+                    <iframe
+                      width={300}
+                      height={200}
+                      style={{width: '300px', height: '200px', marginBottom: '10px', border: 'none'}}
+                      key={index}
+                      src={video.replace('watch?v=', 'embed/')}
+                      title={`YouTube video player ${index + 1}`}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
                   )))}
               </MediaContents>
               {/* 영화 이미지 */}
@@ -793,7 +807,7 @@ length
               <MediaContents>
                 {movieData.images.length === 0 ? (
                   <p>이미지가 없습니다.</p>
-                ) : ( movieData.images.map((image, index) => (
+                ) : (movieData.images.map((image, index) => (
                   <DetailImage
                     key={index}
                     src={image}
