@@ -100,6 +100,9 @@ export const getSimilarReviews = async (tmdbId: string | undefined, page: number
       page: page,
       size: 10,
     }
+  })
+  return res.data
+}
 // 리뷰 좋아요 토글
 export const likeReview = async (reviewId: number) => {
   const res = await axiosInstance.post(`/api/v1/review/like-hate`, {
