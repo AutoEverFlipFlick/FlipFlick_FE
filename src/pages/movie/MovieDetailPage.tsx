@@ -385,8 +385,7 @@ const PageButton = styled.button<{ $active?: boolean; $disabled?: boolean }>`
   background-color: ${({ $active, $disabled }) =>
     $disabled ? '#333' : $active ? '#FE6A3C' : 'transparent'};
   color: ${({ $active, $disabled }) => ($disabled ? '#666' : $active ? '#fff' : '#fff')};
-  border: 1px solid
-    ${({ $active, $disabled }) => ($disabled ? '#444' : $active ? '#FE6A3C' : '#666')};
+  border: 1px solid ${({ $active, $disabled }) => ($disabled ? '#444' : $active ? '#FE6A3C' : '#666')};
 
   &:hover {
     background-color: ${({ $disabled, $active }) =>
@@ -1060,45 +1059,40 @@ export default function MovieDetailPage() {
               ) : (
                 <>
                   <ReviewDebateList>
-                    <DetailReviewCardWrapper>
-                      {filteredDebates.length > 0 ? (
+                    {filteredDebates.length > 0 ? (
                         filteredDebates.map(debate => (
-                          <DebateCard
-                            key={debate.debateId}
-                            debateId={debate.debateId}
-                            title={debate.debateTitle}
-                            content={debate.content}
-                            username={debate.nickname}
-                            createdAt={formatTimeAgo(debate.createdAt)}
-                            likes={debate.likeCnt}
-                            hates={debate.hateCnt}
-                            comments={debate.commentCount}
-                            isMyPost={user?.id === debate.memberId}
-                            isSpoiler={debate.spoiler}
-                            profileImage={debate.profileImage}
-                            images={extractImagesFromContent(debate.content)}
-                            onClick={() => handleDebateClick(debate.debateId)}
-                          />
-                        ))
-                      ) : (
-                        <div
-                          style={{
-                            textAlign: 'center',
-                            padding: '40px',
-                            color: '#666',
-                            width: '100%',
-                          }}
-                        >
-                          {showSpoilers
-                            ? isAuthenticated
-                              ? '아직 작성된 토론이 없습니다. 첫 번째 토론을 시작해보세요!'
-                              : '아직 작성된 토론이 없습니다.'
-                            : isAuthenticated
-                              ? '스포일러가 아닌 토론이 없습니다. 스포일러 포함을 선택하거나 새로운 토론을 작성해보세요!'
-                              : '스포일러가 아닌 토론이 없습니다. 스포일러 포함을 선택해보세요.'}
+                          <DetailReviewCardWrapper key={debate.debateId}>
+                            <DebateCard
+                              debateId={debate.debateId}
+                              title={debate.debateTitle}
+                              content={debate.content}
+                              username={debate.nickname}
+                              createdAt={formatTimeAgo(debate.createdAt)}
+                              likes={debate.likeCnt}
+                              hates={debate.hateCnt}
+                              comments={debate.commentCount}
+                              isMyPost={user?.id === debate.memberId}
+                              isSpoiler={debate.spoiler}
+                              profileImage={debate.profileImage}
+                              images={extractImagesFromContent(debate.content)}
+                              onClick={() => handleDebateClick(debate.debateId)}
+                            />
+                          </DetailReviewCardWrapper>)))
+                      : (
+                        <div style={{
+                          textAlign: 'center',
+                          padding: '40px',
+                          color: '#666',
+                          width: '100%',
+                        }}> {showSpoilers
+                          ? isAuthenticated
+                            ? '아직 작성된 토론이 없습니다. 첫 번째 토론을 시작해보세요!'
+                            : '아직 작성된 토론이 없습니다.'
+                          : isAuthenticated
+                            ? '스포일러가 아닌 토론이 없습니다. 스포일러 포함을 선택하거나 새로운 토론을 작성해보세요!'
+                            : '스포일러가 아닌 토론이 없습니다. 스포일러 포함을 선택해보세요.'}
                         </div>
                       )}
-                    </DetailReviewCardWrapper>
                   </ReviewDebateList>
 
                   {/* 페이지네이션 */}
