@@ -6,7 +6,7 @@ import { DefaultRating } from '@/components/starRating/DefaultRating'
 
 type RatingCardProps = {
   title: string
-  rating: number
+  rating: null | undefined | number
   size?: number // MUI 기준: small | medium | large
   editable?: boolean
   onRate?: (value: number) => void

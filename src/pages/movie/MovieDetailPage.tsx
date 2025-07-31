@@ -498,8 +498,8 @@ export default function MovieDetailPage() {
 
   const onClickAuth = useOnClickAuth()
   const [reviewData, setReviewData] = useState<ReviewData | null>(null)
-  const [myReview, setMyReview] = useState<Review | null>(null)
-  const [myRating, setMyRating] = useState<number >(1) // 내 별점 상태 추가
+  const [myReview, setMyReview] = useState<Review | null | undefined >(null)
+  const [myRating, setMyRating] = useState<number |null | undefined >(1) // 내 별점 상태 추가
   // const [debateData, setDebateData] = useState<DebateData | null>(null)
 
   // 토론 관련 state 추가
@@ -692,7 +692,7 @@ export default function MovieDetailPage() {
       const mappedData: Review | null = mapToMyReviewData(data)
       console.log('내 리뷰 매핑됨 : ', mappedData)
       setMyReview(mappedData)
-      setMyRating(mappedData.rating || 1) // 내 별점 설정
+      setMyRating(mappedData ? mappedData.rating : 1) // 내 별점 설정
     } catch (error) {
       console.error('내 리뷰 불러오기 실패:', error)
     } finally {

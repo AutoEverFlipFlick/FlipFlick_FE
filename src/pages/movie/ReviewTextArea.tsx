@@ -52,7 +52,7 @@ const TextareaButton = styled(BaseButton)`
 interface ReviewTextAreaProps {
   tmdbId: string
   onSuccess?: () => void
-  rating: number // 평점 추가
+  rating: number | null | undefined // 평점 추가
   isAuthenticated: boolean // 인증 여부 추가
   myReview?: Review | null // 수정 모드일 때 기존 리뷰 데이터
 }
@@ -133,7 +133,7 @@ export const ReviewTextArea = ({
         await updateMovieReview(myReview.contentId, {
           content: value,
           spoiler: isSpoiler,
-          star: rating,
+          star: rating || 1,
         })
         await Swal.fire({
           icon: 'success',
@@ -149,7 +149,7 @@ export const ReviewTextArea = ({
         })
         await createMovieReview({
           tmdbId: parseInt(tmdbId),
-          star: rating,
+          star: rating || 1,
           content: value,
           spoiler: isSpoiler,
         })
