@@ -29,12 +29,12 @@ const Title = styled.p`
 `
 
 const RatingCard: React.FC<RatingCardProps> = ({
-                                                 title,
-                                                 rating,
-                                                 size = 24,
-                                                 editable = false,
-                                                 onRate,
-                                               }) => {
+  title,
+  rating,
+  size = 24,
+  editable = false,
+  onRate,
+}) => {
   const [localRating, setLocalRating] = useState<number | null>(rating)
 
   // MUI Rating size 대응
@@ -48,8 +48,8 @@ const RatingCard: React.FC<RatingCardProps> = ({
     <CardContainer>
       <DefaultRating
         value={localRating}
-        precision={(editable)? 0.5 : 0.1} // 편집 가능 여부에 따라 소수점 조정
-        roundTo={(editable) ? 0.5 : 0.1} // 편집 가능 여부에 따라 반올림 단위 조정
+        precision={editable ? 0.5 : 0.1} // 편집 가능 여부에 따라 소수점 조정
+        roundTo={editable ? 0.5 : 0.1} // 편집 가능 여부에 따라 반올림 단위 조정
         size={getMUISize()}
         readOnly={!editable}
         onChange={(e, newValue) => {
@@ -61,7 +61,8 @@ const RatingCard: React.FC<RatingCardProps> = ({
       />
       <Title>
         {title}
-        {title.includes('평점') && `: ${localRating?.toFixed(1)} / 5.0`}
+        {!editable && `: ${localRating?.toFixed(1)} / 5.0`}
+        {editable && `: ${localRating?.toFixed(1)} / 5.0`}
       </Title>
     </CardContainer>
   )
