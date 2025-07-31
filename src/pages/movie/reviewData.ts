@@ -39,7 +39,7 @@ export function mapToMyReviewData(data: any): Review | null {
     },
     tmdbId: review.tmdbId,
     movieTitle: review.movieTitle,
-    contentId: review.contentId,
+    contentId: review.reviewId,
     createdAt: review.createdAt,
     updatedAt: review.updatedAt,
     content: review.content,

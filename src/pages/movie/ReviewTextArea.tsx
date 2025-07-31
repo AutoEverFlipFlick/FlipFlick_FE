@@ -133,7 +133,7 @@ export const ReviewTextArea = ({
         await updateMovieReview(myReview.contentId, {
           content: value,
           spoiler: isSpoiler,
-          star: 5,
+          star: rating,
         })
         await Swal.fire({
           icon: 'success',
@@ -149,7 +149,7 @@ export const ReviewTextArea = ({
         })
         await createMovieReview({
           tmdbId: parseInt(tmdbId),
-          star: 5,
+          star: rating,
           content: value,
           spoiler: isSpoiler,
         })

@@ -1,7 +1,7 @@
 // src/components/starRating/StarRating.tsx
 import React from 'react'
 import styled from 'styled-components'
-import { RoundedRating } from '@/components/starRating/RoundedRating'
+import { DefaultRating } from '@/components/starRating/DefaultRating'
 
 type StarRatingProps = {
   rating: number // 0.0 ~ 5.0
@@ -17,22 +17,17 @@ const Wrapper = styled.div`
 
 const StarRating: React.FC<StarRatingProps> = ({
   rating,
-  size = 20,
   roundTo = 0.5,
   precision = 0.1,
 }) => {
   return (
     <Wrapper>
-      <RoundedRating
+      <DefaultRating
         value={rating}
         readOnly
         roundTo={roundTo}
         precision={precision}
         size="small"
-        sx={{
-          fontSize: size,
-          color: 'gold',
-        }}
       />
     </Wrapper>
   )
