@@ -6,7 +6,7 @@ import ReviewDebateCard from '@/components/feature/movieDetail/ReviewDebateCard'
 import React, { useCallback, useEffect, useState, useRef } from 'react'
 import RatingCard from '@/components/starRating/RatingCard'
 import MovieDetailHeader from '@/pages/movie/MovieDetailHeader'
-import { Eye, EyeOff, Flag, ListPlus, Star, StarOff } from 'lucide-react'
+import { Eye, EyeOff, Flag, ListPlus, Star, StarOff, ChevronDown } from 'lucide-react'
 
 import { mapToMyReviewData, mapToReviewData, Review, ReviewData } from '@/pages/movie/reviewData'
 import { MovieData } from '@/pages/movie/movieData'
@@ -36,7 +36,6 @@ import watchaImg from '@/assets/platform/watcha.png'
 import disneyPlusImg from '@/assets/platform/disney_plus.png'
 import wavveImg from '@/assets/platform/wavve.png'
 import PlaylistAddModal from '@/components/feature/PlaylistAddModal'
-import { ChevronDown } from 'lucide-react'
 
 const MovieDetailLayout = styled.div`
   display: flex;
@@ -278,16 +277,16 @@ const ContentsListTitleTab = styled.div`
   align-items: center;
 `
 
-const ContentsListOrderDropdown = styled.div`
-  width: 80px;
-  height: 30px;
-  display: flex;
-  border-radius: 5px;
-  background-color: #191513;
-  text-align: center;
-  align-items: center;
-  justify-content: center;
-`
+// const ContentsListOrderDropdown = styled.div`
+//   width: 80px;
+//   height: 30px;
+//   display: flex;
+//   border-radius: 5px;
+//   background-color: #191513;
+//   text-align: center;
+//   align-items: center;
+//   justify-content: center;
+// `
 
 const TabButton = styled.button<{ $active: boolean }>`
   all: unset;
@@ -499,7 +498,8 @@ export default function MovieDetailPage() {
 
   const onClickAuth = useOnClickAuth()
   const [reviewData, setReviewData] = useState<ReviewData | null>(null)
-  const [myReview, setMyReview] = useState<Review | null>(null)
+  const [myReview, setMyReview] = useState<Review | null | undefined >(null)
+  const [myRating, setMyRating] = useState<number |null | undefined >(1) // 내 별점 상태 추가
   // const [debateData, setDebateData] = useState<DebateData | null>(null)
 
   // 토론 관련 state 추가
@@ -643,77 +643,63 @@ export default function MovieDetailPage() {
     if (activeTab === 'review') {
       fetchReviewsBySort()
     }
-  }, [sortBy, currentPage, activeTab])
+  }, [sortBy, currentPage, activeTab, myReview])
 
+  const fetchMovieDetail = async () => {
+    try {
+      // setIsLoading(true)
+      console.log('영화 상세 정보 불러오기 시작, 영화 ID : ', tmdbId, typeof tmdbId)
+      const response = await getMovieDetail(tmdbId)
+      const data = response.data
+      console.log('영화 정보 조회됨 : ', data)
+      const mappedData: MovieData = mapToMovieData(data)
+      console.log('영화 정보 매핑됨 : ', mappedData)
+      console.log('영화 providers 확인 : ', mappedData.providers)
+      setMovieData(mappedData)
+      // setIsLiked(mappedData.myLike)
+      setIsWatched(mappedData.myWatched)
+      setIsBookmarked(mappedData.myBookmark)
+    } catch (error) {
+      console.error('영화 상세 정보 불러오기 실패:', error)
+    } finally {
+      console.log('영화 상세 정보 불러오기 및 매핑 완료')
+    }
+  }
+  const fetchMovieReview = async () => {
+    try {
+      console.log('영화 리뷰 불러오기 시작, 영화 ID : ', tmdbId, typeof tmdbId)
+      const response = await getMovieReview(tmdbId, 0)
+      const data = response.data
+      console.log('영화 리뷰 조회됨 : ', data)
+      console.log('영화 리뷰 매핑시 사용된 유저 정보 : ', user, isAuthenticated, user?.id)
+      const mappedData: ReviewData = mapToReviewData(data, user?.id, user?.nickname)
+      console.log('영화 리뷰 매핑됨 : ', mappedData)
+      // setMyReview(mappedData)
+      setReviewData(mappedData)
+    } catch (error) {
+      console.error('영화 리뷰 불러오기 실패:', error)
+    } finally {
+      console.log('영화 리뷰 불러오기 및 매핑 완료')
+    }
+  }
+
+  const fetchMyReview = async () => {
+    try {
+      console.log('내 리뷰 불러오기 시작, 영화 ID : ', tmdbId, typeof tmdbId)
+      const response = await getMyMovieReview(tmdbId)
+      const data = response.data
+      console.log('내 리뷰 조회됨 : ', data)
+      const mappedData: Review | null = mapToMyReviewData(data)
+      console.log('내 리뷰 매핑됨 : ', mappedData)
+      setMyReview(mappedData)
+      setMyRating(mappedData ? mappedData.rating : 1) // 내 별점 설정
+    } catch (error) {
+      console.error('내 리뷰 불러오기 실패:', error)
+    } finally {
+      console.log('내 리뷰 불러오기 및 매핑 완료')
+    }
+  }
   useEffect(() => {
-    const fetchMovieDetail = async () => {
-      try {
-        // setIsLoading(true)
-        console.log('영화 상세 정보 불러오기 시작, 영화 ID : ', tmdbId, typeof tmdbId)
-        const response = await getMovieDetail(tmdbId)
-        const data = response.data
-        console.log('영화 정보 조회됨 : ', data)
-        const mappedData: MovieData = mapToMovieData(data)
-        console.log('영화 정보 매핑됨 : ', mappedData)
-        console.log('영화 providers 확인 : ', mappedData.providers)
-        setMovieData(mappedData)
-        // setIsLiked(mappedData.myLike)
-        setIsWatched(mappedData.myWatched)
-        setIsBookmarked(mappedData.myBookmark)
-      } catch (error) {
-        console.error('영화 상세 정보 불러오기 실패:', error)
-      } finally {
-        console.log('영화 상세 정보 불러오기 및 매핑 완료')
-      }
-    }
-    const fetchMovieReview = async () => {
-      try {
-        console.log('영화 리뷰 불러오기 시작, 영화 ID : ', tmdbId, typeof tmdbId)
-        const response = await getMovieReview(tmdbId, 0)
-        const data = response.data
-        console.log('영화 리뷰 조회됨 : ', data)
-        console.log('영화 리뷰 매핑시 사용된 유저 정보 : ', user, isAuthenticated, user?.id)
-        const mappedData: ReviewData = mapToReviewData(data, user?.id, user?.nickname)
-        console.log('영화 리뷰 매핑됨 : ', mappedData)
-        // setMyReview(mappedData)
-        setReviewData(mappedData)
-      } catch (error) {
-        console.error('영화 리뷰 불러오기 실패:', error)
-      } finally {
-        console.log('영화 리뷰 불러오기 및 매핑 완료')
-      }
-    }
-
-    const fetchMyReview = async () => {
-      try {
-        console.log('내 리뷰 불러오기 시작, 영화 ID : ', tmdbId, typeof tmdbId)
-        const response = await getMyMovieReview(tmdbId)
-        const data = response.data
-        console.log('내 리뷰 조회됨 : ', data)
-        const mappedData: Review | null = mapToMyReviewData(data)
-        console.log('내 리뷰 매핑됨 : ', mappedData)
-        setMyReview(mappedData)
-      } catch (error) {
-        console.error('내 리뷰 불러오기 실패:', error)
-      } finally {
-        console.log('내 리뷰 불러오기 및 매핑 완료')
-      }
-    }
-    // const fetchMovieDebate = async () => {
-    //   try {
-    //     console.log("토론장 불러오기 시작, 영화 ID : ", tmdbId, typeof tmdbId)
-    //     const response = await getMovieDebate(tmdbId, 0)
-    //     const data = response.data
-    //     console.log("토론장 조회됨 : ", response.data)
-    //     const mappedData = mapToDebateData(data, user?.id, user?.nickname)
-    //     console.log("토론장 매핑됨 : ", mappedData)
-    //     setDebateData(mappedData)
-    //   } catch (error) {
-    //     console.error('토론장 불러오기 실패:', error)
-    //   } finally {
-    //     console.log("토론장 불러오기 완료")
-    //   }
-    // }
 
     try {
       if (loading) return // 로딩 중이면 아무것도 하지 않음
@@ -744,7 +730,7 @@ export default function MovieDetailPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [tmdbId, user, loading, isAuthenticated, activeTab]) // activeTab 의존성 추가
+  }, [tmdbId, user, loading, isAuthenticated, activeTab, isLoading]) // activeTab 의존성 추가
 
   // HTML에서 이미지 URL 추출하는 함수
   const extractImagesFromContent = (htmlContent: string): string[] => {
@@ -930,32 +916,42 @@ export default function MovieDetailPage() {
           {activeTab === 'review' && (
             <ReviewDebateContents>
               <RatingWrapper>
-                <RatingCard title="전체 평점" rating={movieData.voteAverage} size={40} />
-                <RatingCard title="평가하기" rating={movieData.myRating} size={40} />
+                <RatingCard
+                  key={`vote-${movieData.voteAverage}`}
+                  title="전체 평점"
+                  rating={movieData.voteAverage}
+                  size={40}
+                  editable={false}
+                />
+
+                <RatingCard
+                  title="내 평점"
+                  rating={myRating}
+                  size={40}
+                  editable={true}
+                  onRate={(value) => {
+                    setMyRating(value)
+                  }}
+                />
+
               </RatingWrapper>
+              <p>리뷰를 저장해야 별점이 적용됩니다!</p>
               <DetailMyReviewWrapper>
                 <DetailMyReviewCard>
                   <ReviewTextArea
                     tmdbId={tmdbId!}
                     myReview={myReview}
-                    rating={myReview?.rating || 1}
+                    rating={myRating}
                     isAuthenticated={isAuthenticated}
                     onSuccess={async () => {
                       try {
-                        const myReviewResponse = await getMyMovieReview(tmdbId!)
-                        const data = myReviewResponse.data
-                        const mappedData: Review | null = mapToMyReviewData(data)
-                        setMyReview(mappedData)
-                        const reviewResponse = await getMovieReview(tmdbId!, 0)
-                        const reviewData = reviewResponse.data
-                        const mappedReviewData: ReviewData = mapToReviewData(
-                          reviewData,
-                          user?.id,
-                          user?.nickname,
-                        )
-                        setReviewData(mappedReviewData)
+                        console.log('리뷰 저장 후 갱신 시작')
+                        await new Promise(resolve => setTimeout(resolve, 500)) // 응답 대기는 유지
+                        console.log('대기 시간 후 갱신 시작')
+                        await fetchMovieDetail() // 전체 평점 다시 받아오기
+                        await fetchMyReview()    // 내 평점/리뷰도 다시 받아오기
                       } catch (error) {
-                        console.error('내 리뷰 불러오기 실패:', error)
+                        console.error('리뷰 저장 후 갱신 실패:', error)
                       }
                     }}
                   />
@@ -964,7 +960,6 @@ export default function MovieDetailPage() {
               <ContentsListWrapper>
                 <ContentsListTitleTab>
                   <ContentsTitle>리뷰 ({reviewData?.totalElements})</ContentsTitle>
-                  {/* TODO : 정렬 버튼 및 랜더링 구현하기*/}
                   <SortContainer ref={dropdownRef}>
                     <SortButton onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
                       {getSortLabel(sortBy)} <ChevronDown size={16} />
