@@ -9,7 +9,7 @@ type RatingCardProps = {
   rating: null | undefined | number
   size?: number // MUI 기준: small | medium | large
   editable?: boolean
-  onRate?: (value: number) => void
+  onRate?: (value: number | null | undefined) => void
 }
 
 const CardContainer = styled(BaseContainer)`
@@ -35,7 +35,7 @@ const RatingCard: React.FC<RatingCardProps> = ({
   editable = false,
   onRate,
 }) => {
-  const [localRating, setLocalRating] = useState<number | null>(rating)
+  const [localRating, setLocalRating] = useState<number | null | undefined>(rating)
 
   // MUI Rating size 대응
   const getMUISize = (): 'small' | 'medium' | 'large' => {

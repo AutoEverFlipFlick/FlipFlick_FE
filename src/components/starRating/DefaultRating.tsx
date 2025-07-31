@@ -3,10 +3,9 @@ import React from 'react'
 import Rating from '@mui/material/Rating'
 import { styled } from 'styled-components'
 import StarIcon from '@mui/icons-material/Star'
-import StarBorderIcon from '@mui/icons-material/StarBorder'
 
 export interface DefaultRatingProps {
-  value: number | null
+  value: number | null | undefined // 현재 선택된 평점 값
   precision?: number // 소수점 표시 단위 (기본값: 0.1)
   onChange?: (event: React.SyntheticEvent, value: number | null) => void
   roundTo?: number // 시각적으로 표시할 반올림 단위 (기본값: 0.5)
@@ -36,7 +35,7 @@ export const DefaultRating: React.FC<DefaultRatingProps> = ({
                                                               readOnly = false,
                                                               size = 'medium',
                                                             }) => {
-  const roundedValue = value === null ? null : Math.round(value / roundTo) * roundTo
+  const roundedValue = value === null ? null : Math.round((value||1) / roundTo) * roundTo
 
   return (
     <Rating
