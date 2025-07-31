@@ -24,28 +24,26 @@ export default meta
 type Story = StoryObj<typeof RatingCard>
 
 export const StaticRating: Story = {
-  render: (args) => {
-    const [value, setValue] = useState<number>(args.rating ?? 3.0)
+  render: args => {
+    function Wrapper() {
+      const [value, setValue] = useState<number | null | undefined>(args.rating ?? 3.0)
 
-    return (
-      <RatingCard
-        {...args}
-        rating={value}
-        onRate={(val) => setValue(val)}
-      />
-    )
+      return <RatingCard {...args} rating={value} onRate={val => setValue(val)} />
+    }
+
+    return <Wrapper />
   },
   args: {
     title: '전체 평점',
     rating: 4.2,
     editable: false,
-
   },
 }
 
 export const EditableRating: Story = {
-  render: (args) => {
-    const [value, setValue] = useState<number>(args.rating ?? 3.0)
+  render: args => {
+    function Wrapper() {
+    const [value, setValue] = useState<number | null | undefined>(args.rating ?? 3.0)
 
     return (
       <RatingCard
@@ -53,12 +51,13 @@ export const EditableRating: Story = {
         title="나의 평점"
         rating={value}
         editable={true}
-        onRate={(val) => setValue(val)}
+        onRate={val => setValue(val)}
       />
     )
+  }
+    return <Wrapper />
   },
   args: {
     rating: 3.0,
-
   },
 }

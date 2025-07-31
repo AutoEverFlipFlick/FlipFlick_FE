@@ -42,18 +42,18 @@ export const Interactive: Story = {
     readOnly: false,
   },
   render: (args: DefaultRatingProps) => {
-    const [rating, setRating] = useState<number | null>(args.value)
+    function Wrapper() {
+      const [rating, setRating] = useState<number | null | undefined>(args.value)
 
-    return (
-      <div style={{ background: '#222', padding: '2rem', color: 'white' }}>
-        <DefaultRating
-          {...args}
-          value={rating}
-          onChange={(e, newValue) => setRating(newValue)}
-        />
-        <div style={{ marginTop: '1rem' }}>현재 별점: {rating}</div>
-      </div>
-    )
+      return (
+        <div style={{ background: '#222', padding: '2rem', color: 'white' }}>
+          <DefaultRating {...args} value={rating} onChange={(e, newValue) => setRating(newValue)} />
+          <div style={{ marginTop: '1rem' }}>현재 별점: {rating}</div>
+        </div>
+      )
+    }
+
+    return <Wrapper />
   },
 }
 
@@ -69,18 +69,17 @@ export const ReadOnly: Story = {
     roundTo: 0.1,
   },
   render: (args: DefaultRatingProps) => {
-    const [rating, setRating] = useState<number | null>(args.value)
+    function Wrapper() {
+      const [rating, setRating] = useState<number | null | undefined>(args.value)
 
-    return (
-      <div style={{ background: '#222', padding: '2rem', color: 'white' }}>
-        <DefaultRating
-          {...args}
-          value={rating}
-          onChange={(e, newValue) => setRating(newValue)}
-        />
-        <div style={{ marginTop: '1rem' }}>현재 별점: {rating}</div>
-      </div>
-    )
+      return (
+        <div style={{ background: '#222', padding: '2rem', color: 'white' }}>
+          <DefaultRating {...args} value={rating} onChange={(e, newValue) => setRating(newValue)} />
+          <div style={{ marginTop: '1rem' }}>현재 별점: {rating}</div>
+        </div>
+      )
+    }
+    return <Wrapper />
   },
 }
 
