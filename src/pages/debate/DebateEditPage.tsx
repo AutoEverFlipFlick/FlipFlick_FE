@@ -337,7 +337,7 @@ const DebateEditPage: React.FC = () => {
           background: '#1e1e2f',
           color: '#fff',
         }).then(() => {
-          navigate(`/debate/${debate.debateId}`)
+          navigate(`/debate/${debate.debateId}`, { replace: true })
         })
       }
     } catch (error) {
