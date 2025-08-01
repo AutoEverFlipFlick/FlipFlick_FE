@@ -28,6 +28,7 @@ import {
   createComment,
   getComments,
   deleteComment,
+  getUserDebateReaction
 } from '@/services/debate'
 import { useAuth } from '@/context/AuthContext'
 
@@ -402,7 +403,7 @@ const DebateDetailPage: React.FC<DebateDetailPageProps> = () => {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // 토론 상세 데이터 가져오기 (기존 코드 유지)
+  // 토론 상세 데이터 가져오기 (기존 코드 수정)
   useEffect(() => {
     const fetchDebateDetail = async () => {
       try {
@@ -429,7 +430,35 @@ const DebateDetailPage: React.FC<DebateDetailPageProps> = () => {
     }
 
     fetchDebateDetail()
-  }, [id])
+  }, [id]) // isAuthenticated 제거
+
+  // 사용자 반응 상태 조회를 별도 useEffect로 분리
+  useEffect(() => {
+    const fetchUserReaction = async () => {
+      try {
+        if (!id || !debate) return
+        
+        if (isAuthenticated) {
+          const reactionResponse = await getUserDebateReaction(parseInt(id))
+          if (reactionResponse.success) {
+            setIsLiked(reactionResponse.data.isLiked || false)
+            setIsDisliked(reactionResponse.data.isHated || false)
+          }
+        } else {
+          // 비로그인 사용자는 기본값
+          setIsLiked(false)
+          setIsDisliked(false)
+        }
+      } catch (error) {
+        console.error('사용자 반응 상태 조회 실패:', error)
+        // 에러가 발생해도 기본값으로 설정
+        setIsLiked(false)
+        setIsDisliked(false)
+      }
+    }
+
+    fetchUserReaction()
+  }, [id, debate, isAuthenticated]) // debate 상태가 설정된 후에 실행
 
   // 댓글 목록 가져오기 (페이지네이션)
   const fetchComments = useCallback(
@@ -945,11 +974,11 @@ const DebateDetailPage: React.FC<DebateDetailPageProps> = () => {
         <DebateTitle>{debate.debateTitle}</DebateTitle>
         <DebateInfo>
           <InfoItem>
-            {/* 프로필 이미지 또는 텍스트 아바타 표시 */}
-            {debate.profileImage ? (
+            {/* BaseHeaderVer2와 동일한 로직으로 수정 */}
+            {debate.profileImage && debate.profileImage !== 'https://placehold.co/600x600' ? (
               <ProfileAvatar src={debate.profileImage} alt="프로필 이미지" />
             ) : (
-              <TextAvatar>{debate.nickname?.charAt(0) || '익'}</TextAvatar>
+              <TextAvatar>{debate.nickname?.charAt(0) || '유'}</TextAvatar>
             )}
             {debate.nickname}
           </InfoItem>
@@ -1114,8 +1143,9 @@ const DebateDetailPage: React.FC<DebateDetailPageProps> = () => {
               <CommentItem key={comment.id}>
                 <CommentAuthor>
                   <CommentAuthorInfo>
+                    {/* 댓글 작성자도 동일한 로직 적용 */}
                     <CommentTextAvatar>
-                      {comment.memberNickname?.charAt(0) || '익'}
+                      {comment.memberNickname?.charAt(0) || '유'}
                     </CommentTextAvatar>
                     {comment.memberNickname}
                   </CommentAuthorInfo>
@@ -1293,7 +1323,7 @@ const RatingBadge = styled.span`
   gap: 0.3rem;
 `
 
-// 프로필 이미지 관련 styled-components 추가
+// 프로필 이미지 관련 styled-components 수정 (BaseHeaderVer2와 동일하게)
 const ProfileAvatar = styled.img`
   width: 24px;
   height: 24px;
@@ -1306,14 +1336,13 @@ const TextAvatar = styled.div`
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background-color: #5025d1;
+  background-color: #999;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
   font-size: 0.8rem;
-  border: 1px solid #444;
 `
 
 const CommentProfileAvatar = styled.img`
@@ -1328,14 +1357,13 @@ const CommentTextAvatar = styled.div`
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background-color: #5025d1;
+  background-color: #999;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
   font-size: 0.7rem;
-  border: 1px solid #444;
 `
 
 // 페이지네이션 관련 styled-components 추가
