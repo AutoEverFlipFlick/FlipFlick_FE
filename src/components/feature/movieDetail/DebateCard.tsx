@@ -58,18 +58,32 @@ const UserAvatar = styled.div<{ $backgroundImage?: string | null }>`
   background-position: center;
 `
 
+// 텍스트 아바타를 BaseHeaderVer2와 동일하게 수정
+const TextAvatar = styled.div`
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #999;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+`
+
 const UserInfo = styled.div`
   display: flex;
   flex-direction: column;
 `
 
 const Username = styled.div`
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
 `
 
 const CreatedAt = styled.div`
-  font-size: 8px;
+  font-size: 12px;
   color: #aaa;
 `
 
@@ -217,8 +231,8 @@ const MainImage = styled.img`
 const SpoilerBadge = styled.div`
   background: linear-gradient(135deg, #ff6b6b, #ff8e53);
   color: white;
-  font-size: 10px;
-  padding: 4px 8px;
+  font-size: 12px;
+  padding: 8px 8px;
   border-radius: 12px;
   font-weight: bold;
   margin-left: auto;
@@ -300,7 +314,12 @@ const DebateCard: React.FC<DebateCardProps> = ({
     <Wrapper onClick={handleCardClick}>
       <Header>
         <UserCard>
-          <UserAvatar $backgroundImage={profileImage || undefined} />
+          {/* BaseHeaderVer2와 동일한 로직으로 수정 */}
+          {profileImage && profileImage !== 'https://placehold.co/600x600' ? (
+            <UserAvatar $backgroundImage={profileImage} />
+          ) : (
+            <TextAvatar>{username?.charAt(0) || '유'}</TextAvatar>
+          )}
           <UserInfo>
             <Username>{username}</Username>
             <CreatedAt>{createdAt}</CreatedAt>

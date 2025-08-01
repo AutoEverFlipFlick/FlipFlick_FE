@@ -259,7 +259,7 @@ const DebateWritePage: React.FC = () => {
       spoiler,
     })
       .then(res => {
-        navigate(`/debate/${res.data.debateId}`)
+        navigate(`/debate/${res.data.debateId}`, { replace: true })
       })
       .catch(() => {
         Swal.fire({

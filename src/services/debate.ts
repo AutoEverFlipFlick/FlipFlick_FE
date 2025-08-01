@@ -134,3 +134,8 @@ export const toggleDebateLike = async (debateId: number, isLike: boolean) => {
   const res = await axiosInstance.post(`/api/v1/debate/${debateId}/${endpoint}`)
   return res.data
 }
+
+export const getUserDebateReaction = async (debateId: number) => {
+  const res = await axiosInstance.get(`/api/v1/debate/${debateId}/user-reaction`)
+  return res.data
+}
