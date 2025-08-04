@@ -857,7 +857,7 @@ const Filmography: React.FC = () => {
 
   // 영화 클릭 핸들러
   const handleMovieClick = (movieTmdbId: number) => {
-    navigate(`/movie/${movieTmdbId}`);
+    navigate(`/movie/detail/${movieTmdbId}`);
   };
 
   // 날짜 포맷팅
