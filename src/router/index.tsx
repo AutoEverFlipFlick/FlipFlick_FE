@@ -182,6 +182,7 @@ const AppRoutes = () => {
             }
           />
           <Route path="/movie/detail/:tmdbId" element={<MovieDetailPage />} />
+          <Route path="/movie/detail/803796" element={<MovieDetailPage />} />
           <Route path="/totalsearch" element={<TotalSearch />} />
           <Route path="/bolkinator" element={<Bolkinator />} />
           <Route path="/example" element={<ExamplePage />} />

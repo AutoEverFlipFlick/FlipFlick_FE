@@ -484,7 +484,72 @@ const DropdownItem = styled.button<{ $active: boolean }>`
   }
 `
 
-export default function MovieDetailPage() {
+interface MockedMovieData {
+  movieData: MovieData
+  reviewData: ReviewData
+  myReview: Review | null
+  debates: DebateData[]
+  isLoading: boolean
+  isBookmarked: boolean
+  isWatched: boolean
+  isLiked: boolean
+  activeTab: 'overview' | 'review' | 'debate' | 'media'
+  activePlatformTab: 'BUY' | 'FLATRATE' | 'RENT'
+}
+
+export function mockedData(): MockedMovieData {
+  const movieData: MovieData = {
+    movieId: 1,
+    tmdbId: 12345,
+    title: 'Mocked Movie',
+    originalTitle: 'Mocked Original Title',
+    overview: 'This is a mocked overview of the movie.',
+    posterImg: 'https://example.com/poster.jpg',
+    backgroundImg: 'https://example.com/background.jpg',
+    releaseDate: '2023-01-01',
+    runtime: 120,
+    productionYear: 2023,
+    productionCountry: 'USA',
+    ageRating: 'PG-13',
+    voteAverage: 7.5,
+    myRating: 4.0,
+    popcorn: 100,
+    myLike: false,
+    myHate: false,
+    myWatched: false,
+    myBookmark: false,
+    likeCnt: 10,
+    hateCnt: 2,
+    genres: [{ tmdbId: 1, genreName: 'Action' }],
+    providers: [],
+    casts: [],
+    images: [],
+    videos: [],
+  }
+
+  const reviewData: ReviewData = {
+    reviews: [],
+    totalElements: 0,
+  }
+
+  const myReview = null
+
+  const debates = []
+
+  return {
+    movieData,
+    reviewData,
+    myReview,
+    debates,
+    isLoading: false,
+    isBookmarked: false,
+    isWatched: false,
+    isLiked: false,
+    activeTab: 'overview',
+    activePlatformTab: 'BUY',
+  }
+}
+export default function MovieDetailPage(mockedData?: MockedMovieData) {
   const [movieData, setMovieData] = useState<MovieData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'overview' | 'review' | 'debate' | 'media'>('overview')
