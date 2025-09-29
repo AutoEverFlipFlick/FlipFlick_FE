@@ -53,7 +53,7 @@ import { BookmarkProvider } from '@/context/BookmarkContext'
 import ProtectedRoute from '@/components/common/ProtectedRoute'
 import PublicRoute from '@/components/common/PublicRoute'
 import EditPlaylist from '@/pages/playlist/EditPlaylist'
-import MovieDetailPage from '@/pages/movie/MovieDetailPage'
+import MovieDetailPage, { mockedData } from '@/pages/movie/MovieDetailPage'
 import TotalSearch from '@/pages/TotalSearch'
 import Login from '@/pages/member/Login'
 import SignUp from '@/pages/member/SignUp'
@@ -181,8 +181,16 @@ const AppRoutes = () => {
               </BookmarkProvider>
             }
           />
-          <Route path="/movie/detail/:tmdbId" element={<MovieDetailPage />} />
-          <Route path="/movie/detail/803796" element={<MovieDetailPage />} />
+          <Route
+            path="/movie/detail/:tmdbId"
+            element={
+              <MovieDetailPage />
+            }
+          />
+          <Route
+            path="/movie/detail/803796/mocked"
+            element={<MovieDetailPage {...mockedData()} />}
+          />
           <Route path="/totalsearch" element={<TotalSearch />} />
           <Route path="/bolkinator" element={<Bolkinator />} />
           <Route path="/example" element={<ExamplePage />} />

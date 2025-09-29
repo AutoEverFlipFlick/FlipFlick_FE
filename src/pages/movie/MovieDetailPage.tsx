@@ -28,7 +28,7 @@ import {
 } from '@/services/movieDetail'
 import Swal from 'sweetalert2'
 import DebateCard from '@/components/feature/movieDetail/DebateCard'
-import { DebateData, getMovieDebates } from '@/services/debate'
+import { DebateData, DebateListResponse, getMovieDebates } from '@/services/debate'
 import { Icon } from '@iconify/react'
 // import {DebateData, mapToDebateData} from "@/pages/movie/debateData";
 import netflixImg from '@/assets/platform/netflix.png'
@@ -498,58 +498,207 @@ interface MockedMovieData {
 }
 
 export function mockedData(): MockedMovieData {
+  const BASE_IMAGE_URL = "https://image.tmdb.org/t/p/w500";
+
+  // TMDB detail API 데이터를 활용한 영화 정보 모킹
   const movieData: MovieData = {
     movieId: 1,
-    tmdbId: 12345,
-    title: 'Mocked Movie',
-    originalTitle: 'Mocked Original Title',
-    overview: 'This is a mocked overview of the movie.',
-    posterImg: 'https://example.com/poster.jpg',
-    backgroundImg: 'https://example.com/background.jpg',
-    releaseDate: '2023-01-01',
-    runtime: 120,
-    productionYear: 2023,
-    productionCountry: 'USA',
-    ageRating: 'PG-13',
-    voteAverage: 7.5,
-    myRating: 4.0,
-    popcorn: 100,
+    tmdbId: 803796,
+    title: 'KPop Demon Hunters',
+    originalTitle: 'KPop Demon Hunters',
+    overview: '', // TMDB 데이터에서는 overview가 비어있음
+    posterImg: `${BASE_IMAGE_URL}/22AouvwlhlXbe3nrFcjzL24bvWH.jpg`,
+    backgroundImg: `${BASE_IMAGE_URL}/l3ycQYwWmbz7p8otwbomFDXIEhn.jpg`,
+    releaseDate: '2025-06-20',
+    runtime: 96,
+    productionYear: 2025,
+    productionCountry: 'United States of America',
+    ageRating: 'Released',
+    voteAverage: 8.411,
+    myRating: 0,
+    popcorn: 1044, // vote_count를 popcorn으로 사용
     myLike: false,
     myHate: false,
     myWatched: false,
     myBookmark: false,
-    likeCnt: 10,
-    hateCnt: 2,
-    genres: [{ tmdbId: 1, genreName: 'Action' }],
-    providers: [],
-    casts: [],
-    images: [],
-    videos: [],
-  }
+    likeCnt: 1044, // 임의로 vote_count를 likeCnt로 사용
+    hateCnt: 0,
+    genres: [
+      { tmdbId: 16, genreName: 'Animation' },
+      { tmdbId: 10402, genreName: 'Music' },
+      { tmdbId: 28, genreName: 'Action' },
+      { tmdbId: 14, genreName: 'Fantasy' },
+      { tmdbId: 35, genreName: 'Comedy' }
+    ],
+    providers: [
+      { providerName: 'Netflix', providerType: 'FLATRATE' },
+      { providerName: 'Disney+', providerType: 'FLATRATE' },
+      { providerName: 'Watcha', providerType: 'RENT' },
+      { providerName: 'wavve', providerType: 'BUY' }
+    ],
+    casts: [
+      {
+        id: 144279,
+        name: 'Arden Cho',
+        profileImg: `${BASE_IMAGE_URL}/uPtfAFoEYeNGRl6n0GdxLPxdM9u.jpg`
+      },
+      {
+        id: 1948606,
+        name: 'May Hong',
+        profileImg: `${BASE_IMAGE_URL}/hnWIn2hxnJt16j0rDTiqdbG5LQo.jpg`
+      },
+      {
+        id: 2983147,
+        name: 'Ji-young Yoo',
+        profileImg: `${BASE_IMAGE_URL}/4jgtqpNWhMx8XOKQ9qQJvDdzbxG.jpg`
+      },
+      {
+        id: 1571598,
+        name: '안효섭',
+        profileImg: `${BASE_IMAGE_URL}/ynu1x6RQnpKvsOLTvB2WhDo26D9.jpg`
+      },
+      {
+        id: 28662,
+        name: '김윤진',
+        profileImg: `${BASE_IMAGE_URL}/xS7eco56mUiZGJGWDZ0pwzrUAei.jpg`
+      }
+    ],
+    images: [
+      `${BASE_IMAGE_URL}/l3ycQYwWmbz7p8otwbomFDXIEhn.jpg`,
+      `${BASE_IMAGE_URL}/rJjhOuRFldNF0OWSuSk4PiCLmeA.jpg`,
+      `${BASE_IMAGE_URL}/7FAGQSghu7gNqnza6ZqIfMojk6g.jpg`,
+      `${BASE_IMAGE_URL}/nNQ49WWdhJNHn733Zqrb3YXhd7J.jpg`,
+      `${BASE_IMAGE_URL}/3ujssVzNMk3ypJaTs3QRywYoQIx.jpg`
+    ],
+    videos: [
+      'qD9QZLnDlSc', // Behind the Lore, Songs & K-Culture
+      'Ug_pv5-r1js', // "What It Sounds Like" Song Clip
+      '5ZRsEnn2Wxw', // The Saja Boys CRASH Huntrix's Meet & Greet
+      'qRl1BdinoHw', // Cast Takes on the SPICY Ramen Challenge
+      'CDcEf3bGfcs'  // TWICE Rates Huntrix's Looks [Subtitled]
+    ],
+  };
 
+  // 리뷰 데이터 모킹
   const reviewData: ReviewData = {
-    reviews: [],
-    totalElements: 0,
-  }
+    reviews: [
+      {
+        member: {
+          memberId: 1,
+          nickname: '영화팬1',
+          profileImage: null,
+          popcornScore: 500
+        },
+        contentId: 1,
+        createdAt: '2023-08-15T14:30:00',
+        content: '애니메이션과 K-POP이 결합된 신선한 시도! 음악과 액션 씬이 정말 인상적이었습니다.',
+        rating: 4.5,
+        likes: 120,
+        hates: 5,
+        isMyPost: false,
+        isSpoiler: false
+      },
+      {
+        member: {
+          memberId: 2,
+          nickname: 'K-POP러버',
+          profileImage: null,
+          popcornScore: 750
+        },
+        contentId: 2,
+        createdAt: '2023-08-16T09:15:00',
+        content: '음악이 정말 좋았어요! 캐릭터 디자인도 매력적이고 스토리도 재미있었습니다.',
+        rating: 5.0,
+        likes: 200,
+        hates: 3,
+        isMyPost: false,
+        isSpoiler: false
+      }
+    ],
+    totalElements: 2
+  };
 
-  const myReview = null
+  // 내 리뷰 데이터 모킹
+  const myReview: Review = {
+    member: {
+      memberId: 3,
+      nickname: '내닉네임',
+      profileImage: null,
+      popcornScore: 1200
+    },
+    contentId: 3,
+    createdAt: '2023-08-17T10:45:00',
+    content: '한국 문화와 애니메이션의 만남이 이렇게 멋질 줄이야! 음악과 액션 모두 완벽했습니다.',
+    rating: 4.8,
+    likes: 50,
+    hates: 1,
+    isMyPost: true,
+    isSpoiler: false
+  };
 
-  const debates = []
+  // 토론 데이터 모킹
+  const debates: DebateListResponse = {
+    content: [
+      {
+        debateId: 1,
+        memberId: 4,
+        tmdbId: 803796,
+        movie: null,
+        movieTitle: 'KPop Demon Hunters',
+        debateTitle: '이 영화의 음악이 K-POP 산업에 미칠 영향은?',
+        content: '이 영화가 K-POP의 글로벌 인기에 어떤 영향을 미칠지 토론해봅시다.',
+        spoiler: false,
+        likeCnt: 85,
+        hateCnt: 2,
+        createdAt: '2023-08-18T16:20:00',
+        updatedAt: '2023-08-18T16:20:00',
+        nickname: '문화평론가',
+        profileImage: null,
+        popcorn: 980,
+        commentCount: 15
+      },
+      {
+        debateId: 2,
+        memberId: 5,
+        tmdbId: 803796,
+        movie: null,
+        movieTitle: 'KPop Demon Hunters',
+        debateTitle: '애니메이션 스타일에 대한 의견',
+        content: '이 영화의 애니메이션 스타일이 한국 문화를 잘 표현했다고 생각하시나요?',
+        spoiler: false,
+        likeCnt: 62,
+        hateCnt: 4,
+        createdAt: '2023-08-19T11:30:00',
+        updatedAt: '2023-08-19T11:30:00',
+        nickname: '애니메이션팬',
+        profileImage: null,
+        popcorn: 820,
+        commentCount: 8
+      }
+    ],
+    currentPage: 0,
+    totalPages: 1,
+    totalElements: 2,
+    numberOfElements: 2,
+    first: true,
+    last: true
+  };
 
   return {
     movieData,
     reviewData,
     myReview,
-    debates,
+    debates : debates.content,
     isLoading: false,
     isBookmarked: false,
     isWatched: false,
     isLiked: false,
     activeTab: 'overview',
     activePlatformTab: 'BUY',
-  }
+  };
 }
-export default function MovieDetailPage(mockedData?: MockedMovieData) {
+
+export default function MovieDetailPage(mockData?: MockedMovieData) {
   const [movieData, setMovieData] = useState<MovieData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'overview' | 'review' | 'debate' | 'media'>('overview')
@@ -766,6 +915,15 @@ export default function MovieDetailPage(mockedData?: MockedMovieData) {
   }
   useEffect(() => {
 
+    if (mockData) {
+      setMovieData(mockData.movieData);
+      setReviewData(mockData.reviewData);
+      setMyReview(mockData.myReview);
+      setDebates(mockData.debates);
+      setIsLoading(false);
+      setDebateLoading(false);
+      return;
+    }
     try {
       if (loading) return // 로딩 중이면 아무것도 하지 않음
 
@@ -796,6 +954,9 @@ export default function MovieDetailPage(mockedData?: MockedMovieData) {
       setIsLoading(false)
     }
   }, [tmdbId, user, loading, isAuthenticated, activeTab, isLoading]) // activeTab 의존성 추가
+
+
+
 
   // HTML에서 이미지 URL 추출하는 함수
   const extractImagesFromContent = (htmlContent: string): string[] => {
@@ -1218,22 +1379,32 @@ export default function MovieDetailPage(mockedData?: MockedMovieData) {
                 {movieData.videos.length === 0 ? (
                   <p>유튜브 영상이 없습니다.</p>
                 ) : (
-                  movieData.videos.map((video, index) => (
-                    <iframe
-                      width={300}
-                      height={200}
+                  movieData.videos.map((video) => (
+                  // movieData.videos.map((video, index) => (
+                    // <iframe
+                    //   width={300}
+                    //   height={200}
+                    //   style={{
+                    //     width: '300px',
+                    //     height: '200px',
+                    //     marginBottom: '10px',
+                    //     border: 'none',
+                    //   }}
+                    //   key={index}
+                    //   src={video.replace('watch?v=', 'embed/')}
+                    //   title={`YouTube video player ${index + 1}`}
+                    //   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    //   allowFullScreen
+                    // />
+                    <div
+                      key={video}
                       style={{
-                        width: '300px',
-                        height: '200px',
-                        marginBottom: '10px',
-                        border: 'none',
-                      }}
-                      key={index}
-                      src={video.replace('watch?v=', 'embed/')}
-                      title={`YouTube video player ${index + 1}`}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
+                          width: '300px',
+                          height: '200px',
+                          marginBottom: '10px',
+                          border: 'none',
+                        }}
+                          > </div>
                   ))
                 )}
               </MediaContents>
